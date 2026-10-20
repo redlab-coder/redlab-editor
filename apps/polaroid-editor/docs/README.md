@@ -10,6 +10,7 @@
 | [Validação 1.0.1](history/1.0.1.md) | Conferência, preenchimento branco, limpeza e responsividade |
 | [Validação 1.1.0](history/1.1.0.md) | Nova identidade, importação por arraste e prévias em pé |
 | [Validação 1.1.1](history/1.1.1.md) | Arraste proporcional, filtros graduais e desempenho |
+| [Validação 1.1.2](history/1.1.2.md) | Integração ao RedLab Editor e canal próprio |
 | [Recursos de terceiros](../THIRD-PARTY.md) | Bibliotecas e modelo de orientação |
 
 [← Polaroid Editor](../README.md)

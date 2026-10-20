@@ -223,7 +223,7 @@ def main():
                 print(existing, flush=True)
         elif sys.platform == 'win32':
             import ctypes
-            ctypes.windll.user32.MessageBoxW(None, 'O BottonsEditor já está iniciando ou encerrando. Aguarde alguns segundos e tente novamente.', 'Bottons Editor', 0x40)
+            ctypes.windll.user32.MessageBoxW(None, 'O Bottons Editor já está iniciando ou encerrando. Aguarde alguns segundos e tente novamente.', 'Bottons Editor', 0x40)
         return
     try:
         server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
