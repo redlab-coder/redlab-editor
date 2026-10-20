@@ -1,14 +1,18 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const token = document.querySelector('meta[name="moldura-token"]').content;
+const token = document.querySelector('meta[name="bottons-editor-token"]').content;
 const defaults = () => ({cx:.5,cy:.5,zoom:1,rotation:0,brightness:1,contrast:1,saturation:1,sharpness:1});
 const sliders = ['zoom','brightness','contrast','saturation','sharpness'];
+const adjustmentLimits={brightness:100,contrast:100,saturation:100,sharpness:200};
+const factorFromSlider=(key,value)=>1+Math.sign(value)*(value/100)**2*(value<0?1:adjustmentLimits[key]/100);
+const sliderFromFactor=(key,value)=>Math.sign(value-1)*Math.sqrt(Math.abs(value-1)/(value<1?1:adjustmentLimits[key]/100))*100;
+const adjustmentText=value=>String(Math.round((value-1)*10000)/100);
 const adjustmentNames={zoom:'Zoom',brightness:'Brilho',contrast:'Contraste',saturation:'Saturação',sharpness:'Nitidez'};
 const templates=JSON.parse($('template-data').textContent);
 let activeTemplate='square';
 const spec=()=>templates[activeTemplate];
 const capacity=()=>spec().capacity;
-let photos = [], selected = null, revision = 0, sheetRevision = 0, debounce, editorTimer, toastTimer, importing = false, exporting = false, drag, liveFrame, closed=false;
+let photos = [], selected = null, revision = 0, sheetRevision = 0, debounce, editorTimer, toastTimer, importing = false, exporting = false, clearing=false, drag, liveFrame, closed=false;
 const objectUrls = new Map();
 const sheetCache = new Map();
 const previewSources = new Map();
@@ -16,16 +20,16 @@ let orientedSource = null;
 let syncTimer, restoreVersion=0;
 const scratchPhoto=document.createElement('canvas');scratchPhoto.width=591;scratchPhoto.height=591;
 const scratchHorizontal=document.createElement('canvas');scratchHorizontal.width=827;scratchHorizontal.height=591;
-const sessionKey = 'moldura-session';
+const sessionKey = 'bottons-editor-session';
 let restoring = false;
 let openedSheet=null, sheetDownloading=false, sheetDialogUrl=null;
 let authoritativeRevision=0;
-let editingAllowed=false, releaseOwnership=null, acquiring=false, pendingRestore=null, sessionRevision=0, modelRevision=0;
+let editingAllowed=false, releaseOwnership=null, acquiring=false, passiveAfterYield=false, pendingRestore=null, sessionRevision=0, modelRevision=0;
 const tabId=crypto.randomUUID();
-const channel=typeof BroadcastChannel!=='undefined'?new BroadcastChannel('moldura:'+token):null;
-const canEdit=()=>editingAllowed&&!closed&&!restoring;
+const channel=typeof BroadcastChannel!=='undefined'?new BroadcastChannel('bottons-editor:'+token):null;
+const canEdit=()=>editingAllowed&&!closed&&!restoring&&!importing&&!exporting&&!clearing;
 async function api(path, data, raw=false, filename='') {
-  const response = await fetch('/api/'+path, {method:'POST',headers:{'X-Moldura-Token':token,'Content-Type':raw?'application/octet-stream':'application/json',...(filename?{'X-Filename':encodeURIComponent(filename)}:{})},body:raw?data:JSON.stringify(data)});
+  const response = await fetch('/api/'+path, {method:'POST',headers:{'X-BottonsEditor-Token':token,'Content-Type':raw?'application/octet-stream':'application/json',...(filename?{'X-Filename':encodeURIComponent(filename)}:{})},body:raw?data:JSON.stringify(data)});
   if (!response.ok) {const body = await response.json();const error=new Error(body.error || 'Não foi possível concluir.');error.status=response.status;throw error;}
   return response;
 }
@@ -139,7 +143,7 @@ function drawLive() {
 }
 function updateSliders() {
   const photo=current();
-  for (const name of sliders) {const value=photo?photo.edits[name]:1; $(name).disabled=!photo||!canEdit(); $(name).value=value; $(name+'-value').textContent=name==='zoom'?value.toFixed(2).replace('.',',')+'×':(Math.round((value-1)*100)>0?'+':'')+Math.round((value-1)*100);const numeric=$(name+'-number');numeric.disabled=!photo||!canEdit();if(document.activeElement!==numeric)numeric.value=name==='zoom'?value.toFixed(2):Math.round((value-1)*100);$(name+'-zero').disabled=!photo||!canEdit();}
+  for (const name of sliders) {const value=photo?photo.edits[name]:1; $(name).disabled=!photo||!canEdit(); $(name).value=name==='zoom'?value:sliderFromFactor(name,value); $(name+'-value').textContent=name==='zoom'?value.toFixed(2).replace('.',',')+'×':(value>1?'+':'')+adjustmentText(value);const numeric=$(name+'-number');numeric.disabled=!photo||!canEdit();if(document.activeElement!==numeric)numeric.value=name==='zoom'?value.toFixed(2):adjustmentText(value);$(name+'-zero').disabled=!photo||!canEdit();}
   for(const id of ['rotate','reset','center'])$(id).disabled=!photo||!canEdit();
   $('guides').disabled=!photo;
 }
@@ -151,25 +155,26 @@ function renderLibrary() {
   photos.forEach((photo,index)=>{
     const row=document.createElement('div'); row.className='photo-row'+(photo.id===selected?' active':'');
     const selectButton=document.createElement('button');selectButton.type='button';selectButton.className='photo-select';selectButton.setAttribute('aria-label','Editar '+photo.name);selectButton.onclick=()=>select(photo.id);
-    const image=photo.thumb?document.createElement('img'):document.createElement('span');if(photo.thumb){image.src=photo.thumb;image.alt='';}else{image.className='photo-placeholder';image.innerHTML=MolduraIcons.svg(photo.previewError?'retry':'add-photo');}image.dataset.photo=photo.id;
+    const image=photo.thumb?document.createElement('img'):document.createElement('span');if(photo.thumb){image.src=photo.thumb;image.alt='';}else{image.className='photo-placeholder';image.innerHTML=BottonsEditorIcons.svg(photo.previewError?'retry':'add-photo');}image.dataset.photo=photo.id;
     const detail=document.createElement('div'); detail.className='photo-detail';
     const name=document.createElement('strong'); name.textContent=photo.name; name.title=photo.name;
     const subtitle=document.createElement('small'); subtitle.textContent=photo.previewError?'Tentar prévia':`Folha ${Math.floor(index/capacity())+1}`;subtitle.title=`${photo.width} × ${photo.height} px`;
     const actions=document.createElement('div'); actions.className='row-actions';
     for(const [symbol,label,action,disabled] of [['up','Mover para cima',()=>move(index,-1),index===0],['down','Mover para baixo',()=>move(index,1),index===photos.length-1],['remove','Remover foto',()=>remove(photo.id),false]]) {
-      const button=document.createElement('button');button.type='button';button.innerHTML=MolduraIcons.svg(symbol); button.setAttribute('aria-label',label+' '+photo.name);button.title=label; button.disabled=disabled||!canEdit()||importing; button.onclick=()=>action(); actions.append(button);
+      const button=document.createElement('button');button.type='button';button.innerHTML=BottonsEditorIcons.svg(symbol); button.setAttribute('aria-label',label+' '+photo.name);button.title=label; button.disabled=disabled||!canEdit()||importing; button.onclick=()=>action(); actions.append(button);
     }
     detail.append(name,subtitle);selectButton.append(image,detail);row.append(selectButton,actions);$('photo-list').append(row);
   });
-  $('export').disabled=!photos.length||importing||exporting||restoring;
+  $('export').disabled=!photos.length||importing||exporting||restoring||clearing;
   const pages=Math.ceil(photos.length/capacity());
   $('export-label').textContent=exporting?'Preparando…':photos.length?`Exportar ${pages} folha${pages>1?'s':''}`:'Exportar JPG';
   $('export').setAttribute('aria-label',$('export-label').textContent);$('export').title=$('export-label').textContent;
   $('sheet-summary').textContent=photos.length?`${photos.length} foto${photos.length>1?'s':''} · ${pages} folha${pages>1?'s':''}`:'';
   for(const id of ['add','drop','empty-add'])$(id).disabled=!canEdit()||importing||exporting;
+  $('clear-all').hidden=!photos.length;$('clear-all').disabled=!photos.length||!canEdit();$('clear-confirm').disabled=clearing;$('clear-cancel').disabled=clearing;updateSliders();
   if(keepListFocus)focusSelectedPhoto();
 }
-function select(id) {selected=id;revision++;renderLibrary();updateSliders();drawLive();renderEditor();saveSession();}
+function select(id) {if(selected!==id){drag=null;$('tile-frame').classList.remove('dragging');$('tile-image').getContext('2d').clearRect(0,0,$('tile-image').width,$('tile-image').height);}selected=id;revision++;renderLibrary();updateSliders();drawLive();renderEditor();saveSession();}
 function focusSelectedPhoto(){
   const list=$('photo-list'),index=photos.findIndex(photo=>photo.id===selected),row=list.children[index];
   if(!row)return;row.querySelector('.photo-select')?.focus({preventScroll:true});
@@ -208,8 +213,8 @@ async function renderEditor() {
     const thumb=document.querySelector(`img[data-photo="${photo.id}"]`);if(thumb)thumb.src=photo.thumb;if(failed||!thumb)renderLibrary();
   } catch(error) {if(request===revision){photo.previewError=true;$('retry-preview').hidden=false;renderLibrary();toast('A foto foi preservada. Tente carregar a prévia novamente.');}}
 }
-function changed() {
-  revision++;updateSliders();drawLive();saveSession();
+function changed({interactive=false}={}) {
+  revision++;drawLive();if(interactive)return;updateSliders();saveSession();
   clearTimeout(editorTimer);editorTimer=setTimeout(()=>{editorTimer=null;if(!drag)renderEditor();},180);
   clearTimeout(debounce);debounce=setTimeout(()=>{if(!drag)renderSheets();},450);
 }
@@ -241,6 +246,7 @@ async function renderSheets() {
   } catch(error) {if(request===sheetRevision)toast(error.message);}
 }
 async function importFiles(files) {
+  files=files.filter(file=>!['thumbs.db','.ds_store','desktop.ini'].includes(file.name.toLowerCase()));
   if(importing||exporting||!canEdit()||!files.length) return;
   importing=true;renderLibrary();$('drop').disabled=true;$('add').disabled=true;
   const errors=[];let first=null;
@@ -261,21 +267,31 @@ async function importFiles(files) {
 function move(index,offset) {if(!canEdit())return;const other=index+offset;if(other<0||other>=photos.length)return;[photos[index],photos[other]]=[photos[other],photos[index]];renderLibrary();renderSheets();saveSession();}
 async function remove(id) {
   if(!canEdit()||importing)return;
-  try {await api('delete',{id});photos=photos.filter(p=>p.id!==id);const url=objectUrls.get('thumb-'+id);if(url)URL.revokeObjectURL(url);objectUrls.delete('thumb-'+id);previewSources.get(id)?.then(bitmap=>bitmap.close()).catch(()=>{});previewSources.delete(id);if(selected===id)selected=photos[0]?.id||null;renderLibrary();updateSliders();drawLive();renderEditor();renderSheets();saveSession();}catch(error){toast(error.message);}
+  try {await api('delete',{id});photos=photos.filter(p=>p.id!==id);const url=objectUrls.get('thumb-'+id);if(url)URL.revokeObjectURL(url);objectUrls.delete('thumb-'+id);previewSources.get(id)?.then(bitmap=>bitmap.close()).catch(()=>{});previewSources.delete(id);if(orientedSource?.id===id)orientedSource=null;if(selected===id)selected=photos[0]?.id||null;renderLibrary();updateSliders();drawLive();renderEditor();renderSheets();saveSession();}catch(error){toast(error.message);}
 }
 for(const id of ['add','drop','empty-add']) $(id).onclick=()=>$('files').click();
 $('files').onchange=event=>importFiles([...event.target.files]);
-for(const type of ['dragenter','dragover']) $('drop').addEventListener(type,event=>{event.preventDefault();$('drop').classList.add('drag-over');});
-for(const type of ['dragleave','drop']) $('drop').addEventListener(type,event=>{event.preventDefault();$('drop').classList.remove('drag-over');if(type==='drop')importFiles([...event.dataTransfer.files]);});
+// Only external files trigger import; pointer gestures still position the photo.
+const importArea=$('import-area');let fileDragDepth=0;
+const fileDrag=e=>Array.from(e.dataTransfer?.types||[]).includes('Files');
+const acceptsDrop=()=>canEdit()&&!document.querySelector('dialog[open]');
+function clearFileDrag(){fileDragDepth=0;importArea.classList.remove('file-drop-active');}
+importArea.addEventListener('dragenter',e=>{if(!fileDrag(e))return;e.preventDefault();fileDragDepth++;if(acceptsDrop())importArea.classList.add('file-drop-active');});
+importArea.addEventListener('dragover',e=>{if(!fileDrag(e))return;e.preventDefault();e.dataTransfer.dropEffect=acceptsDrop()?'copy':'none';if(!acceptsDrop())clearFileDrag();});
+importArea.addEventListener('dragleave',e=>{if(!fileDrag(e))return;if(--fileDragDepth<=0)clearFileDrag();});
+importArea.addEventListener('drop',e=>{if(!fileDrag(e))return;e.preventDefault();e.stopPropagation();clearFileDrag();if(acceptsDrop())importFiles(Array.from(e.dataTransfer.files));});
+// Prevent the browser from navigating to a dropped file outside the import area.
+for(const type of ['dragover','drop'])document.addEventListener(type,e=>{if(fileDrag(e)){e.preventDefault();if(type==='drop'||!importArea.contains(e.target)){clearFileDrag();e.dataTransfer.dropEffect='none';}}});
+document.addEventListener('dragend',clearFileDrag);window.addEventListener('blur',clearFileDrag);
 for(const name of sliders) {
   const output=$(name+'-value'),controls=document.createElement('span');controls.className='precise-control';
-  const numeric=document.createElement('input');numeric.type='number';numeric.id=name+'-number';numeric.min=name==='zoom'?'1':'-100';numeric.max=name==='zoom'?'5':name==='sharpness'?'200':'100';numeric.step=name==='zoom'?'0.01':'1';numeric.value=name==='zoom'?'1.00':'0';numeric.disabled=true;numeric.setAttribute('aria-label',name==='zoom'?'Zoom exato':`Valor exato de ${adjustmentNames[name].toLowerCase()}`);
-  const zero=document.createElement('button');zero.type='button';zero.id=name+'-zero';zero.innerHTML=MolduraIcons.svg('reset');zero.disabled=true;zero.title=name==='zoom'?'Restaurar zoom':'Zerar este ajuste';zero.setAttribute('aria-label',zero.title+' '+name);
+  const numeric=document.createElement('input');numeric.type='number';numeric.id=name+'-number';numeric.min=name==='zoom'?'1':'-100';numeric.max=name==='zoom'?'5':name==='sharpness'?'200':'100';numeric.step='0.01';numeric.value=name==='zoom'?'1.00':'0';numeric.disabled=true;numeric.setAttribute('aria-label',name==='zoom'?'Zoom exato':`Valor exato de ${adjustmentNames[name].toLowerCase()}`);
+  const zero=document.createElement('button');zero.type='button';zero.id=name+'-zero';zero.innerHTML=BottonsEditorIcons.svg('reset');zero.disabled=true;zero.title=name==='zoom'?'Restaurar zoom':'Zerar este ajuste';zero.setAttribute('aria-label',zero.title+' '+name);
   controls.append(numeric,zero);output.classList.add('sr-only');output.after(controls);
-  function apply(value) {const photo=current();if(!photo||!canEdit())return;photo.edits[name]=Math.max(Number($(name).min),Math.min(Number($(name).max),Math.round(value*100)/100));clampCrop(photo);changed();}
-  $(name).oninput=()=>apply(Number($(name).value));
+  function apply(value) {const photo=current();if(!photo||!canEdit())return;photo.edits[name]=Math.max(name==='zoom'?1:0,Math.min(name==='zoom'?5:name==='sharpness'?3:2,Math.round(value*10000)/10000));clampCrop(photo);changed();}
+  $(name).oninput=()=>apply(name==='zoom'?Number($(name).value):factorFromSlider(name,Number($(name).value)));
   numeric.oninput=()=>{if(numeric.value===''||!numeric.validity.valid)return;const value=Number(numeric.value);apply(name==='zoom'?value:1+value/100);};
-  numeric.onchange=()=>{const photo=current();if(photo)numeric.value=name==='zoom'?photo.edits[name].toFixed(2):Math.round((photo.edits[name]-1)*100);};
+  numeric.onchange=()=>{const photo=current();if(photo)numeric.value=name==='zoom'?photo.edits[name].toFixed(2):adjustmentText(photo.edits[name]);};
   numeric.onkeydown=event=>{if(event.key==='Enter')numeric.blur();};
   zero.onclick=()=>apply(1);
   $(name).ondblclick=()=>apply(1);
@@ -283,31 +299,31 @@ for(const name of sliders) {
 $('rotate').onclick=()=>{const photo=current();if(!photo||!canEdit())return;const {cx,cy}=photo.edits;photo.edits.rotation=(photo.edits.rotation+90)%360;photo.edits.cx=1-cy;photo.edits.cy=cx;changed();};
 $('reset').onclick=()=>{const photo=current();if(!photo||!canEdit())return;photo.edits=defaults();changed();};
 $('center').onclick=()=>{const photo=current();if(!photo||!canEdit())return;photo.edits.cx=.5;photo.edits.cy=.5;changed();};
-$('tile-frame').addEventListener('pointerdown',event=>{const photo=current();if(!photo||!canEdit())return;event.preventDefault();const geometry=clampCrop(photo);drag={x:event.clientX,y:event.clientY,cx:photo.edits.cx,cy:photo.edits.cy,id:photo.id,...geometry};$('tile-frame').setPointerCapture(event.pointerId);$('tile-frame').classList.add('dragging');});
-$('tile-frame').addEventListener('pointermove',event=>{if(!drag)return;const photo=current();if(!photo||photo.id!==drag.id)return;const display=$('tile-frame').clientWidth*spec().visible_mm/spec().cut_mm;photo.edits.cx=drag.cx-(event.clientX-drag.x)*drag.side/(display*drag.w);photo.edits.cy=drag.cy-(event.clientY-drag.y)*drag.side/(display*drag.h);clampCrop(photo);changed();});
+$('tile-frame').addEventListener('pointerdown',event=>{const photo=current();if(event.button!==0||drag||!photo||!canEdit())return;event.preventDefault();clampCrop(photo);drag={pointerId:event.pointerId,x:event.clientX,y:event.clientY,id:photo.id,moved:false};$('tile-frame').setPointerCapture(event.pointerId);$('tile-frame').classList.add('dragging');});
+$('tile-frame').addEventListener('pointermove',event=>{if(!drag||event.pointerId!==drag.pointerId)return;const photo=current();if(!photo||photo.id!==drag.id)return;const geometry=clampCrop(photo),display=$('tile-frame').clientWidth*spec().visible_mm/spec().cut_mm,dx=event.clientX-drag.x,dy=event.clientY-drag.y;drag.x=event.clientX;drag.y=event.clientY;const before=[photo.edits.cx,photo.edits.cy];photo.edits.cx-=dx*geometry.side/(display*geometry.w);photo.edits.cy-=dy*geometry.side/(display*geometry.h);clampCrop(photo);if(before[0]!==photo.edits.cx||before[1]!==photo.edits.cy){drag.moved=true;changed({interactive:true});}});
 // Fine movement: one source pixel; Shift moves ten pixels.
 $('tile-frame').addEventListener('keydown',event=>{const axes={ArrowLeft:[1,0],ArrowRight:[-1,0],ArrowUp:[0,1],ArrowDown:[0,-1]};if(!axes[event.key])return;const photo=current();if(!photo||!canEdit())return;event.preventDefault();const geometry=clampCrop(photo),step=event.shiftKey?10:1;photo.edits.cx+=axes[event.key][0]*step/geometry.w;photo.edits.cy+=axes[event.key][1]*step/geometry.h;clampCrop(photo);changed();});
-for(const type of ['pointerup','pointercancel','lostpointercapture']) $('tile-frame').addEventListener(type,()=>{if(!drag)return;drag=null;$('tile-frame').classList.remove('dragging');changed();});
+for(const type of ['pointerup','pointercancel','lostpointercapture']) $('tile-frame').addEventListener(type,event=>{if(!drag||event.pointerId!==drag.pointerId)return;const moved=drag.moved;drag=null;$('tile-frame').classList.remove('dragging');if(moved)changed();});
 $('export').onclick=async()=>{
-  if(!photos.length||exporting)return;exporting=true;renderLibrary();
+  if(!photos.length||exporting||importing||clearing)return;exporting=true;renderLibrary();
   try {
-    const snapshot=photos.map(item),template=activeTemplate,perPage=capacity(),response=await api('export',{items:snapshot,template}),blob=await response.blob(),url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=snapshot.length>perPage?'Moldura-folhas.zip':'Moldura-01.jpg';document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast(snapshot.length>perPage?'Download iniciado · ZIP com as folhas em JPG.':'Download iniciado · JPG a 300 DPI.');
+    const snapshot=photos.map(item),template=activeTemplate,perPage=capacity(),response=await api('export',{items:snapshot,template}),blob=await response.blob(),url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=snapshot.length>perPage?'BottonsEditor-folhas.zip':'BottonsEditor-01.jpg';document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast(snapshot.length>perPage?'Download iniciado · ZIP com as folhas em JPG.':'Download iniciado · JPG a 300 DPI.');
   }catch(error){toast(error.message);}finally{exporting=false;renderLibrary();flushRestore();}
 };
-$('quit').onclick=async()=>{if(photos.length&&!confirm('Você já exportou suas folhas? Encerrar descarta as fotos e ajustes desta sessão.'))return;try{await api('quit',{});closed=true;photos=[];editingAllowed=false;releaseOwnership?.();channel?.close();localStorage.removeItem(sessionKey);clearInterval(heartbeat);clearTimeout(debounce);clearTimeout(editorTimer);clearTimeout(syncTimer);clearTimeout(toastTimer);cancelAnimationFrame(liveFrame);document.body.innerHTML='<main style="padding-top:100px;text-align:center"><h1>Até a próxima memória.</h1><p>O Moldura foi encerrado. Você pode fechar esta aba.</p></main>';}catch(error){toast(error.message);}};
+$('quit').onclick=async()=>{if(importing||exporting||clearing){toast('Aguarde a operação terminar antes de encerrar.');return;}if(photos.length&&!confirm('Você já exportou suas folhas? Encerrar descarta as fotos e ajustes desta sessão.'))return;try{await api('quit',{});closed=true;photos=[];editingAllowed=false;releaseOwnership?.();channel?.close();localStorage.removeItem(sessionKey);clearInterval(heartbeat);clearTimeout(debounce);clearTimeout(editorTimer);clearTimeout(syncTimer);clearTimeout(toastTimer);cancelAnimationFrame(liveFrame);document.body.innerHTML='<main style="padding-top:100px;text-align:center"><h1>Até a próxima memória.</h1><p>O BottonsEditor foi encerrado. Você pode fechar esta aba.</p></main>';}catch(error){toast(error.message);}};
 async function refreshAppStatus(){
   const state=await(await api('heartbeat',{})).json();if(closed)return;
   const update=state.update,badge=$('update-status');
   const visible=['available','downloading','ready'].includes(update?.state);
   if(visible){
     const label=update.state==='downloading'?'Baixando atualização':'Atualização disponível';
-    const detail=update.state==='ready'?`A versão ${update.version} está pronta e será instalada ao encerrar o Moldura.`:update.state==='downloading'?`A versão ${update.version} está sendo baixada em segundo plano.`:`A versão ${update.version} está disponível. O download será tentado novamente; você também pode verificar pela bandeja.`;
+    const detail=update.state==='ready'?`A versão ${update.version} está pronta e será instalada ao encerrar o Bottons Editor.`:update.state==='downloading'?`A versão ${update.version} está sendo baixada em segundo plano.`:`A versão ${update.version} está disponível. O download será tentado novamente; você também pode verificar pela bandeja.`;
     if($('update-label').textContent!==label)$('update-label').textContent=label;
     if(badge.title!==detail){badge.title=detail;badge.setAttribute('aria-label',label+'. '+detail);}
   }
   badge.hidden=!visible;
 }
-const heartbeat=setInterval(()=>refreshAppStatus().catch(()=>{clearInterval(heartbeat);toast('A sessão foi encerrada. Abra o Moldura novamente.');}),20000);
+const heartbeat=setInterval(()=>refreshAppStatus().catch(()=>{clearInterval(heartbeat);toast('A sessão foi encerrada. Abra o Bottons Editor novamente.');}),20000);
 refreshAppStatus().catch(()=>{});
 async function restoreSession(saved) {
   if(!saved||saved.token!==token||!Array.isArray(saved.photos))return;
@@ -341,33 +357,26 @@ document.querySelectorAll('[data-template]').forEach(button=>button.onclick=()=>
 // Only one tab edits this session. Other tabs can inspect it and explicitly take over.
 function refreshOwnershipUI(){if(closed)return;$('session-banner').hidden=editingAllowed;updateTemplateUI();updateSliders();renderLibrary();}
 function queueRestore(saved){if(!saved||saved.token!==token||(saved.sessionRevision||0)<=sessionRevision)return;pendingRestore=saved;clearTimeout(syncTimer);syncTimer=setTimeout(flushRestore,120);}
-function flushRestore(){if(!pendingRestore||drag||importing||exporting||restoring||closed)return;const saved=pendingRestore;pendingRestore=null;if((saved.sessionRevision||0)<=sessionRevision)return;restoreSession(saved).catch(()=>toast('A sessão foi preservada. Tente novamente.'));}
+function flushRestore(){if(!pendingRestore||drag||importing||exporting||clearing||restoring||closed)return;const saved=pendingRestore;pendingRestore=null;if((saved.sessionRevision||0)<=sessionRevision)return;restoreSession(saved).catch(()=>toast('A sessão foi preservada. Tente novamente.'));}
 function readSession(){try{return JSON.parse(localStorage.getItem(sessionKey));}catch(error){return null;}}
-function tryAcquireEditor(){
-  if(acquiring||editingAllowed||closed)return;
+function tryAcquireEditor(wait=false){
+  if(acquiring||editingAllowed||closed||(!wait&&passiveAfterYield))return;
+  if(wait)passiveAfterYield=false;
   if(!navigator.locks){editingAllowed=true;refreshOwnershipUI();return;}
   acquiring=true;
-  navigator.locks.request('moldura-editor:'+token,{ifAvailable:true},async lock=>{
-    acquiring=false;if(!lock){refreshOwnershipUI();return;}
-    editingAllowed=true;
-    const hold=new Promise(resolve=>{releaseOwnership=resolve;});
-    const saved=readSession();
+  const controller=wait?new AbortController():null;
+  const timeout=controller?setTimeout(()=>controller.abort(),5000):null;
+  // Explicit transfer waits for the old holder to release instead of racing a timer.
+  navigator.locks.request('bottons-editor:editing:'+token,controller?{signal:controller.signal}:{ifAvailable:true},async lock=>{
+    clearTimeout(timeout);acquiring=false;if(!lock){refreshOwnershipUI();return;}
+    editingAllowed=true;const hold=new Promise(resolve=>releaseOwnership=resolve),saved=readSession();
     if(saved?.token===token&&(saved.sessionRevision||0)>sessionRevision)await restoreSession(saved);
-    refreshOwnershipUI();
-    await hold;releaseOwnership=null;editingAllowed=false;
-  }).catch(()=>{acquiring=false;toast('Não foi possível ativar a edição nesta aba.');});
+    refreshOwnershipUI();await hold;releaseOwnership=null;editingAllowed=false;
+  }).catch(error=>{clearTimeout(timeout);acquiring=false;toast(error.name==='AbortError'?'A outra aba está ocupada. Aguarde a operação terminar e tente novamente.':'Não foi possível ativar a edição nesta aba.');});
 }
-function yieldEditor(){
-  if(!editingAllowed)return false;
-  if(importing||exporting)return false;
-  saveSession();editingAllowed=false;drag=null;$('tile-frame').classList.remove('dragging');clearTimeout(editorTimer);clearTimeout(debounce);refreshOwnershipUI();releaseOwnership?.();return true;
-}
-if(channel)channel.onmessage=event=>{
-  if(closed)return;
-  if(event.data.type==='yield'&&editingAllowed){if(yieldEditor())channel.postMessage({type:'released',target:event.data.from});}
-  if(event.data.type==='released'&&event.data.target===tabId){queueRestore(readSession());setTimeout(tryAcquireEditor,0);}
-};
-$('takeover').onclick=()=>{channel?.postMessage({type:'yield',from:tabId});tryAcquireEditor();setTimeout(tryAcquireEditor,250);};
+function yieldEditor(){if(!editingAllowed||importing||exporting||clearing||restoring)return false;saveSession();passiveAfterYield=true;editingAllowed=false;drag=null;$('tile-frame').classList.remove('dragging');clearTimeout(editorTimer);clearTimeout(debounce);refreshOwnershipUI();releaseOwnership?.();return true;}
+if(channel)channel.onmessage=e=>{if(closed)return;if(e.data.type==='yield'&&editingAllowed){if(yieldEditor())channel.postMessage({type:'released',target:e.data.from});}if(e.data.type==='released'&&e.data.target===tabId){queueRestore(readSession());tryAcquireEditor(true);}};
+$('takeover').onclick=()=>{channel?.postMessage({type:'yield',from:tabId});tryAcquireEditor(true);};
 window.addEventListener('focus',()=>{if(!editingAllowed)tryAcquireEditor();});
 window.addEventListener('storage',event=>{if(event.key===sessionKey&&!closed){if(event.newValue){try{queueRestore(JSON.parse(event.newValue));}catch(error){}}else if(!editingAllowed){photos=[];selected=null;renderLibrary();renderEditor();renderSheets();}}});
 window.addEventListener('pagehide',()=>{saveSession();editingAllowed=false;releaseOwnership?.();});
@@ -390,14 +399,22 @@ $('download-sheet').onclick=async()=>{
   const snapshot=openedSheet;sheetDownloading=true;$('download-sheet').disabled=true;$('download-sheet').setAttribute('aria-busy','true');
   try{
     const response=await api('export',{items:snapshot.items,template:snapshot.template}),blob=await response.blob();
-    const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=`Moldura-${String(snapshot.index+1).padStart(2,'0')}.jpg`;
+    const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=`BottonsEditor-${String(snapshot.index+1).padStart(2,'0')}.jpg`;
     document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
     toast(`Download iniciado · Folha ${snapshot.index+1} em JPG a 300 DPI.`);
   }catch(error){toast(error.message);}finally{sheetDownloading=false;$('download-sheet').disabled=!openedSheet;$('download-sheet').removeAttribute('aria-busy');}
 };
 $('help').onclick=()=>$('help-dialog').showModal();
 document.querySelectorAll('[data-close-dialog]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
-document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();}}));
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{if(event.target===dialog){if(dialog.id==='clear-dialog'&&clearing)return;const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();}}));
 new ResizeObserver(entries=>{for(const entry of entries){const size=Math.max(120,Math.floor(Math.min(entry.contentRect.width,entry.contentRect.height)-38));$('tile-frame').style.setProperty('--preview-size',size+'px');}}).observe($('canvas-area'));
 refreshOwnershipUI();
 (async()=>{const saved=readSession();if(saved?.token===token)await restoreSession(saved);tryAcquireEditor();})();
+
+$('clear-all').onclick=()=>{if(canEdit()&&photos.length){$('clear-message').textContent=`Remover ${photos.length===1?'a foto':`as ${photos.length} fotos`} desta sessão? Exporte as folhas antes para guardar o resultado.`;$('clear-dialog').showModal();}};
+$('clear-dialog').addEventListener('cancel',event=>{if(clearing)event.preventDefault();});
+$('clear-confirm').onclick=async()=>{
+  if(!canEdit()||!photos.length)return;const ids=photos.map(photo=>photo.id);clearing=true;revision++;sheetRevision++;clearTimeout(editorTimer);clearTimeout(debounce);cancelAnimationFrame(liveFrame);liveFrame=null;drag=null;$('tile-frame').classList.remove('dragging');renderLibrary();
+  try{await api('clear',{ids});for(const promise of previewSources.values())promise.then(bitmap=>bitmap.close()).catch(()=>{});previewSources.clear();for(const url of objectUrls.values())URL.revokeObjectURL(url);objectUrls.clear();sheetCache.clear();orientedSource=null;openedSheet=null;if(sheetDialogUrl)URL.revokeObjectURL(sheetDialogUrl);sheetDialogUrl=null;$('sheet-dialog-image').removeAttribute('src');photos=[];selected=null;$('clear-dialog').close();toast('Fotos removidas da sessão.');}
+  catch(error){toast(error.message);}finally{clearing=false;renderLibrary();renderEditor();renderSheets();saveSession();flushRestore();if(!photos.length)$('empty-add').focus();}
+};

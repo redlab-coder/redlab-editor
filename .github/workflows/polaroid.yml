@@ -1,0 +1,73 @@
+name: Polaroid Editor · Windows e publicação
+on:
+  push:
+    branches: [main]
+    paths: ['apps/polaroid-editor/**', 'scripts/**', 'tests/**', '.github/workflows/polaroid.yml']
+    tags: ['polaroid-v*']
+  pull_request:
+    paths: ['apps/polaroid-editor/**', 'scripts/**', 'tests/**', '.github/workflows/polaroid.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: polaroid-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: apps/polaroid-editor
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14'
+      - name: Instalar dependências
+        run: python -m pip install -r requirements-build.txt playwright==1.59.0
+      - name: Testar aplicativo
+        run: python -m unittest discover -s tests -v
+      - name: Testar contratos de distribuição
+        working-directory: .
+        run: python -m unittest discover -s tests -v
+      - name: Preparar instalador
+        run: ./scripts/bootstrap_inno.ps1
+      - name: Compilar
+        run: python scripts/build_windows.py
+      - name: Validar executável e interface
+        run: python -u tests/packaged_check.py dist/PolaroidEditor-Portable.exe
+      - name: Validar instalação e atualização
+        run: python -u tests/installer_check.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: PolaroidEditor-Windows-${{ github.run_id }}
+          path: |
+            apps/polaroid-editor/dist/PolaroidEditor-Setup-*.exe
+            apps/polaroid-editor/dist/PolaroidEditor-Portable.exe
+            apps/polaroid-editor/dist/update.json
+            apps/polaroid-editor/dist/SHA256SUMS.txt
+          if-no-files-found: error
+  publish:
+    if: startsWith(github.ref, 'refs/tags/polaroid-v')
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14'
+      - name: Baixar arquivos aprovados no Windows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download ${{ github.run_id }} --name PolaroidEditor-Windows-${{ github.run_id }} --dir dist
+      - name: Publicar aplicativo e canal próprio
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python scripts/publish.py polaroid-editor "$RELEASE_TAG"

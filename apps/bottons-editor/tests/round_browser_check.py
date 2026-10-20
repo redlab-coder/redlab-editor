@@ -41,10 +41,10 @@ with sync_playwright() as p:
             page.mouse.move(x,y);page.mouse.down();page.mouse.move(x-25,y+20,steps=6);page.mouse.up()
             page.wait_for_timeout(800)
             # Exact final pixels must match the backend for every model.
-            snapshot=page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+            snapshot=page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
             photo=next(photo for photo in snapshot['photos'] if photo['id']==snapshot['selected'])
-            token=page.locator('meta[name=moldura-token]').get_attribute('content')
-            req=urllib.request.Request(URL+'/api/preview',data=json.dumps({'id':photo['id'],'edits':photo['edits'],'template':key}).encode(),headers={'X-Moldura-Token':token,'Content-Type':'application/json'})
+            token=page.locator('meta[name=bottons-editor-token]').get_attribute('content')
+            req=urllib.request.Request(URL+'/api/preview',data=json.dumps({'id':photo['id'],'edits':photo['edits'],'template':key}).encode(),headers={'X-BottonsEditor-Token':token,'Content-Type':'application/json'})
             with urllib.request.urlopen(req) as response:reference=Image.open(io.BytesIO(response.read())).convert('RGB')
             actual=Image.open(io.BytesIO(base64.b64decode(page.locator('#tile-image').evaluate('c=>c.toDataURL().split(",")[1]')))).convert('RGB')
             assert actual.tobytes()==reference.tobytes(),key
@@ -62,7 +62,7 @@ with sync_playwright() as p:
     assert page.locator('#zoom-number').input_value()=='1.65'
     page.get_by_role('button',name='Remover foto Round-7.png').click();page.wait_for_function("document.querySelector('#count').textContent==='6'")
     with page.expect_download() as event:page.locator('#export').click()
-    assert event.value.suggested_filename=='Moldura-01.jpg';event.value.save_as(str(OUT/'redondo-p-6.jpg'))
+    assert event.value.suggested_filename=='BottonsEditor-01.jpg';event.value.save_as(str(OUT/'redondo-p-6.jpg'))
     page.wait_for_timeout(700);page.screenshot(path=str(OUT/'model-round_p-six.png'),full_page=True)
     page.set_viewport_size({'width':390,'height':844});page.screenshot(path=str(OUT/'model-mobile.png'),full_page=True)
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')

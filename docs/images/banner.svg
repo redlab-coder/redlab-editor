@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="420" viewBox="0 0 1400 420">
+ <rect width="1400" height="420" rx="24" fill="#eef4f3"/>
+ <circle cx="1270" cy="60" r="210" fill="#dae8e3"/>
+ <circle cx="1320" cy="360" r="260" fill="#d8e6eb"/>
+ <text x="80" y="100" font-family="Segoe UI,Arial,sans-serif" font-size="20" letter-spacing="4" fill="#53756d">FERRAMENTAS REDLAB</text>
+ <text x="76" y="205" font-family="Segoe UI,Arial,sans-serif" font-size="76" font-weight="700" fill="#203d39">RedLab Editor</text>
+ <text x="80" y="264" font-family="Segoe UI,Arial,sans-serif" font-size="25" fill="#526c68">Suas fotos, prontas para produzir.</text>
+ <rect x="80" y="310" width="224" height="46" rx="23" fill="#315c4c"/>
+ <text x="192" y="340" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" fill="white">Bottons Editor</text>
+ <rect x="320" y="310" width="224" height="46" rx="23" fill="#315b6b"/>
+ <text x="432" y="340" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" fill="white">Polaroid Editor</text>
+ <circle cx="1040" cy="210" r="93" fill="white"/><circle cx="1040" cy="210" r="71" fill="#80a798"/>
+ <g transform="translate(1160 100) rotate(10 72 110)"><rect width="144" height="216" rx="5" fill="white"/><rect x="13" y="13" width="118" height="118" fill="#80a2b0"/></g>
+</svg>

@@ -79,6 +79,6 @@ O `.polaroid` é um ZIP com `project.json` e originais numerados, validados por 
 
 Faixas inteiramente brancas nas bordas são identificadas na importação por varreduras estreitas, com tolerância de cinco níveis para quase branco. Seus limites normalizados acompanham tanto os originais quanto as fontes leves. Os ajustes são aplicados ao retângulo de conteúdo antes da composição sobre branco; o preenchimento não entra no cálculo de contraste. Detalhes brancos internos à foto continuam editáveis. Não se trata de segmentação de objetos nem de remoção das margens existentes.
 
-Encerramento forçado pode deixar temporários no Windows. Salvar um lote é a forma de manter fotos e ajustes após reiniciar. Polaroid Editor e Moldura usam mutexes, identificadores e atualizadores distintos.
+Encerramento forçado pode deixar temporários no Windows. Salvar um lote é a forma de manter fotos e ajustes após reiniciar. Polaroid Editor e Bottons Editor usam mutexes, identificadores e atualizadores distintos.
 
 [← Documentação](README.md)

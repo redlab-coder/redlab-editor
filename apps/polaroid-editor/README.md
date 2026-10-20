@@ -3,11 +3,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/redlab-coder/polaroid-editor/releases/download/v1.1.1/PolaroidEditor-Setup-1.1.1.exe"><img src="docs/images/download.svg" width="252" height="54" alt="Baixar Polaroid Editor para Windows"></a>
+  <a href="https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.1.2/PolaroidEditor-Setup-1.1.2.exe"><img src="docs/images/download.svg" width="252" height="54" alt="Baixar Polaroid Editor para Windows"></a>
   <br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub>
 </p>
 
-<p align="center"><a href="https://github.com/redlab-coder/polaroid-editor/releases/latest">Versões e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.1.2">Versões e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a></p>
 
 ![Interface real do Polaroid Editor com ilustrações de demonstração](docs/images/workspace.png)
 
@@ -30,3 +30,5 @@ A orientação sugerida precisa de conferência, especialmente em desenhos e col
 ---
 
 [Documentação](docs/README.md) · [Medidas](docs/printing.md) · [Desenvolvimento](docs/development.md) · [Histórico](CHANGELOG.md) · [Contribuir](CONTRIBUTING.md)
+
+[← Todas as ferramentas RedLab](../../README.md)

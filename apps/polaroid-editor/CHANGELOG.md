@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.1.2 — 2026-10-20
+
+- Aplicativo integrado ao RedLab Editor, com histórico preservado e canal de atualização exclusivo.
+- Manifestos identificam o produto e validam o instalador da release própria.
+- Polaroid, edição, conferência e exportação mantêm o comportamento da versão 1.1.1.
+
 ## 1.1.1 — 2026-10-20
 
 - Arraste proporcional ao tamanho exibido e ao zoom nos modos Preencher e Inteira, com resposta imediata ao inverter o movimento nas bordas.

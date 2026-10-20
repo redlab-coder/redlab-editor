@@ -25,7 +25,7 @@ def icon_image():
 
 
 class SingleInstance:
-    def __init__(self, namespace='Moldura', mutex_name=None):
+    def __init__(self, namespace='BottonsEditor', mutex_name=None):
         self.handle = None
         self.owner = False
         root = Path(os.environ.get('LOCALAPPDATA', Path.home())) / namespace
@@ -42,7 +42,7 @@ class SingleInstance:
             ctypes.set_last_error(0)
             self.handle = kernel.CreateMutexW(None, False, name)
             if not self.handle:
-                raise OSError(ctypes.get_last_error(), 'Não foi possível iniciar o Moldura.')
+                raise OSError(ctypes.get_last_error(), 'Não foi possível iniciar o Bottons Editor.')
             self.owner = ctypes.get_last_error() != 183  # ERROR_ALREADY_EXISTS
         else:
             self.owner = True
@@ -65,7 +65,7 @@ class SingleInstance:
                     raise ValueError('URL inválida')
                 with urllib.request.urlopen(url + '/health', timeout=1) as response:
                     health = json.load(response)
-                if health.get('product') == 'Moldura' and health.get('instance') == state['instance']:
+                if health.get('product') == 'Bottons Editor' and health.get('instance') == state['instance']:
                     return url
             except (OSError, ValueError, KeyError):
                 pass
@@ -88,7 +88,7 @@ class SingleInstance:
 def confirm_shutdown():
     if os.name != 'nt':
         return True
-    return ctypes.windll.user32.MessageBoxW(None, 'Encerrar o Moldura? Exporte suas folhas antes de continuar.\nAs fotos e ajustes desta sessão serão descartados.', 'Moldura', 0x24 | 0x10000) == 6
+    return ctypes.windll.user32.MessageBoxW(None, 'Encerrar o Bottons Editor? Exporte suas folhas antes de continuar.\nAs fotos e ajustes desta sessão serão descartados.', 'Bottons Editor', 0x24 | 0x10000) == 6
 
 
 def run_tray(url, request_shutdown, has_photos, updater=None):
@@ -100,13 +100,13 @@ def run_tray(url, request_shutdown, has_photos, updater=None):
             return
         request_shutdown()
     items = [
-        pystray.MenuItem('Abrir Moldura', open_app, default=True),
+        pystray.MenuItem('Abrir Bottons Editor', open_app, default=True),
         pystray.Menu.SEPARATOR,
-        pystray.MenuItem('Encerrar Moldura', quit_app),
+        pystray.MenuItem('Encerrar Bottons Editor', quit_app),
     ]
     if updater:
         items.extend([pystray.Menu.SEPARATOR,
                       pystray.MenuItem(lambda item: updater.status, None, enabled=False),
                       pystray.MenuItem('Verificar atualizações', lambda icon, item: updater.check_async())])
-    icon = pystray.Icon('Moldura', icon_image(), f'Moldura {VERSION} · Estúdio de impressão', menu=pystray.Menu(*items))
+    icon = pystray.Icon('BottonsEditor', icon_image(), f'Bottons Editor {VERSION} · Estúdio de impressão', menu=pystray.Menu(*items))
     return icon

@@ -44,7 +44,7 @@ try:
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.goto(URL)
-        token = page.locator('meta[name=moldura-token]').get_attribute('content')
+        token = page.locator('meta[name=bottons-editor-token]').get_attribute('content')
         page.wait_for_function("!document.querySelector('[data-template=square]').disabled")
         started = time.perf_counter()
         retained = []
@@ -90,13 +90,13 @@ try:
         assert report['live_canvas_draws_during_drag'] >= 10, report
         assert len(previews) <= 2
         page.wait_for_timeout(1000)
-        saved = page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+        saved = page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
         first = saved['photos'][0]
         # Individual export must be byte-identical to rendering the original,
         # even at high zoom where an editing proxy would lose fine details.
-        token = page.locator('meta[name=moldura-token]').get_attribute('content')
+        token = page.locator('meta[name=bottons-editor-token]').get_attribute('content')
         payload = {'items':[first], 'template':'square'}
-        req = urllib.request.Request(URL+'/api/export',data=json.dumps(payload).encode(),headers={'X-Moldura-Token':token,'Content-Type':'application/json'})
+        req = urllib.request.Request(URL+'/api/export',data=json.dumps(payload).encode(),headers={'X-BottonsEditor-Token':token,'Content-Type':'application/json'})
         actual = urllib.request.urlopen(req,timeout=120).read()
         original = load_image(paths[0].read_bytes())
         expected = jpeg_bytes(compose_page([render_tile(original,first['edits'],'square')],'square'))
@@ -123,13 +123,13 @@ try:
         assert not errors, errors
         # Remove test records, including their temporary originals, without
         # touching any photo in another process or browser session.
-        page.evaluate('''async()=>{for(const photo of photos)await api('delete',{id:photo.id});localStorage.removeItem('moldura-session');}''')
+        page.evaluate('''async()=>{for(const photo of photos)await api('delete',{id:photo.id});localStorage.removeItem('bottons-editor-session');}''')
         report['browser_errors'] = errors
         browser.close()
 finally:
     for id_ in uploaded:
         try:
-            request=urllib.request.Request(URL+'/api/delete',data=json.dumps({'id':id_}).encode(),headers={'X-Moldura-Token':token,'Content-Type':'application/json'})
+            request=urllib.request.Request(URL+'/api/delete',data=json.dumps({'id':id_}).encode(),headers={'X-BottonsEditor-Token':token,'Content-Type':'application/json'})
             urllib.request.urlopen(request,timeout=10).close()
         except OSError: pass
     stop.set();sampler.join(timeout=2)

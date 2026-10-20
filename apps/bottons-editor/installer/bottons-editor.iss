@@ -1,30 +1,30 @@
 #ifndef AppVersion
-  #define AppVersion "1.0.0"
+  #define AppVersion "1.1.0"
 #endif
 [Setup]
 AppId={{D75F765B-4424-4C77-B57B-E5B0C574E19D}
-AppName=Moldura
+AppName=Bottons Editor
 AppVersion={#AppVersion}
 AppPublisher=RedLab
-AppPublisherURL=https://github.com/redlab-coder/moldura
-AppSupportURL=https://github.com/redlab-coder/moldura/issues
-AppUpdatesURL=https://github.com/redlab-coder/moldura/releases
-DefaultDirName={localappdata}\Programs\Moldura
+AppPublisherURL=https://github.com/redlab-coder/redlab-editor
+AppSupportURL=https://github.com/redlab-coder/redlab-editor/issues
+AppUpdatesURL=https://github.com/redlab-coder/redlab-editor/releases
+DefaultDirName={localappdata}\Programs\Bottons Editor
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 WizardStyle=modern
-SetupIconFile=..\assets\moldura-v4.ico
-UninstallDisplayIcon={app}\Moldura.exe
+SetupIconFile=..\assets\bottons-editor.ico
+UninstallDisplayIcon={app}\BottonsEditor.exe
 OutputDir=..\dist
-OutputBaseFilename=Moldura-Setup-{#AppVersion}
+OutputBaseFilename=BottonsEditor-Setup-{#AppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 MinVersion=10.0.17763
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-AppMutex=Local\Moldura.Installed.Running
-SetupMutex=Local\Moldura.Setup.Running
+AppMutex=Local\BottonsEditor.Installed.Running,Local\Moldura.Installed.Running
+SetupMutex=Local\BottonsEditor.Setup.Running
 CloseApplications=no
 RestartApplications=no
 SetupLogging=yes
@@ -36,15 +36,20 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 Name: "desktopicon"; Description: "Criar atalho na área de trabalho"; Flags: unchecked
 
 [Files]
-Source: "..\dist\Moldura-v8.exe"; DestDir: "{app}"; DestName: "Moldura.exe"; Flags: ignoreversion
+Source: "..\dist\BottonsEditor-Portable.exe"; DestDir: "{app}"; DestName: "BottonsEditor.exe"; Flags: ignoreversion
 Source: "..\assets\installed.marker"; DestDir: "{app}"; Flags: ignoreversion
 
+[InstallDelete]
+Type: files; Name: "{app}\Moldura.exe"
+Type: files; Name: "{userprograms}\Moldura.lnk"
+Type: files; Name: "{userdesktop}\Moldura.lnk"
+
 [Icons]
-Name: "{userprograms}\Moldura"; Filename: "{app}\Moldura.exe"
-Name: "{userdesktop}\Moldura"; Filename: "{app}\Moldura.exe"; Tasks: desktopicon
+Name: "{userprograms}\Bottons Editor"; Filename: "{app}\BottonsEditor.exe"
+Name: "{userdesktop}\Bottons Editor"; Filename: "{app}\BottonsEditor.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\Moldura.exe"; Description: "Abrir o Moldura"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\BottonsEditor.exe"; Description: "Abrir o Bottons Editor"; Flags: nowait postinstall skipifsilent
 
 [Code]
 function OpenProcess(Access: LongWord; InheritHandle: Boolean; ProcessId: LongWord): THandle;

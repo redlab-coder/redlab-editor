@@ -33,12 +33,12 @@ with sync_playwright() as p:
     page.locator('#brightness-number').fill('17');page.locator('#brightness-number').press('Enter')
     page.get_by_role('button',name='Button Redondo M',exact=True).click()
     page.wait_for_timeout(600)
-    before=page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    before=page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     page.route('**/api/preview',lambda route:route.fulfill(status=503,content_type='application/json',body='{"error":"Falha temporária simulada"}'))
     page.reload();page.wait_for_function("document.querySelector('#count').textContent==='2'&&!document.querySelector('[data-template=round_m]').disabled")
     assert page.locator('#retry-preview').is_visible()
     assert page.locator('#brightness-number').input_value()=='17'
-    assert page.evaluate('JSON.parse(localStorage.getItem("moldura-session")).photos.length')==2
+    assert page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session")).photos.length')==2
     page.unroute('**/api/preview');page.locator('#retry-preview').click()
     page.wait_for_function("document.querySelector('#retry-preview').hidden")
     second=context.new_page();second.on('pageerror',lambda error:errors.append(str(error)));second.goto(URL)
@@ -47,7 +47,7 @@ with sync_playwright() as p:
     assert second.locator('#brightness-number').is_disabled()
     # Programmatic input on a read-only tab must also be ignored by the handler.
     second.locator('#brightness-number').evaluate("e=>{e.value='99';e.dispatchEvent(new Event('input',{bubbles:true}));}")
-    saved=second.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    saved=second.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     assert round((saved['photos'][0]['edits']['brightness']-1)*100)==0  # Selected photo is the second item.
     selected=next(photo for photo in saved['photos'] if photo['id']==saved['selected'])
     assert round((selected['edits']['brightness']-1)*100)==17
@@ -59,16 +59,16 @@ with sync_playwright() as p:
         page.wait_for_function("document.querySelector('#brightness-number').value==='25'",timeout=6000)
     except Exception:
         print('TAB STATE',page.evaluate('({sessionRevision,restoring,pendingRestore,editingAllowed,photos})'))
-        print('STORAGE',second.evaluate('JSON.parse(localStorage.getItem("moldura-session"))'))
+        print('STORAGE',second.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))'))
         raise
     page.close();second.wait_for_timeout(200)
-    saved=second.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    saved=second.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     selected=next(photo for photo in saved['photos'] if photo['id']==saved['selected'])
     assert round((selected['edits']['brightness']-1)*100)==25
     second.locator('#guides').click();assert second.locator('#safe-guide').is_hidden()
     second.locator('#guides').click();assert second.locator('#safe-guide').is_visible()
     second.locator('#zoom-number').fill('1.65');second.locator('#zoom-number').press('Enter')
-    second.locator('#center').click();saved=second.evaluate('JSON.parse(localStorage.getItem("moldura-session"))');selected=next(photo for photo in saved['photos'] if photo['id']==saved['selected'])
+    second.locator('#center').click();saved=second.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))');selected=next(photo for photo in saved['photos'] if photo['id']==saved['selected'])
     assert selected['edits']['cx']==selected['edits']['cy']==.5 and selected['edits']['zoom']==1.65 and selected['edits']['brightness']==1.25
     second.wait_for_timeout(700);second.get_by_role('button',name='Ampliar folha 1',exact=True).click()
     assert second.locator('#sheet-dialog').is_visible();second.keyboard.press('Escape');assert not second.locator('#sheet-dialog').is_visible()

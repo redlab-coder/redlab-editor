@@ -1,7 +1,7 @@
 """Actual per-user install, single instance, deferred update and uninstall.
 
 Uses a temporary application directory and updater state. Never replaces an
-existing user's Moldura installation or stops an unrelated application.
+existing user's BottonsEditor installation or stops an unrelated application.
 """
 import hashlib
 import io
@@ -21,7 +21,7 @@ from PIL import Image
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from desktop import SingleInstance
-from version import VERSION, INSTALLED_NAMESPACE, INSTALLED_MUTEX, REPOSITORY
+from version import VERSION, INSTALLED_NAMESPACE, INSTALLED_MUTEX, REPOSITORY, PRODUCT_ID, RELEASE_PREFIX
 
 for view in (winreg.KEY_WOW64_32KEY,winreg.KEY_WOW64_64KEY):
     try:
@@ -30,19 +30,19 @@ for view in (winreg.KEY_WOW64_32KEY,winreg.KEY_WOW64_64KEY):
     except FileNotFoundError:pass
 probe=SingleInstance(INSTALLED_NAMESPACE,mutex_name=INSTALLED_MUTEX)
 try:
-    assert probe.owner,'Já há um Moldura instalado em execução. O teste não interromperá essa sessão.'
+    assert probe.owner,'Já há um BottonsEditor instalado em execução. O teste não interromperá essa sessão.'
 finally:probe.close()
 
-setup=ROOT/'dist'/f'Moldura-Setup-{VERSION}.exe'
+setup=ROOT/'dist'/f'BottonsEditor-Setup-{VERSION}.exe'
 flags=getattr(subprocess,'CREATE_NO_WINDOW',0)
-with tempfile.TemporaryDirectory(prefix='Moldura-install-test-') as temporary:
+with tempfile.TemporaryDirectory(prefix='BottonsEditor-install-test-') as temporary:
     sandbox=Path(temporary)
-    directory=sandbox/'Aplicativo Moldura'
+    directory=sandbox/'Aplicativo Bottons Editor'
     env=dict(os.environ,LOCALAPPDATA=str(sandbox/'Local'))
     metadata=Path(env['LOCALAPPDATA'])/INSTALLED_NAMESPACE/'runtime.json'
     current=None
     def start(no_updates=True):
-        args=[str(directory/'Moldura.exe'),'--no-browser']
+        args=[str(directory/'BottonsEditor.exe'),'--no-browser']
         if no_updates:args.append('--no-updates')
         process=subprocess.Popen(args,env=env,creationflags=flags)
         deadline=time.monotonic()+25
@@ -58,16 +58,16 @@ with tempfile.TemporaryDirectory(prefix='Moldura-install-test-') as temporary:
         raise AssertionError('A instalação não iniciou')
     def api(state,path,data):
         html=urllib.request.urlopen(state['url']).read().decode()
-        token=re.search('name="moldura-token" content="([^"]+)',html).group(1)
-        headers={'X-Moldura-Token':token,'Content-Type':'application/octet-stream' if isinstance(data,bytes) else 'application/json'}
+        token=re.search('name="bottons-editor-token" content="([^"]+)',html).group(1)
+        headers={'X-BottonsEditor-Token':token,'Content-Type':'application/octet-stream' if isinstance(data,bytes) else 'application/json'}
         body=data if isinstance(data,bytes) else json.dumps(data).encode()
         return urllib.request.urlopen(urllib.request.Request(state['url']+'/api/'+path,data=body,headers=headers)).read()
     try:
         subprocess.run([str(setup),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/TASKS=',f'/DIR={directory}'],check=True,timeout=90,creationflags=flags)
-        assert (directory/'installed.marker').read_text().strip()=='Moldura'
-        assert (directory/'Moldura.exe').read_bytes()==(ROOT/'dist'/'Moldura-v8.exe').read_bytes()
+        assert (directory/'installed.marker').read_text().strip()=='BottonsEditor'
+        assert (directory/'BottonsEditor.exe').read_bytes()==(ROOT/'dist'/'BottonsEditor-Portable.exe').read_bytes()
         current,state=start()
-        second=subprocess.Popen([str(directory/'Moldura.exe'),'--no-browser','--no-updates'],env=env,creationflags=flags)
+        second=subprocess.Popen([str(directory/'BottonsEditor.exe'),'--no-browser','--no-updates'],env=env,creationflags=flags)
         assert second.wait(timeout=20)==0
         assert json.loads(metadata.read_text())['instance']==state['instance']
         api(state,'quit',{})
@@ -75,11 +75,11 @@ with tempfile.TemporaryDirectory(prefix='Moldura-install-test-') as temporary:
         current=None
         # Simulate a verified newer queue using the genuine installer, without
         # publishing a fake version. The product must wait until normal exit.
-        updates=Path(env['LOCALAPPDATA'])/'Moldura'/'updates'
+        updates=Path(env['LOCALAPPDATA'])/'BottonsEditor'/'updates'
         updates.mkdir(parents=True,exist_ok=True)
-        staged=updates/'Moldura-Setup-9999.0.0.exe'
+        staged=updates/'BottonsEditor-Setup-9999.0.0.exe'
         shutil.copyfile(setup,staged)
-        manifest={'version':'9999.0.0','url':f'https://github.com/{REPOSITORY}/releases/download/v9999.0.0/{staged.name}','sha256':hashlib.sha256(staged.read_bytes()).hexdigest(),'size':staged.stat().st_size}
+        manifest={'product':PRODUCT_ID,'version':'9999.0.0','url':f'https://github.com/{REPOSITORY}/releases/download/{RELEASE_PREFIX}9999.0.0/{staged.name}','sha256':hashlib.sha256(staged.read_bytes()).hexdigest(),'size':staged.stat().st_size}
         (updates/'pending.json').write_text(json.dumps(manifest),encoding='utf-8')
         current,state=start(no_updates=False)
         picture=io.BytesIO();Image.new('RGB',(100,100),'blue').save(picture,'PNG')
@@ -109,7 +109,8 @@ with tempfile.TemporaryDirectory(prefix='Moldura-install-test-') as temporary:
         uninstaller=directory/'unins000.exe'
         if uninstaller.exists():
             subprocess.run([str(uninstaller),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'],check=True,timeout=90,creationflags=flags)
-            deadline=time.monotonic()+10
-            while (directory/'Moldura.exe').exists() and time.monotonic()<deadline:time.sleep(.1)
-            assert not (directory/'Moldura.exe').exists(),'Desinstalação não removeu o aplicativo de teste'
+            deadline=time.monotonic()+30
+            while ((directory/'BottonsEditor.exe').exists() or uninstaller.exists()) and time.monotonic()<deadline:time.sleep(.1)
+            assert not uninstaller.exists(),'O desinstalador ainda está concluindo a limpeza'
+            assert not (directory/'BottonsEditor.exe').exists(),'Desinstalação não removeu o aplicativo de teste'
     print(json.dumps({'uninstall':'OK','user_installation_untouched':True}))

@@ -57,7 +57,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_reply({'error': 'Acesso inválido.'}, 403)
         path = urlparse(self.path).path
         if path == '/health':
-            return self.json_reply({'product': 'Moldura', 'instance': INSTANCE, 'pid': __import__('os').getpid(), 'version': VERSION})
+            return self.json_reply({'product': 'Bottons Editor', 'instance': INSTANCE, 'pid': __import__('os').getpid(), 'version': VERSION})
         if path == '/':
             html = (ROOT / 'ui' / 'index.html').read_text(encoding='utf-8').replace('__TOKEN__', TOKEN)
             html = html.replace('__VERSION__', VERSION)
@@ -76,7 +76,7 @@ class Handler(BaseHTTPRequestHandler):
         global LAST_ACTIVE
         origin = self.headers.get('Origin')
         expected = f'http://127.0.0.1:{self.server.server_port}'
-        if not self.authorized_host() or self.headers.get('X-Moldura-Token') != TOKEN or (origin and origin != expected):
+        if not self.authorized_host() or self.headers.get('X-BottonsEditor-Token') != TOKEN or (origin and origin != expected):
             return self.json_reply({'error': 'Acesso inválido.'}, 403)
         LAST_ACTIVE = time.monotonic()
         path = urlparse(self.path).path
@@ -115,11 +115,20 @@ class Handler(BaseHTTPRequestHandler):
                 if removed:
                     CACHE.discard(removed['record'])
                 return self.json_reply({'ok': True})
+            if path == '/api/clear':
+                ids=payload.get('ids')
+                if not isinstance(ids,list) or len(ids)>100 or any(not isinstance(id_,str) for id_ in ids):
+                    raise ValueError('Lista de fotos inválida.')
+                with LOCK:
+                    removed=[IMAGES.pop(id_) for id_ in dict.fromkeys(ids) if id_ in IMAGES]
+                for photo in removed:CACHE.discard(photo['record'])
+                return self.json_reply({'ok':True,'removed':len(removed)})
             if path in ('/api/preview', '/api/thumbnail'):
+
                 item = payload
                 record = self.record(item['id'])
                 with CACHE.lock:
-                    source = CACHE.get(record, full=path == '/api/preview')
+                    source = CACHE.get(record)
                     tile = render_tile(source, item.get('edits', {}), item.get('template', 'square'))
                     del source
                 if path == '/api/thumbnail':
@@ -158,20 +167,20 @@ class Handler(BaseHTTPRequestHandler):
                     return self.reply(output.getvalue(), 'image/png')
                 if len(items) <= capacity:
                     page = compose(records)
-                    return self.reply(jpeg_bytes(page), 'image/jpeg', filename='Moldura-01.jpg')
+                    return self.reply(jpeg_bytes(page), 'image/jpeg', filename='BottonsEditor-01.jpg')
                 # Large ZIPs spill to disk and are sent in chunks instead of
                 # duplicating the entire archive in server memory.
                 with tempfile.SpooledTemporaryFile(max_size=8 * 1024**2) as output:
                     with zipfile.ZipFile(output, 'w', zipfile.ZIP_STORED) as archive:
                         for start in range(0, len(items), capacity):
                             page = compose(records[start:start + capacity])
-                            archive.writestr(f'Moldura-{start // capacity + 1:02}.jpg', jpeg_bytes(page))
+                            archive.writestr(f'BottonsEditor-{start // capacity + 1:02}.jpg', jpeg_bytes(page))
                     size = output.tell()
                     output.seek(0)
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/zip')
                     self.send_header('Content-Length', str(size))
-                    self.send_header('Content-Disposition', 'attachment; filename="Moldura-folhas.zip"')
+                    self.send_header('Content-Disposition', 'attachment; filename="BottonsEditor-folhas.zip"')
                     self.send_header('Cache-Control', 'no-store')
                     self.send_header('X-Content-Type-Options', 'nosniff')
                     self.end_headers()
@@ -214,7 +223,7 @@ def main():
                 print(existing, flush=True)
         elif sys.platform == 'win32':
             import ctypes
-            ctypes.windll.user32.MessageBoxW(None, 'O Moldura já está iniciando ou encerrando. Aguarde alguns segundos e tente novamente.', 'Moldura', 0x40)
+            ctypes.windll.user32.MessageBoxW(None, 'O BottonsEditor já está iniciando ou encerrando. Aguarde alguns segundos e tente novamente.', 'Bottons Editor', 0x40)
         return
     try:
         server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
@@ -235,11 +244,13 @@ def main():
     if instance:
         instance.publish(url, INSTANCE)
     stopped = threading.Event()
+    shutdown_lock=threading.Lock()
     tray = None
     def request_shutdown():
-        if stopped.is_set():
-            return
-        stopped.set()
+        with shutdown_lock:
+            if stopped.is_set():
+                return
+            stopped.set()
         server.shutdown()
         if tray:
             tray.stop()

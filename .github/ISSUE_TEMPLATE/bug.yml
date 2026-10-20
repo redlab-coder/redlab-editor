@@ -1,0 +1,24 @@
+name: Relatar problema
+description: Informe um problema em uma das ferramentas RedLab.
+body:
+  - type: dropdown
+    id: product
+    attributes:
+      label: Aplicativo
+      options: [Bottons Editor, Polaroid Editor]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão
+      description: Informe também se usa o instalador ou a versão portátil.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir
+      description: Explique o resultado esperado e o observado. Use fotos de teste sem informações pessoais.
+    validations:
+      required: true

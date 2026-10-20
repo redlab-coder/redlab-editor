@@ -1,14 +1,13 @@
-# Publicar uma versão
+# Publicação do Polaroid Editor
 
-1. Atualize `version.py`, `CHANGELOG.md` e `RELEASE_NOTES.md`.
-2. Valide processamento, projetos, navegador, executável e instalação.
-3. Atualize capturas reais com o conteúdo de demonstração.
-4. Envie o código e uma tag `v<versão>` correspondente a `version.py`.
+A distribuição deste aplicativo é mantida no repositório [RedLab Editor](https://github.com/redlab-coder/redlab-editor).
 
-O GitHub Actions executa os testes, compila no Windows e verifica o programa e o instalador. A publicação usa um job Linux para enviar os mesmos arquivos já aprovados, sem recompilação. Uma alteração na branch principal é verificada, mas somente uma tag de versão publica uma release.
+1. Atualize `version.py`, `CHANGELOG.md`, `RELEASE_NOTES.md`, o link de download e as capturas quando necessário.
+2. Execute os testes do aplicativo e os testes de contratos na raiz.
+3. Envie uma tag `polaroid-v<versão>` correspondente ao aplicativo.
 
-As releases incluem `PolaroidEditor-Setup-<versão>.exe`, `PolaroidEditor-Portable.exe`, `update.json` e `SHA256SUMS.txt`. O atualizador instalado aceita apenas o endereço de instalador esperado neste repositório e verifica tamanho e SHA-256 antes de instalar ao encerrar.
+O workflow próprio compila e testa no Windows. Depois de validar executável, interface e instalador, publica os mesmos binários e atualiza somente `updates/polaroid-editor.json`. As releases de outro aplicativo não interferem neste canal. O envio é feito por um job Linux.
 
-O README deve apontar para um instalador publicado; alinhe seu link à versão de entrega.
+O instalador é conferido por tamanho, SHA-256, produto e endereço esperado. A instalação acontece ao encerrar normalmente. A edição portátil não instala atualizações.
 
-[← Documentação](README.md)
+[Processo completo e transição](../../../docs/maintenance.md) · [← Documentação](README.md)

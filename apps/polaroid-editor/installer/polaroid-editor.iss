@@ -1,14 +1,14 @@
 #ifndef AppVersion
-  #define AppVersion "1.1.1"
+  #define AppVersion "1.1.2"
 #endif
 [Setup]
 AppId={{F2777E7D-38D9-45D3-A932-F9E7F7BD5D71}
 AppName=Polaroid Editor
 AppVersion={#AppVersion}
 AppPublisher=RedLab
-AppPublisherURL=https://github.com/redlab-coder/polaroid-editor
-AppSupportURL=https://github.com/redlab-coder/polaroid-editor/issues
-AppUpdatesURL=https://github.com/redlab-coder/polaroid-editor/releases
+AppPublisherURL=https://github.com/redlab-coder/redlab-editor
+AppSupportURL=https://github.com/redlab-coder/redlab-editor/issues
+AppUpdatesURL=https://github.com/redlab-coder/redlab-editor/releases
 DefaultDirName={localappdata}\Programs\Polaroid Editor
 DisableDirPage=yes
 DisableProgramGroupPage=yes

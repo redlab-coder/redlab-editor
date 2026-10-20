@@ -1,6 +1,6 @@
 # Documentação
 
-O essencial para usar, entender e manter o Moldura.
+O essencial para usar, entender e manter o Bottons Editor.
 
 | Guia | Conteúdo |
 |---|---|
@@ -10,4 +10,4 @@ O essencial para usar, entender e manter o Moldura.
 | [Publicação](releases.md) | Versões e distribuição de atualizações |
 | [Registros anteriores](history/README.md) | Revisões e validações preservadas |
 
-[← Moldura](../README.md)
+[← Bottons Editor](../README.md)

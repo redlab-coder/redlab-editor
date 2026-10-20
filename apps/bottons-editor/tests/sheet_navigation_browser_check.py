@@ -25,7 +25,7 @@ with sync_playwright() as p:
     page.locator('#files').set_input_files(files)
     page.wait_for_function("document.querySelector('#count').textContent==='7'&&!document.querySelector('#export').disabled")
     page.wait_for_function("document.querySelectorAll('.sheet-card img').length===4&&[...document.querySelectorAll('.sheet-card img')].every(i=>i.complete&&i.naturalWidth>0)")
-    initial=page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    initial=page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     original_ids=[photo['id'] for photo in initial['photos']]
     page.get_by_role('button',name='Editar Foto-1.png',exact=True).click()
     y_before=page.evaluate('scrollY')
@@ -39,15 +39,15 @@ with sync_playwright() as p:
     # Container focus also starts from the current selection and keeps order intact.
     page.locator('#photo-list').focus();page.keyboard.press('ArrowDown');page.keyboard.press('ArrowDown')
     assert page.locator('#selected-name').inner_text()=='Foto-3.png'
-    after=page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    after=page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     assert [photo['id'] for photo in after['photos']]==original_ids
     page.locator('#brightness-number').focus();page.keyboard.press('ArrowUp')
     assert page.locator('#selected-name').inner_text()=='Foto-3.png'
-    assert page.locator('#brightness-number').input_value()=='1'
+    assert page.locator('#brightness-number').input_value()=='0.01'
     page.locator('#zoom-number').fill('1.50');page.locator('#zoom-number').press('Enter')
-    before=page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    before=page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     page.locator('#tile-frame').focus();page.keyboard.press('ArrowDown')
-    after=page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    after=page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     assert after['selected']==before['selected']
     assert after['photos'][2]['edits']['cy']!=before['photos'][2]['edits']['cy']
     page.wait_for_timeout(850)
@@ -55,7 +55,7 @@ with sync_playwright() as p:
     assert page.locator('#sheet-dialog-title').inner_text()=='Folha 2'
     page.screenshot(path=str(OUT/'v5-folha-download.png'))
     with page.expect_download() as event:page.locator('#download-sheet').click()
-    download=event.value;assert download.suggested_filename=='Moldura-02.jpg'
+    download=event.value;assert download.suggested_filename=='BottonsEditor-02.jpg'
     download.save_as(str(OUT/'v5-folha-02.jpg'))
     payload=json.loads(requests[-1].post_data)
     assert [photo['id'] for photo in payload['items']]==original_ids[2:4]

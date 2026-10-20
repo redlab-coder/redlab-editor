@@ -14,7 +14,7 @@ import sys
 import threading
 import urllib.request
 
-from version import VERSION, REPOSITORY
+from version import VERSION, REPOSITORY, PRODUCT_ID, RELEASE_PREFIX, UPDATE_URL
 
 MAX_DOWNLOAD = 150 * 1024**2
 LOG = logging.getLogger('polaroid-editor.updater')
@@ -36,11 +36,11 @@ def installed_directory():
 
 
 def validate_manifest(value):
-    if not isinstance(value, dict):
+    if not isinstance(value, dict) or value.get('product') != PRODUCT_ID:
         raise ValueError('Manifesto de atualização inválido.')
     version_tuple(value.get('version'))
     version = value['version']
-    expected = f'https://github.com/{REPOSITORY}/releases/download/v{version}/PolaroidEditor-Setup-{version}.exe'
+    expected = f'https://github.com/{REPOSITORY}/releases/download/{RELEASE_PREFIX}{version}/PolaroidEditor-Setup-{version}.exe'
     digest = value.get('sha256')
     if value.get('url') != expected or not isinstance(digest, str) or not re.fullmatch(r'[a-fA-F0-9]{64}', digest):
         raise ValueError('Origem ou verificação da atualização inválida.')
@@ -100,7 +100,7 @@ class Updater:
             if self.stopped.is_set():
                 return
             self.status = 'Verificando atualizações…'
-            request = urllib.request.Request(f'https://github.com/{REPOSITORY}/releases/latest/download/update.json', headers={'User-Agent':f'PolaroidEditor/{self.current}'})
+            request = urllib.request.Request(UPDATE_URL, headers={'User-Agent':f'PolaroidEditor/{self.current}'})
             with self.opener(request, timeout=20) as response:
                 raw = response.read(65537)
                 if len(raw) > 65536:

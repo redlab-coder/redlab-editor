@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from updater import Updater, installed_directory, validate_manifest, version_tuple
-from version import REPOSITORY
+from version import REPOSITORY, PRODUCT_ID, RELEASE_PREFIX
 
 
 class UpdateTests(unittest.TestCase):
@@ -17,10 +17,10 @@ class UpdateTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.data = b'fixture installer bytes; never executed'
-        self.manifest = {'version':'1.1.0','url':f'https://github.com/{REPOSITORY}/releases/download/v1.1.0/PolaroidEditor-Setup-1.1.0.exe','sha256':hashlib.sha256(self.data).hexdigest(),'size':len(self.data)}
+        self.manifest = {'product':PRODUCT_ID,'version':'1.1.0','url':f'https://github.com/{REPOSITORY}/releases/download/{RELEASE_PREFIX}1.1.0/PolaroidEditor-Setup-1.1.0.exe','sha256':hashlib.sha256(self.data).hexdigest(),'size':len(self.data)}
 
     def opener(self, request, timeout):
-        return io.BytesIO(json.dumps(self.manifest).encode() if request.full_url.endswith('update.json') else self.data)
+        return io.BytesIO(json.dumps(self.manifest).encode() if request.full_url.endswith(PRODUCT_ID+'.json') else self.data)
 
     def manager(self, opener=None, current='1.0.0'):
         return Updater(self.root/'app', self.root/'updates', current=current, opener=opener or self.opener)
@@ -29,7 +29,7 @@ class UpdateTests(unittest.TestCase):
         self.assertGreater(version_tuple('1.0.10'), version_tuple('1.0.2'))
         for version in ('1.0', '../1.2.3', '1.2.3-beta', '١.٢.٣', None):
             with self.assertRaises(ValueError): version_tuple(version)
-        for changes in ({'url':'https://example.com/setup.exe'},{'sha256':12},{'size':True},{'size':200*1024**2},{'sha256':'z'*64}):
+        for changes in ({'product':'outro-editor'},{'url':'https://example.com/setup.exe'},{'sha256':12},{'size':True},{'size':200*1024**2},{'sha256':'z'*64}):
             with self.assertRaises(ValueError):validate_manifest(dict(self.manifest,**changes))
 
     def test_download_is_verified_and_only_runs_on_exit(self):
@@ -87,7 +87,7 @@ class UpdateTests(unittest.TestCase):
     def test_ui_status_is_readable_while_downloading_and_restored_when_ready(self):
         entered, release = threading.Event(), threading.Event()
         def opener(request, timeout):
-            if not request.full_url.endswith('update.json'):
+            if not request.full_url.endswith(PRODUCT_ID+'.json'):
                 entered.set()
                 release.wait(3)
             return self.opener(request, timeout)

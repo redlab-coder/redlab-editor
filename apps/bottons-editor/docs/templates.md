@@ -34,4 +34,4 @@ As dimensões em centímetros não resultam em números inteiros de pixels a 300
 
 **Impressão:** escolha papel 10,2 × 15,2 cm, orientação horizontal e tamanho real / escala 100%. Desative ajustes automáticos de enquadramento e expansão de impressão sem borda quando o driver permitir. As configurações da impressora podem alterar a escala física.
 
-[← Documentação](README.md) · [Moldura](../README.md)
+[← Documentação](README.md) · [Bottons Editor](../README.md)

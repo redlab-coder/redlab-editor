@@ -21,7 +21,7 @@ from PIL import Image
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from desktop import SingleInstance
-from version import VERSION, INSTALLED_NAMESPACE, INSTALLED_MUTEX, REPOSITORY
+from version import VERSION, INSTALLED_NAMESPACE, INSTALLED_MUTEX, REPOSITORY, PRODUCT_ID, RELEASE_PREFIX
 
 for view in (winreg.KEY_WOW64_32KEY,winreg.KEY_WOW64_64KEY):
     try:
@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory(prefix='PolaroidEditor-install-test-') as tempo
         updates.mkdir(parents=True,exist_ok=True)
         staged=updates/'PolaroidEditor-Setup-9999.0.0.exe'
         shutil.copyfile(setup,staged)
-        manifest={'version':'9999.0.0','url':f'https://github.com/{REPOSITORY}/releases/download/v9999.0.0/{staged.name}','sha256':hashlib.sha256(staged.read_bytes()).hexdigest(),'size':staged.stat().st_size}
+        manifest={'product':PRODUCT_ID,'version':'9999.0.0','url':f'https://github.com/{REPOSITORY}/releases/download/{RELEASE_PREFIX}9999.0.0/{staged.name}','sha256':hashlib.sha256(staged.read_bytes()).hexdigest(),'size':staged.stat().st_size}
         (updates/'pending.json').write_text(json.dumps(manifest),encoding='utf-8')
         current,state=start(no_updates=False)
         picture=io.BytesIO();Image.new('RGB',(100,100),'blue').save(picture,'PNG')

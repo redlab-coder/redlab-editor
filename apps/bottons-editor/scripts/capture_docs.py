@@ -78,8 +78,8 @@ def main():
             browser.close()
     finally:
         html=urllib.request.urlopen(url).read().decode()
-        token=re.search('name="moldura-token" content="([^"]+)',html).group(1)
-        urllib.request.urlopen(urllib.request.Request(url+'/api/quit',data=b'{}',headers={'X-Moldura-Token':token,'Content-Type':'application/json'})).close()
+        token=re.search('name="bottons-editor-token" content="([^"]+)',html).group(1)
+        urllib.request.urlopen(urllib.request.Request(url+'/api/quit',data=b'{}',headers={'X-BottonsEditor-Token':token,'Content-Type':'application/json'})).close()
         server.wait(timeout=10)
     print('Capturas atualizadas: docs/images/workspace.png e sheet.png')
 

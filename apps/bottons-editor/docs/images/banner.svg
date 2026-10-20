@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="480" viewBox="0 0 1440 480" role="img" aria-labelledby="title desc">
-  <title id="title">Moldura</title>
-  <desc id="desc">Suas fotos, prontas para imprimir. Identidade verde do Moldura com uma folha e dois buttons ilustrados.</desc>
+  <title id="title">Bottons Editor</title>
+  <desc id="desc">Suas fotos, prontas para imprimir. Identidade verde do Bottons Editor com uma folha e dois buttons ilustrados.</desc>
   <defs>
     <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#213d2b" flood-opacity=".09"/></filter>
     <clipPath id="card"><rect width="1440" height="480" rx="24"/></clipPath>
@@ -21,7 +21,7 @@
         <path d="M3 8V4a1 1 0 0 1 1-1h4m8 0h4a1 1 0 0 1 1 1v4m0 8v4a1 1 0 0 1-1 1h-4m-8 0H4a1 1 0 0 1-1-1v-4"/>
         <rect x="6" y="6" width="12" height="12" rx="3"/><circle cx="12" cy="12" r="3.4"/>
       </g>
-      <text x="65" y="38" font-family="Segoe UI,Arial,sans-serif" font-size="40" font-weight="650" letter-spacing="-1.6" fill="#2b4032">Moldura</text>
+      <text x="65" y="38" font-family="Segoe UI,Arial,sans-serif" font-size="40" font-weight="650" letter-spacing="-1.6" fill="#2b4032">Bottons Editor</text>
     </g>
     <g font-family="Segoe UI,Arial,sans-serif" fill="#2b4032">
       <text x="76" y="224" font-size="54" font-weight="600" letter-spacing="-2">Suas fotos, prontas</text>

@@ -1,6 +1,9 @@
 """Single version source for the application, installer and releases."""
-VERSION = '1.0.1'
-REPOSITORY = 'redlab-coder/moldura'
-PORTABLE_NAMESPACE = 'Moldura-v8'
-INSTALLED_MUTEX = 'Local\\Moldura.Installed.Running'
-INSTALLED_NAMESPACE = 'Moldura-Installed'
+VERSION = "1.1.0"
+REPOSITORY = "redlab-coder/redlab-editor"
+PORTABLE_NAMESPACE = 'BottonsEditor-Portable'
+INSTALLED_MUTEX = 'Local\\BottonsEditor.Installed.Running'
+INSTALLED_NAMESPACE = 'BottonsEditor-Installed'
+PRODUCT_ID = "bottons-editor"
+RELEASE_PREFIX = "bottons-v"
+UPDATE_URL = "https://raw.githubusercontent.com/redlab-coder/redlab-editor/main/updates/bottons-editor.json"

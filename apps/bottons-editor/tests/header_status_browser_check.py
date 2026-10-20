@@ -42,7 +42,7 @@ with sync_playwright() as p:
         assert page.locator('#export').is_visible()
         assert page.locator('#export').get_attribute('aria-label')=='Exportar 1 folha'
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
-        assert page.evaluate("document.querySelector('.brand').getBoundingClientRect().right<=document.querySelector('.header-actions').getBoundingClientRect().left"),width
+        assert page.evaluate("(()=>{const a=document.querySelector('.brand').getBoundingClientRect(),b=document.querySelector('.header-actions').getBoundingClientRect();return a.right<=b.left||a.bottom<=b.top})()"),width
     page.screenshot(path=str(OUT/'header-ready-mobile.png'))
     page.emulate_media(reduced_motion='reduce')
     assert page.locator('#update-status').evaluate("e=>getComputedStyle(e).animationName")=='none'

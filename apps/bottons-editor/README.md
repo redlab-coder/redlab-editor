@@ -1,22 +1,22 @@
 <p align="center">
-  <img src="docs/images/banner.svg" alt="Moldura — suas fotos, prontas para imprimir" width="100%">
+  <img src="docs/images/banner.svg" alt="Bottons Editor — suas fotos, prontas para imprimir" width="100%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/redlab-coder/moldura/releases/download/v1.0.1/Moldura-Setup-1.0.1.exe">
-    <img src="docs/images/download.svg" alt="Baixar o instalador do Moldura para Windows" width="252" height="54">
+  <a href="https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.1.0/BottonsEditor-Setup-1.1.0.exe">
+    <img src="docs/images/download.svg" alt="Baixar o instalador do Bottons Editor para Windows" width="252" height="54">
   </a>
   <br>
   <sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub>
 </p>
 
 <p align="center">
-  <a href="https://github.com/redlab-coder/moldura/releases/latest">Versões e edição portátil</a>
+  <a href="https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.1.0">Versões e edição portátil</a>
   &nbsp; · &nbsp;
   <a href="docs/usage.md">Guia de uso</a>
 </p>
 
-![Interface do Moldura com o gabarito Redondo G e artes de demonstração](docs/images/workspace.png)
+![Interface do Bottons Editor com o gabarito Redondo G e artes de demonstração](docs/images/workspace.png)
 
 ## Do arquivo ao papel
 
@@ -36,3 +36,5 @@ Imprima em **tamanho real / 100%**. Exporte suas folhas antes de encerrar o apli
 ---
 
 [Documentação](docs/README.md) · [Gabaritos](docs/templates.md) · [Desenvolvimento](docs/development.md) · [Histórico](CHANGELOG.md) · [Contribuir](CONTRIBUTING.md)
+
+[← Todas as ferramentas RedLab](../../README.md)

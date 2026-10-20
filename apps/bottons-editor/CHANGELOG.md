@@ -1,5 +1,16 @@
 # Histórico
 
+## 1.1.0 — 2026-10-20
+
+- Moldura passa a Bottons Editor na coleção RedLab Editor, com atualização independente e transição pelo instalador existente.
+- Área de importação por arraste ampliada para Fotos e enquadramento; arquivos auxiliares do Windows ignorados.
+- Filtros com resposta gradual perto do zero, precisão numérica e preservação dos valores existentes.
+- Ícone discreto de limpar a sessão, com confirmação, recuperação em falhas e originais preservados.
+- Transferência entre abas estabilizada, prévias leves e menos trabalho durante o arraste.
+- Geometria e composição dos quatro gabaritos preservadas e comparadas com a versão aprovada do Moldura.
+- Sem fluxo de conferência ou aprovação de fotos.
+
+
 ## 1.0.1 — Versão e atualização na interface
 
 - Identificação discreta da versão ao lado do nome do aplicativo, substituindo o indicador “Local”.

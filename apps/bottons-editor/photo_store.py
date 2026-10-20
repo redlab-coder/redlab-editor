@@ -16,7 +16,7 @@ from engine import load_image
 
 class PhotoRecord:
     def __init__(self, data):
-        self.directory = tempfile.TemporaryDirectory(prefix='Moldura-foto-')
+        self.directory = tempfile.TemporaryDirectory(prefix='BottonsEditor-foto-')
         self._cleanup = weakref.finalize(self, self.directory.cleanup)
         self.original = Path(self.directory.name) / 'original'
         self.proxy = Path(self.directory.name) / 'editor.png'

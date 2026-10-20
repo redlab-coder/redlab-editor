@@ -1,6 +1,6 @@
 # Desenvolvimento
 
-O Moldura usa Python, Pillow e uma interface local em HTML, CSS e JavaScript. O navegador se conecta apenas ao servidor em `127.0.0.1`.
+O Bottons Editor usa Python, Pillow e uma interface local em HTML, CSS e JavaScript. O navegador se conecta apenas ao servidor em `127.0.0.1`.
 
 ## Executar
 
@@ -43,7 +43,7 @@ python -m unittest discover -s tests -v
 Para os testes de navegador, instale `playwright==1.59.0` e tenha o Microsoft Edge disponível. Depois de compilar:
 
 ```powershell
-python tests/packaged_check.py dist/Moldura-v8.exe
+python tests/packaged_check.py dist/BottonsEditor-Portable.exe
 python tests/installer_check.py
 ```
 
@@ -61,14 +61,16 @@ O script prepara a versão portátil, o instalador, o manifesto de atualização
 
 ## Funcionamento e memória
 
-Os arquivos enviados são preservados integralmente em pastas temporárias locais. O editor usa fontes leves de até 1800 px e miniaturas de 128 px; o cache do navegador conserva até três fontes de edição. A prévia definitiva da foto e a exportação continuam usando o original completo. As prévias das folhas usam versões leves, e os JPGs finais usam os originais.
+Os arquivos enviados são preservados integralmente em pastas temporárias locais. O editor usa fontes leves de até 1800 px e miniaturas de 128 px; o cache do navegador conserva até três fontes de edição. As prévias da foto usam essas fontes leves; somente a exportação lê o original completo. As prévias das folhas usam versões leves, e os JPGs finais usam os originais.
 
 O cache do servidor tem orçamento de 160 MiB, com cotas separadas para originais e prévias. A decodificação e o processamento de originais são serializados para evitar picos multiplicados por várias solicitações simultâneas. Arquivos ZIP maiores que 8 MiB usam armazenamento temporário e envio em blocos. As pastas de cada foto acompanham suas referências: uma exportação iniciada continua válida mesmo se outra aba remover uma foto. A remoção normal limpa os arquivos quando a última operação termina. Encerramento forçado ou falta de energia podem deixar temporários no Windows; não há recuperação de projeto após reiniciar o aplicativo.
 
 `tests/test_photo_store.py` cobre preservação dos bytes, cache limitado, separação entre original e prévia, imagens maiores que o cache e limpeza dos temporários. `tests/heavy_photo_browser_check.py URL foto1 foto2 foto3` testa 12 importações, memória, quadros durante arraste, exportação em zoom alto, todas as folhas e recuperação da aba; não grava fotos pessoais nos artefatos de teste. O script usa psutil somente no ambiente de desenvolvimento.
 
+Os testes adicionais verificam a área ampliada de importação, filtros graduais, cancelamento e falha na limpeza, arquivos auxiliares ignorados e três transferências de edição entre abas. Os contratos de publicação e a comparação de pixels com o Moldura aprovado ficam em `../../tests/`.
+
 ## Sessão local
 
-O serviço escuta somente em 127.0.0.1, usa porta livre automaticamente e valida Host, Origin e token da sessão. Um mutex do Windows impede instâncias duplicadas; `%LOCALAPPDATA%/Moldura-Installed/runtime.json` (instalada) ou `%LOCALAPPDATA%/Moldura-v8/runtime.json` (portátil) guarda somente a URL, PID e identificador de execução para localizar a instância existente, e é removido ao encerrar. Não há telemetria, banco de dados ou envio de fotos à nuvem. A versão instalada consulta somente os arquivos de atualização do repositório oficial no GitHub, sem credenciais embutidas.
+O serviço escuta somente em 127.0.0.1, usa porta livre automaticamente e valida Host, Origin e token da sessão. Um mutex do Windows impede instâncias duplicadas; `%LOCALAPPDATA%/BottonsEditor-Installed/runtime.json` (instalada) ou `%LOCALAPPDATA%/BottonsEditor-Portable/runtime.json` (portátil) guarda somente a URL, PID e identificador de execução para localizar a instância existente, e é removido ao encerrar. Não há telemetria, banco de dados ou envio de fotos à nuvem. A versão instalada consulta somente os arquivos de atualização do repositório oficial no GitHub, sem credenciais embutidas.
 
-[← Documentação](README.md) · [Moldura](../README.md)
+[← Documentação](README.md) · [Bottons Editor](../README.md)

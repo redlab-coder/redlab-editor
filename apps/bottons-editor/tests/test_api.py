@@ -13,6 +13,17 @@ import app
 
 
 class ApiTests(unittest.TestCase):
+    def test_clear_validates_all_ids_before_mutation_and_preserves_other_photos(self):
+        data=io.BytesIO();Image.new('RGB',(120,100),'blue').save(data,'PNG')
+        with self.request('upload',data.getvalue(),True) as response:first=json.load(response)['id']
+        with self.request('upload',data.getvalue(),True) as response:second=json.load(response)['id']
+        try:
+            with self.assertRaises(urllib.error.HTTPError) as caught:self.request('clear',{'ids':[first,None]})
+            caught.exception.close();self.assertIn(first,app.IMAGES);self.assertIn(second,app.IMAGES)
+            with self.request('clear',{'ids':[first,first,'missing']}) as response:self.assertEqual(json.load(response)['removed'],1)
+            self.assertNotIn(first,app.IMAGES);self.assertIn(second,app.IMAGES)
+        finally:
+            with self.request('clear',{'ids':[first,second]}):pass
     @classmethod
     def setUpClass(cls):
         cls.server=ThreadingHTTPServer(('127.0.0.1',0),app.Handler)
@@ -25,7 +36,7 @@ class ApiTests(unittest.TestCase):
         cls.server.shutdown();cls.server.server_close();cls.thread.join()
 
     def request(self,path,data,raw=False,token=app.TOKEN,origin=None):
-        headers={'X-Moldura-Token':token,'Content-Type':'application/octet-stream' if raw else 'application/json'}
+        headers={'X-BottonsEditor-Token':token,'Content-Type':'application/octet-stream' if raw else 'application/json'}
         if origin:headers['Origin']=origin
         req=urllib.request.Request(self.url+'/api/'+path,data=data if raw else json.dumps(data).encode(),headers=headers)
         return urllib.request.urlopen(req)
@@ -59,11 +70,11 @@ class ApiTests(unittest.TestCase):
             self.assertEqual(Image.open(io.BytesIO(response.read())).size,(1000,671))
         with self.request('export',{'items':items}) as response:
             archive=zipfile.ZipFile(io.BytesIO(response.read()))
-            self.assertEqual(archive.namelist(),['Moldura-01.jpg','Moldura-02.jpg'])
+            self.assertEqual(archive.namelist(),['BottonsEditor-01.jpg','BottonsEditor-02.jpg'])
             for filename in archive.namelist():
                 image=Image.open(io.BytesIO(archive.read(filename)))
                 self.assertEqual(image.size,(1795,1205));self.assertEqual(image.info['dpi'],(300,300))
-            last=Image.open(io.BytesIO(archive.read('Moldura-02.jpg')))
+            last=Image.open(io.BytesIO(archive.read('BottonsEditor-02.jpg')))
             self.assertGreater(last.getpixel((897,602))[2],240)
             self.assertEqual(last.getpixel((200,602)),(255,255,255))
         with self.request('export',{'items':items[:1]}) as response:
@@ -99,7 +110,7 @@ class ApiTests(unittest.TestCase):
                     data=response.read()
                 if count==7:
                     archive=zipfile.ZipFile(io.BytesIO(data));self.assertEqual(len(archive.namelist()),2)
-                    page=Image.open(io.BytesIO(archive.read('Moldura-02.jpg')))
+                    page=Image.open(io.BytesIO(archive.read('BottonsEditor-02.jpg')))
                     self.assertGreater(page.getpixel((897,602))[0],240)
                     self.assertLess(page.getpixel((897,602))[1],10)
             with self.request('sheet',{'items':[item]*6,'template':'round_p'}) as response:

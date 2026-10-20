@@ -1,5 +1,7 @@
-A versão do Moldura agora aparece ao lado do nome do aplicativo, no lugar do indicador “Local”.
+O Moldura agora se chama **Bottons Editor** e faz parte do **RedLab Editor**, com instalador, portátil e atualizações próprios.
 
-Quando houver uma atualização, o cabeçalho mostra discretamente o download em andamento ou a atualização disponível. A informação de que ela será instalada ao encerrar fica acessível no aviso. O editor continua livre para trabalhar durante o download.
+Arraste fotos para a coluna Fotos ou a área de enquadramento. Os filtros têm resposta gradual perto do zero e valores numéricos com duas casas decimais. O ícone ao lado de Adicionar permite limpar a sessão com confirmação. A transferência entre abas foi estabilizada e as prévias usam fontes leves.
 
-Gabaritos, medidas de impressão, qualidade dos JPGs e funcionamento da atualização ao encerrar foram preservados.
+Os quatro gabaritos, medidas, sangrias, bordas refletidas, capacidade das folhas e JPGs a 300 DPI foram preservados. O Bottons Editor continua sem fluxo de conferência de fotos.
+
+Exporte as folhas antes de encerrar. A versão instalada verifica seu canal próprio e aplica atualizações no encerramento normal. Quem usa o Moldura pode receber a versão de transição pelo atualizador existente.

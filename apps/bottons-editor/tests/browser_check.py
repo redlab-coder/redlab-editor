@@ -41,8 +41,8 @@ with sync_playwright() as p:
     page.wait_for_function("document.querySelector('#count').textContent === '3' && !document.querySelector('#export').disabled")
     page.wait_for_function("[...document.querySelectorAll('.sheet-card img')].length===2 && [...document.querySelectorAll('.sheet-card img')].every(i=>i.complete&&i.naturalWidth>0)")
     page.locator('#zoom').evaluate("e=>{e.value='1.35';e.dispatchEvent(new Event('input',{bubbles:true}));}")
-    page.locator('#brightness').evaluate("e=>{e.value='1.12';e.dispatchEvent(new Event('input',{bubbles:true}));}")
-    page.locator('#saturation').evaluate("e=>{e.value='0.85';e.dispatchEvent(new Event('input',{bubbles:true}));}")
+    page.locator('#brightness-number').fill('12');page.locator('#brightness-number').press('Enter')
+    page.locator('#saturation-number').fill('-15');page.locator('#saturation-number').press('Enter')
     page.wait_for_timeout(700)
     preview_start=sum(url.endswith('/api/preview') for url in requests)
     frame=page.locator('#tile-frame').bounding_box()
@@ -60,7 +60,7 @@ with sync_playwright() as p:
     assert page.locator('#brightness-number').input_value()=='12'
     page.locator('#sharpness-number').fill('31')
     page.locator('#sharpness-number').press('ArrowUp')
-    assert page.locator('#sharpness-number').input_value()=='32'
+    assert page.locator('#sharpness-number').input_value()=='31.01'
     page.locator('#sharpness-zero').click()
     assert page.locator('#sharpness-number').input_value()=='0'
     page.locator('#zoom-number').fill('1.42')
@@ -71,16 +71,16 @@ with sync_playwright() as p:
     page.get_by_role('button',name='Mover para baixo Paisagem-1.png').click()
     page.wait_for_timeout(900)
     assert page.locator('.photo-detail strong').first.inner_text()=='Paisagem-2.png'
-    before=page.evaluate('JSON.parse(localStorage.getItem("moldura-session"))')
+    before=page.evaluate('JSON.parse(localStorage.getItem("bottons-editor-session"))')
     page.reload()
     page.wait_for_function("document.querySelector('#count').textContent === '3' && !document.querySelector('#export').disabled")
     assert page.locator('#zoom-number').input_value()=='1.42'
     assert page.locator('#brightness-number').input_value()=='12'
     assert page.locator('.photo-detail strong').first.inner_text()=='Paisagem-2.png'
     page.wait_for_timeout(900)
-    token=page.locator('meta[name=moldura-token]').get_attribute('content')
+    token=page.locator('meta[name=bottons-editor-token]').get_attribute('content')
     selected=next(photo for photo in before['photos'] if photo['id']==before['selected'])
-    req=urllib.request.Request(URL+'/api/preview',data=json.dumps({'id':selected['id'],'edits':selected['edits']}).encode(),headers={'X-Moldura-Token':token,'Content-Type':'application/json'})
+    req=urllib.request.Request(URL+'/api/preview',data=json.dumps({'id':selected['id'],'edits':selected['edits']}).encode(),headers={'X-BottonsEditor-Token':token,'Content-Type':'application/json'})
     reference=Image.open(io.BytesIO(urllib.request.urlopen(req).read())).convert('RGB')
     actual=Image.open(io.BytesIO(base64.b64decode(page.locator('#tile-image').evaluate('canvas=>canvas.toDataURL().split(",")[1]')))).convert('RGB')
     assert actual.tobytes()==reference.tobytes(),'Final canvas must match export processing exactly'
@@ -92,7 +92,7 @@ with sync_playwright() as p:
     with page.expect_download() as event:page.locator('#export').click()
     download=event.value;download.save_as(str(OUT/'folhas.zip'))
     with zipfile.ZipFile(OUT/'folhas.zip') as archive:
-        assert archive.namelist()==['Moldura-01.jpg','Moldura-02.jpg']
+        assert archive.namelist()==['BottonsEditor-01.jpg','BottonsEditor-02.jpg']
         for name in archive.namelist():
             image=Image.open(io.BytesIO(archive.read(name)))
             assert image.size==(1795,1205) and image.info['dpi']==(300,300)

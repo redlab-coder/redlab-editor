@@ -9,7 +9,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from version import VERSION, REPOSITORY
+from version import VERSION, REPOSITORY, PRODUCT_ID, RELEASE_PREFIX
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
     setup = ROOT / 'dist' / f'PolaroidEditor-Setup-{VERSION}.exe'
     with setup.open('rb') as stream:
         digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-    manifest = {'version': VERSION, 'url': f'https://github.com/{REPOSITORY}/releases/download/v{VERSION}/{setup.name}', 'sha256': digest, 'size': setup.stat().st_size}
+    manifest = {'product': PRODUCT_ID, 'version': VERSION, 'url': f'https://github.com/{REPOSITORY}/releases/download/{RELEASE_PREFIX}{VERSION}/{setup.name}', 'sha256': digest, 'size': setup.stat().st_size}
     (ROOT / 'dist' / 'update.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
     checksums = []
     for path in (setup, ROOT / 'dist' / 'PolaroidEditor-Portable.exe', ROOT / 'dist' / 'update.json'):
