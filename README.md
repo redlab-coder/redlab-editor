@@ -35,6 +35,7 @@ O código e o histórico das duas ferramentas estão reunidos aqui, mantendo seu
 
 - [Desenvolvimento e testes](docs/development.md)
 - [Publicação, canais e transição](docs/maintenance.md)
+- [Validação desta integração](docs/validation.md)
 - [Alterações](CHANGELOG.md)
 - [Contribuir](CONTRIBUTING.md)
 - [Relatar um problema](https://github.com/redlab-coder/redlab-editor/issues/new/choose)
