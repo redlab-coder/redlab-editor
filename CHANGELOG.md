@@ -1,5 +1,13 @@
 # Alterações do RedLab Editor
 
+## Medidas Editor 1.0.0 — 26/10/2026
+
+- Terceira ferramenta para fotografias em medidas personalizadas, com 27 folhas oficiais e seleção pela menor área compatível.
+- Recorte separado da folha, revisão por imagem, lotes salvos e JPEGs a 300 dpi.
+- Exportação por partes para formatos de até 61 × 250 cm, progresso, cancelamento e erros individuais.
+- Catálogo, identidade visual, instalador e canal de atualização próprios.
+- Validação física de escala e cor na Noritsu pendente.
+
 ## Integração inicial
 
 - Reunião dos projetos em um repositório público, com os históricos originais preservados.

@@ -36,6 +36,7 @@ with sync_playwright() as p:
     page.on('pageerror',lambda error:errors.append(str(error)))
     page.on('request',lambda request:requests.append(request.url))
     page.goto(URL);page.wait_for_selector('#empty-editor')
+    page.wait_for_function("!document.querySelector('#add').disabled")
     page.screenshot(path=str(OUT/'01-vazio.png'),full_page=True)
     page.locator('#files').set_input_files(fixtures())
     page.wait_for_function("document.querySelector('#count').textContent === '3' && !document.querySelector('#export').disabled")

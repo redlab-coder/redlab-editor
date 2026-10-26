@@ -11,7 +11,8 @@ import time
 
 REPOSITORY = 'redlab-coder/redlab-editor'
 PRODUCTS = {'bottons-editor': ('BottonsEditor', 'Bottons Editor', 'bottons-v'),
-            'polaroid-editor': ('PolaroidEditor', 'Polaroid Editor', 'polaroid-v')}
+            'polaroid-editor': ('PolaroidEditor', 'Polaroid Editor', 'polaroid-v'),
+            'medidas-editor': ('MedidasEditor', 'Medidas Editor', 'medidas-v')}
 
 
 def gh(*args, body=None):

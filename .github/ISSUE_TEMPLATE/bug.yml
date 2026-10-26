@@ -5,7 +5,7 @@ body:
     id: product
     attributes:
       label: Aplicativo
-      options: [Bottons Editor, Polaroid Editor]
+      options: [Bottons Editor, Polaroid Editor, Medidas Editor]
     validations:
       required: true
   - type: input
