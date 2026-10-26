@@ -25,6 +25,7 @@ with sync_playwright() as p:
     page=context.new_page();errors=[]
     page.on('pageerror',lambda error:errors.append(str(error)))
     page.goto(URL)
+    page.wait_for_function("!document.querySelector('#add').disabled")
     page.locator('#files').set_input_files(paths)
     page.wait_for_function("document.querySelector('#count').textContent==='7' && !document.querySelector('#export').disabled")
     models=[('square',827,4),('round_g',833,4),('round_m',650,4),('round_p',531,2)]
