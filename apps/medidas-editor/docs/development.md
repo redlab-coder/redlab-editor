@@ -19,7 +19,7 @@ Pillow permanece no tratamento de entrada/ICC e nas prévias. Uma folha máxima 
 
 O Windows recebe a libvips junto ao executável; não existe instalação manual de bibliotecas pelo operador. Isso aumenta o tamanho do pacote e exige os avisos/licenças indicados em [THIRD-PARTY.md](../THIRD-PARTY.md).
 
-O original é normalizado um por vez para TIFF temporário; a folha final não é montada em um canvas de resolução completa. O cache de operações libvips é desativado, seu cache de memória é limitado a 32 MiB e são usadas duas threads internas. A fila exporta um item de cada vez. O JPEG é gravado em arquivo temporário e disponibilizado somente depois de concluído.
+O original é normalizado um por vez para TIFF temporário; a folha final não é montada em um canvas de resolução completa. O cache de operações libvips é desativado, seu cache de memória é limitado a 32 MiB e são usadas duas threads internas. A fila exporta um item de cada vez. O JPEG é gravado em arquivo temporário e disponibilizado somente depois de concluído. O download de exportações é transmitido diretamente ao gerenciador do navegador por uma URL local com chave por tarefa; a interface não monta o ZIP completo em um Blob JavaScript.
 
 O teste real do formato máximo monitora memória do processo e inspeciona pequenos blocos do resultado, evitando decodificar a folha inteira no próprio teste. O consumo também depende da entrada: normalizar uma fotografia de 60 megapixels demanda mais memória que o arquivo sintético usado no teste. Espaço em disco é verificado antes da exportação.
 

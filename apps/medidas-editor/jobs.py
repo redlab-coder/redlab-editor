@@ -34,7 +34,7 @@ class ExportManager:
             job = dict(state='running', done=0, total=len(records), percent=0,
                        items=[dict(name=meta['name'], state='queued', error=None) for _, meta in records],
                        success=0, error=None, filename=None, created=time.monotonic(),
-                       directory=directory, cancel=threading.Event(), path=None)
+                       directory=directory, cancel=threading.Event(), path=None, download_key=secrets.token_urlsafe(24))
             self.jobs[identifier] = job
             thread = threading.Thread(target=self._work, args=(job, records), daemon=True, name='MedidasEditor-export')
             job['thread'] = thread
@@ -108,6 +108,13 @@ class ExportManager:
         except Exception:
             with self.lock:
                 job.update(state='failed', error='Falha ao finalizar o lote. Confira o espaço em disco e tente novamente.')
+            # An incomplete ZIP must not retain copies of all successful JPEGs.
+            for path in folder.iterdir():
+                try:
+                    if path.is_file():
+                        path.unlink(missing_ok=True)
+                except OSError:
+                    pass
 
     def _progress(self, job, value):
         with self.lock:
@@ -116,8 +123,10 @@ class ExportManager:
     def status(self, identifier):
         with self.lock:
             job = self.jobs[identifier]
-            return {key: ([item.copy() for item in job[key]] if key == 'items' else job[key])
-                    for key in ('state', 'done', 'total', 'percent', 'items', 'success', 'error', 'filename')}
+            result = {key: ([item.copy() for item in job[key]] if key == 'items' else job[key])
+                      for key in ('state', 'done', 'total', 'percent', 'items', 'success', 'error', 'filename')}
+            result['download_url'] = f'/download?job={identifier}&key={job["download_key"]}' if job['state'] == 'ready' else None
+            return result
 
     def cancel(self, identifier):
         with self.lock:

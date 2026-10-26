@@ -55,6 +55,10 @@ class ApiTests(unittest.TestCase):
         result=json.loads(self.api('export/status',dict(job=job)))
         self.assertEqual(result['state'],'ready');self.assertEqual(result['success'],1)
         output=self.api('export/download',dict(job=job))
+        with urllib.request.urlopen(self.url+result['download_url']) as response:
+            self.assertEqual(response.read(),output)
+        with self.assertRaises(urllib.error.HTTPError):
+            urllib.request.urlopen(self.url+result['download_url']+'wrong')
         with zipfile.ZipFile(io.BytesIO(output)) as archive:
             self.assertEqual(len([n for n in archive.namelist() if n.endswith('.jpg')]),1)
             self.assertIn('LEIA-ME-falhas.txt',archive.namelist())

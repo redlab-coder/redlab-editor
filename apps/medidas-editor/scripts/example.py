@@ -20,10 +20,11 @@ def main():
     if args.output.exists():raise SystemExit('O arquivo de destino já existe. Escolha outro nome.')
     with tempfile.TemporaryDirectory(prefix='MedidasEditor-example-') as temporary:
         root=Path(temporary);original=root/'foto.png';result=root/'result.jpg'
-        image=Image.new('RGB',(1200,1440),'#c3d2c2');draw=ImageDraw.Draw(image)
-        draw.rectangle((0,0,1199,719),fill='#94b1b6')
-        draw.ellipse((800,180,1040,420),fill='#f2d7a5')
-        draw.polygon([(0,1440),(520,440),(1200,1440)],fill='#7d906d')
+        width,height=3543,4252
+        image=Image.new('RGB',(width,height),'#c3d2c2');draw=ImageDraw.Draw(image)
+        draw.rectangle((0,0,width-1,height//2),fill='#94b1b6')
+        draw.ellipse((int(width*.66),int(height*.125),int(width*.86),int(height*.29)),fill='#f2d7a5')
+        draw.polygon([(0,height),(int(width*.43),int(height*.3)),(width,height)],fill='#7d906d')
         image.save(original);image.close()
         plan,_=export_jpeg(original,dict(width_cm='30',height_cm='36'),result)
         # Exclusive creation prevents overwrites even if another process creates

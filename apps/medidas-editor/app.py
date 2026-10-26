@@ -1,6 +1,7 @@
 """Local desktop service: immutable originals, interactive proxies and jobs."""
 import argparse
 import io
+import hmac
 import json
 import os
 from pathlib import Path
@@ -12,7 +13,7 @@ import time
 import webbrowser
 import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse, unquote, quote
+from urllib.parse import urlparse, unquote, quote, parse_qs
 from PIL import Image, UnidentifiedImageError
 from engine import FORMATS, layout, normalized_settings, proportional_size, cm_text, render_preview
 from photo_store import PhotoRecord, PhotoCache, MAX_FILE, MAX_PHOTOS, MAX_TOTAL
@@ -81,6 +82,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Disposition', "attachment; filename*=UTF-8''"+quote(filename, safe=''))
         self.send_header('Cache-Control', 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('Referrer-Policy', 'no-referrer')
         self.end_headers()
         while chunk := stream.read(256*1024):
             self.wfile.write(chunk)
@@ -94,6 +96,25 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == '/health':
             return self.json_reply(dict(product='Medidas Editor', version=VERSION, instance=INSTANCE, pid=os.getpid()))
+        if path == '/download':
+            query = parse_qs(urlparse(self.path).query)
+            with EXPORTS.lock:
+                job = EXPORTS.jobs.get(query.get('job', [''])[0])
+                supplied = query.get('key', [''])[0]
+                if (job is None or job['state'] != 'ready' or not supplied.isascii()
+                        or not hmac.compare_digest(supplied, job['download_key'])):
+                    return self.json_reply({'error':'Download indisponível.'}, 403)
+                try:
+                    stream = job['path'].open('rb')
+                except OSError:
+                    return self.json_reply({'error':'O resultado não está mais disponível.'}, 404)
+                filename = job['filename']
+            try:
+                with stream:
+                    self.send_file(stream, filename, 'image/jpeg' if filename.endswith('.jpg') else 'application/zip')
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            return
         if path == '/':
             html = (ROOT/'ui/index.html').read_text(encoding='utf-8')
             html = html.replace('__TOKEN__', TOKEN).replace('__VERSION__', VERSION).replace('__FORMATS__', json.dumps(FORMATS, ensure_ascii=False))

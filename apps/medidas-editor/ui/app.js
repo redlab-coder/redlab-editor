@@ -79,10 +79,11 @@ function renderSettings(){
   renderSummary();refreshControls();
 }
 function renderSummary(){
-  const photo=current();$('output-summary').replaceChildren();$('resolution').hidden=true;$('photo-error').hidden=!photo?.error;
+  const photo=current();$('output-summary').replaceChildren();$('sheet-context').textContent='';$('resolution').hidden=true;$('photo-error').hidden=!photo?.error;
   if(photo?.error)$('photo-error').textContent=photo.error;
   if(!photo?.plan){$('output-summary').textContent='Defina a medida da foto para sugerir a folha.';return;}
   const plan=photo.plan,s=photo.settings,sheet=plan.sheet;
+  $('sheet-context').textContent=`Foto: ${dimensions(s.width_cm,s.height_cm)} · Folha ${sheet.name}: ${dimensions(sheet.width_cm,sheet.height_cm)}${sheet.rotation?' · giro de 90°':''}`;
   for(const text of [`Foto: ${dimensions(s.width_cm,s.height_cm)}`,`Folha: ${sheet.name} — arquivo de ${dimensions(sheet.width_cm,sheet.height_cm)}`,`Posição: ${positionNames[s.position]}`,sheet.rotation?'Foto girada 90° para acomodar na folha.':'Foto acomodada sem giro adicional.',`Saída: JPEG · 300 dpi · ${sheet.size_px[0]} × ${sheet.size_px[1]} px`]){const p=document.createElement('p');p.textContent=text;$('output-summary').append(p);}
   const warnings=[...photo.metadata.warnings,...plan.warnings];
   $('resolution').hidden=!warnings.length;$('resolution').textContent=warnings.join(' ');
@@ -187,19 +188,20 @@ document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'
 new ResizeObserver(fitPreview).observe($('canvas-area'));
 
 async function downloadBlob(response,name){const blob=await response.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+function downloadNative(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.rel='noreferrer';document.body.append(a);a.click();a.remove();}
 function requestExport(targets){if(!canEdit())return;if(draftDirty){toast('Aplique as medidas digitadas antes de exportar.');return;}const ready=targets.filter(p=>!pending(p));if(ready.length!==targets.length){pendingExport=ready;$('export-message').textContent=`${targets.length-ready.length} foto(s) ainda precisam de medidas ou revisão. ${ready.length} estão prontas. As pendentes ficarão fora desta exportação.`;$('export-ready').disabled=!ready.length;$('export-dialog').showModal();}else startExport(ready);}
 $('export').onclick=()=>requestExport(photos);$('export-photo').onclick=()=>{if(current())requestExport([current()]);};$('export-ready').onclick=()=>{$('export-dialog').close();startExport(pendingExport);};
 async function startExport(targets){
   if(!canEdit()||!targets.length)return;const snapshot=targets.map(item);saveSession();exporting=true;renderLibrary();renderCards();$('job-panel').hidden=false;$('job-errors').replaceChildren();$('download-result').hidden=true;$('cancel-export').hidden=false;$('cancel-export').disabled=true;
   try{const {job}=await(await api('export/start',{items:snapshot})).json();lastJob=job;$('cancel-export').disabled=false;
     while(!closed){const state=await(await api('export/status',{job})).json();$('job-title').textContent=state.state==='running'?'Preparando arquivos':state.state==='ready'?'Arquivos prontos':state.state==='cancelled'?'Exportação cancelada':'Confira os arquivos';$('job-progress').value=(state.done+(state.state==='running'?state.percent/100:0))/state.total*100;$('job-status').textContent=`${state.done} de ${state.total} processadas · ${state.success} JPEG(s) gerados${state.error?' · '+state.error:''}`;
-      if(state.state!=='running'){$('cancel-export').hidden=true;for(const result of state.items){if(result.error){const li=document.createElement('li');li.textContent=`${result.name}: ${result.error}`;$('job-errors').append(li);}}if(state.state==='ready'){$('download-result').hidden=false;$('download-result').dataset.filename=state.filename;await downloadBlob(await api('export/download',{job}),state.filename);toast(state.success===state.total?'Download iniciado.':'Download iniciado com os JPEGs válidos e um relatório das falhas.');}break;}
+      if(state.state!=='running'){$('cancel-export').hidden=true;for(const result of state.items){if(result.error){const li=document.createElement('li');li.textContent=`${result.name}: ${result.error}`;$('job-errors').append(li);}}if(state.state==='ready'){$('download-result').hidden=false;$('download-result').dataset.filename=state.filename;downloadNative(state.download_url,state.filename);toast(state.success===state.total?'Download iniciado.':'Download iniciado com os JPEGs válidos e um relatório das falhas.');}break;}
       await new Promise(resolve=>setTimeout(resolve,400));
     }
   }catch(error){toast(error.message);$('job-status').textContent=error.message;$('cancel-export').hidden=true;}finally{exporting=false;renderLibrary();renderCards();saveSession();flushRestore();}
 }
 $('cancel-export').onclick=async()=>{if(!lastJob)return;$('cancel-export').disabled=true;try{await api('export/cancel',{job:lastJob});$('job-status').textContent='Cancelando e liberando os recursos…';}catch(error){toast(error.message);$('cancel-export').disabled=false;}};
-$('download-result').onclick=async()=>{try{await downloadBlob(await api('export/download',{job:lastJob}),$('download-result').dataset.filename);}catch(error){toast(error.message);}};
+$('download-result').onclick=async()=>{try{const state=await(await api('export/status',{job:lastJob})).json();if(state.state!=='ready')throw new Error('O resultado não está mais disponível.');downloadNative(state.download_url,state.filename);}catch(error){toast(error.message);}};
 
 $('clear-all').onclick=()=>{if(canEdit())$('clear-dialog').showModal();};
 $('clear-confirm').onclick=async()=>{if(!canEdit())return;clearing=true;refreshControls();$('clear-confirm').disabled=true;$('clear-cancel').disabled=true;try{await api('clear',{ids:photos.map(p=>p.id)});releaseImages();photos=[];selected=null;checked.clear();$('clear-dialog').close();}catch(error){toast(error.message);}finally{clearing=false;$('clear-confirm').disabled=false;$('clear-cancel').disabled=false;renderSettings();renderLibrary();renderCards();drawLive();saveSession();flushRestore();}};
