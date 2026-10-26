@@ -1,11 +1,9 @@
-# Medidas Editor 1.0.0
+# Medidas Editor 1.0.1
 
-Prepare fotografias em medidas personalizadas e acomode cada uma na menor folha comercial compatível, com fundo branco, zero margem adicional e JPEG a 300 dpi.
+A seção Preparação agora mostra a composição final em miniaturas, com recorte e branco da folha. Clique para ampliar, voltar à edição ou exportar a foto, seguindo o padrão dos outros editores RedLab.
 
-O exemplo de 30 × 36 cm mantém a foto em 3543 × 4252 pixels dentro da folha comercial 30×40, arquivo de 3602 × 4724 pixels. Os 27 formatos oficiais incluem saídas de até 61 × 250 cm.
+O painel Arquivos prontos foi removido. O download continua automático, com progresso no botão de exportação e cancelamento discreto junto à Preparação. Falhas individuais aparecem apenas quando necessário.
 
-Inclui recorte interativo, modo inteira, aplicação de medidas a uma seleção, avisos de resolução e cor, revisão de recortes, lotes `.medidas`, progresso, cancelamento e falhas individuais. O processamento é local e os originais permanecem intactos.
+Textos repetidos foram retirados e os detalhes técnicos ficam recolhidos. As miniaturas são reduzidas, carregadas sob demanda em fila única e reutilizadas até os ajustes mudarem.
 
-Instalador e atualizações próprios; Bottons Editor e Polaroid Editor continuam independentes. Windows 10/11 de 64 bits.
-
-A política de entrada da Noritsu e a impressão física de validação de escala e cor permanecem pendentes. A saída inicial usa sRGB com perfil ICC incorporado.
+Medidas físicas, JPEG a 300 dpi, recortes, revisão, projetos e canais dos outros editores permanecem compatíveis. A impressão física de escala e cor na Noritsu continua pendente.

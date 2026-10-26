@@ -1,4 +1,14 @@
-# Validação — Medidas Editor 1.0.0
+# Validação — Medidas Editor
+
+## 1.0.1 — interface e preparação
+
+- 32 testes de unidade e API aprovados, incluindo prévias reduzidas com limite de tamanho e geometria da folha preservada.
+- Fluxos de navegador: miniaturas da composição, ampliação, exportação pela prévia, download automático sem painel persistente, cancelamento sem janela de erro e falhas individuais em aviso específico.
+- Lote de 12 imagens: miniaturas fora da região visível não são renderizadas antecipadamente, uma requisição de composição por vez, reutilização ao conferir e invalidação após alterar a posição. Branco da composição conferido por pixel.
+- Recursos da galeria e da ampliação liberados ao fechar/remover. Projetos, revisão, recortes, dimensões do JPEG e telas de 320 a 1440 pixels cobertos pelos fluxos do produto.
+- Executável e instalador passam pelas verificações Windows do workflow antes de publicar `medidas-v1.0.1`. A geração dos arquivos de produção segue o mesmo motor da versão inicial.
+
+## 1.0.0 — versão inicial
 
 26/10/2026. Referência de publicação: tag `medidas-v1.0.0`.
 

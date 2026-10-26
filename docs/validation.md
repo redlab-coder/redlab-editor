@@ -1,5 +1,13 @@
 # Validação da integração
 
+## Medidas Editor 1.0.1 — interface
+
+A interface passou a mostrar miniaturas da composição na Preparação e uma prévia ampliada. O download permanece automático, com progresso e cancelamento discretos. Foram removidos o painel persistente de arquivos prontos e as explicações repetidas.
+
+Validação: 32 testes de unidade/API e quatro contratos do repositório, além dos fluxos do executável real. A galeria foi verificada com 12 imagens: carregamento sob demanda, fila única, cache reutilizado ao conferir, invalidação após mudar posição, branco da folha, ampliação, exportação e liberação de recursos. Testes de cancelamento, falhas individuais, projetos e telas de 320 a 1440 pixels também cobrem o novo fluxo.
+
+O workflow de [publicação 1.0.1](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.0.1) exige novamente motor, maior formato, executável e instalação no Windows. O motor de impressão e os canais dos outros editores foram preservados.
+
 ## Medidas Editor — 26/10/2026
 
 O terceiro aplicativo passou por 31 testes de processamento, geometria, fila, API, projetos, integração Windows e atualizador. Os quatro testes atuais do repositório também passaram, incluindo o isolamento do novo canal e a regressão do motor de impressão do Bottons.

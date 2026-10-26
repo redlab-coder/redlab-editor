@@ -62,8 +62,9 @@ def run(url):
         page.wait_for_function("current()?.plan?.sheet.id==='61x250'&&!current().planning&&!importing")
         page.locator('#export-photo').click();page.wait_for_function("!document.querySelector('#cancel-export').disabled")
         page.locator('#cancel-export').click()
-        page.wait_for_function("document.querySelector('#job-title').textContent==='Exportação cancelada'&&!exporting",timeout=30000)
-        assert page.locator('#download-result').is_hidden();assert page.locator('#count').inner_text()=='1'
+        page.wait_for_function("document.querySelector('#toast').textContent==='Exportação cancelada.'&&!exporting",timeout=30000)
+        assert page.locator('#errors-dialog').is_hidden()
+        assert page.locator('#cancel-export').is_hidden();assert page.locator('#count').inner_text()=='1'
         # Three explicit handoff cycles with a loaded batch.
         second=context.new_page();second.goto(url);second.wait_for_selector('#session-banner:visible')
         for _ in range(3):

@@ -239,7 +239,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_reply(layout((record.width, record.height), data.get('settings')))
             if path == '/api/preview':
                 with CACHE.lock:
-                    image, plan = render_preview(CACHE.get(record), (record.width, record.height), data.get('settings'))
+                    maximum = data.get('maximum', 1000)
+                    if type(maximum) is not int or not 128 <= maximum <= 1000:
+                        raise ValueError('Tamanho de prévia inválido.')
+                    image, plan = render_preview(CACHE.get(record), (record.width, record.height), data.get('settings'), maximum=maximum)
                     output = io.BytesIO()
                     try:
                         image.save(output, 'PNG')

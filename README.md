@@ -6,7 +6,7 @@ Três aplicativos independentes para preparar imagens para impressão. Processam
 | --- | --- | --- |
 | **Bottons Editor** | Montagem nos gabaritos Square e Round G, M e P, com sangria espelhada e organização em folhas. | [Baixar instalador](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.1.0/BottonsEditor-Setup-1.1.0.exe) · [Documentação](apps/bottons-editor/README.md) |
 | **Polaroid Editor** | Enquadramento, ajustes e montagem de fotos no template de polaroid, com conferência antes de exportar. | [Baixar instalador](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.1.2/PolaroidEditor-Setup-1.1.2.exe) · [Documentação](apps/polaroid-editor/README.md) |
-| **Medidas Editor** | Fotografias em medidas personalizadas, acomodadas na menor folha comercial compatível, com branco nas sobras. | [Baixar instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.0.0/MedidasEditor-Setup-1.0.0.exe) · [Documentação](apps/medidas-editor/README.md) |
+| **Medidas Editor** | Fotografias em medidas personalizadas, acomodadas na menor folha comercial compatível, com branco nas sobras. | [Baixar instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.0.1/MedidasEditor-Setup-1.0.1.exe) · [Documentação](apps/medidas-editor/README.md) |
 
 ## Bottons Editor
 
@@ -32,7 +32,7 @@ Informe a medida desejada, ajuste o recorte e exporte um JPEG por fotografia. O 
 
 Exemplo: **foto de 30 × 36 cm → folha comercial 30×40 → arquivo de 30,5 × 40 cm**, a 300 dpi. A área da foto é preservada. A validação física de escala e cor na Noritsu permanece pendente.
 
-[Guia de uso](apps/medidas-editor/docs/usage.md) · [Medidas e cor](apps/medidas-editor/docs/printing.md) · [Versão portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.0.0/MedidasEditor-Portable.exe)
+[Guia de uso](apps/medidas-editor/docs/usage.md) · [Medidas e cor](apps/medidas-editor/docs/printing.md) · [Versão portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.0.1/MedidasEditor-Portable.exe)
 
 ## Instalação e atualizações
 

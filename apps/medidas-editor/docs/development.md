@@ -41,6 +41,8 @@ Os testes de navegador usam Microsoft Edge e uma instância isolada. `tests/pack
 .venv/Scripts/python.exe tests/packaged_check.py dist/MedidasEditor-Portable.exe
 ```
 
+A galeria usa prévias de até 320 pixels, carregadas sob demanda por uma fila única. Ajustes invalidam apenas a prévia da foto alterada; conferir uma foto reutiliza a imagem. A ampliação usa até 1000 pixels e libera sua URL ao fechar. `tests/gallery_browser_check.py` verifica a geometria, o carregamento sob demanda, a invalidação, falhas de exportação e a liberação de recursos.
+
 As capturas públicas são geradas por `tests/browser_check.py` com imagens sintéticas. Nunca incluir fotos de clientes no repositório. O teste físico na Noritsu permanece separado e pendente.
 
 [← Medidas Editor](../README.md)
