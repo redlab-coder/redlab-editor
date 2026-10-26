@@ -2,7 +2,7 @@
 
 26/10/2026. Referência de publicação: tag `medidas-v1.0.0`.
 
-- 30 testes locais de geometria, processamento, cor, fila, API, projetos, integração Windows e atualizador aprovados.
+- 31 testes locais de geometria, processamento, cor, fila, API, projetos, integração Windows e atualizador aprovados.
 - Quatro testes do repositório aprovados, incluindo o contrato do terceiro produto e a regressão de impressão do Bottons contra o Moldura preservado.
 - Exemplo real de 30 × 36 cm exportado como 3602 × 4724 pixels, 300 ppi, JPEG qualidade 100/4:4:4 e ICC sRGB. A composição da foto é 3543 × 4252, deixando 59 pixels à direita e 472 abaixo. Original preservado byte a byte.
 - Seleção decimal exata, casos de não encaixe, giro de acomodação após recorte, proporção, modo inteira, EXIF, perfis inválidos, transparência e resolução efetiva cobertos.

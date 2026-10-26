@@ -48,3 +48,20 @@ class JobTests(unittest.TestCase):
     def test_safe_output_names(self):
         self.assertEqual(output_name('CON.jpg',0),'001-CON.jpg')
         self.assertNotIn('/',output_name('../../f:oto.png',0))
+
+    def test_cancel_during_final_zip_write_cannot_publish_a_download(self):
+        original_write=zipfile.ZipFile.write
+        writes=0
+        def cancel_on_last_write(archive,*args,**kwargs):
+            nonlocal writes
+            result=original_write(archive,*args,**kwargs);writes+=1
+            if writes==2:
+                next(iter(self.manager.jobs.values()))['cancel'].set()
+            return result
+        records=[(self.record,dict(name='foto.png',settings=dict(width_cm='3',height_cm='3',mode='contain'))) for _ in range(2)]
+        with patch('jobs.zipfile.ZipFile.write',cancel_on_last_write):
+            identifier=self.manager.start(records)
+            self.manager.jobs[identifier]['thread'].join(timeout=30)
+        self.assertEqual(self.manager.status(identifier)['state'],'cancelled')
+        self.assertIsNone(self.manager.status(identifier)['download_url'])
+        self.assertIsNone(self.manager.jobs[identifier]['path'])

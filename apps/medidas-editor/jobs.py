@@ -95,6 +95,8 @@ class ExportManager:
                 for path in successful:
                     path.unlink()
             with self.lock:
+                if job['cancel'].is_set():
+                    raise ExportCancelled()
                 job.update(state='ready', path=result, filename=result.name, percent=100)
         except ExportCancelled:
             with self.lock:
