@@ -136,7 +136,8 @@ def layout(source_size, settings):
         crop = [cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2]
         content = [0, 0, pw, ph]
         ppi = DPI * side_scale
-        needs_review = iw - cw > 1.01 or ih - ch > 1.01
+        needs_review = (settings['zoom'] > 1.000001 or iw-cw > max(.01, iw*.0005)
+                        or ih-ch > max(.01, ih*.0005))
     else:
         crop = [0, 0, iw, ih]
         scale = min(pw / iw, ph / ih)
@@ -284,9 +285,9 @@ def export_jpeg(original, settings, destination, cancel=None, progress=None):
                 source = source.rot({90:'d90', 180:'d180', 270:'d270'}[rotation])
             left, top, right, bottom = plan['crop_box']
             # Integer edge rounding is shared and never enlarges the photo area.
-            x0, y0 = max(0, round(left)), max(0, round(top))
-            x1, y1 = min(source.width, round(right)), min(source.height, round(bottom))
-            cropped = source.crop(x0, y0, max(1, x1-x0), max(1, y1-y0))
+            x0, y0 = max(0, min(source.width-1, round(left))), max(0, min(source.height-1, round(top)))
+            x1, y1 = max(x0+1, min(source.width, round(right))), max(y0+1, min(source.height, round(bottom)))
+            cropped = source.crop(x0, y0, x1-x0, y1-y0)
             x, y, r, b = plan['content_box']; dw, dh = r-x, b-y
             content = cropped.resize(dw / cropped.width, vscale=dh / cropped.height, kernel='lanczos3')
             # Accommodate encoder/library rounding while keeping exact raster edges.

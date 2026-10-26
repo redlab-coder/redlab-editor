@@ -72,6 +72,16 @@ class GeometryTests(unittest.TestCase):
 
 
 class ImageTests(unittest.TestCase):
+    def test_tiny_source_at_maximum_zoom_and_edge_is_reported_and_can_render(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);source=root/'pixel.png';target=root/'result.jpg'
+            Image.new('RGB',(1,1),(120,20,30)).save(source)
+            plan,_=export_jpeg(source,dict(width_cm='3',height_cm='3',zoom=10,cx=1,cy=1),target)
+            self.assertTrue(plan['needs_review']);self.assertTrue(plan['warnings'])
+            self.assertLess(plan['effective_ppi'],1)
+            with Image.open(target) as result:
+                self.assertTrue(all(abs(a-b)<=2 for a,b in zip(result.getpixel((50,50)),(120,20,30))))
+
     def test_exif_orientation_metadata_and_opaque_white(self):
         data=io.BytesIO();image=Image.new('RGB',(120,80),'red');exif=Image.Exif();exif[274]=6
         image.save(data,'JPEG',exif=exif,dpi=(300,150)); image.close()
