@@ -1,6 +1,6 @@
 # Guia de uso
 
-Instale `MedidasEditor-Setup-1.0.0.exe` ou abra a [versão portátil](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.0.0). A interface abre no navegador padrão; o programa fica disponível na bandeja do Windows até ser encerrado. Não é necessário instalar Python. A edição e a exportação funcionam offline.
+Instale `MedidasEditor-Setup-1.0.1.exe` ou abra a [versão portátil](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.0.1). A interface abre no navegador padrão; o programa fica disponível na bandeja do Windows até ser encerrado. Não é necessário instalar Python. A edição e a exportação funcionam offline.
 
 ## Preparar uma foto
 
@@ -24,13 +24,15 @@ Recortes que removem conteúdo e avisos de conversão de cor exigem revisão. Us
 
 Uma resolução abaixo de 300 ppi gera aviso. O cálculo usa a parte do original aproveitada após o recorte e o zoom. Reamostrar aumenta a quantidade de pixels; não recupera detalhes inexistentes.
 
-## Lotes e downloads
+## Preparação, lotes e downloads
+
+A seção **Preparação** mostra miniaturas da composição final, incluindo recorte e branco da folha. Clique para ampliar; a prévia permite voltar à edição ou exportar a foto. Antes de definir as medidas, a miniatura mostra somente o original, identificado como pendente.
 
 Marque as fotos desejadas, informe as medidas e clique em **Aplicar às selecionadas**. Uma dimensão vazia é calculada individualmente pela proporção de cada original. Cada foto pode manter modo, medida, folha, posição e recorte próprios.
 
-**Exportar lote** informa quando há itens pendentes e oferece exportar somente as fotos prontas. Um lote gera um ZIP com um JPEG por foto; não existe composição de várias fotos independentes na mesma folha. Falhas de processamento são mostradas individualmente e não impedem os demais arquivos. Quando houver resultados válidos e falhas, o ZIP inclui `LEIA-ME-falhas.txt`.
+**Exportar lote** informa quando há itens pendentes e oferece exportar somente as fotos prontas. Um lote gera um ZIP com um JPEG por foto; não existe composição de várias fotos independentes na mesma folha. Falhas de processamento são mostradas em uma janela de avisos e não impedem os demais arquivos. Quando houver resultados válidos e falhas, o ZIP inclui `LEIA-ME-falhas.txt`.
 
-O botão de download ao lado do nome exporta somente a foto atual. A exportação acontece em segundo plano, um item por vez. **Cancelar exportação** interrompe a fila; resultados parciais não ficam disponíveis para download.
+O botão de download ao lado do nome exporta somente a foto atual. A exportação acontece em segundo plano, um item por vez. O download começa automaticamente ao concluir; o progresso aparece no botão de exportação e ao lado de **Preparação**, sem painel de arquivos prontos. O ícone de cancelar ao lado do progresso interrompe a fila; resultados parciais não ficam disponíveis para download.
 
 Os downloads seguem o destino e a política de nomes do navegador, como nas outras ferramentas RedLab. Para escolher uma pasta a cada download, habilite essa opção no navegador. O aplicativo não tem acesso irrestrito às pastas do computador. Prefixos numéricos evitam nomes duplicados dentro do ZIP, inclusive quando os originais têm o mesmo nome.
 

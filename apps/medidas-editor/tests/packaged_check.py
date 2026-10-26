@@ -16,6 +16,7 @@ from version import PORTABLE_NAMESPACE
 from desktop import SingleInstance
 from browser_check import run
 from refinement_browser_check import run as run_refinements
+from gallery_browser_check import run as run_gallery
 
 probe=SingleInstance(PORTABLE_NAMESPACE)
 try:
@@ -45,6 +46,7 @@ with tempfile.TemporaryDirectory(prefix='MedidasEditor-packaged-test-') as tempo
         assert json.loads(state_path.read_text())['instance']==state['instance']
         run(state['url'])
         run_refinements(state['url'])
+        run_gallery(state['url'])
         print(json.dumps({'portable':'OK','tray_lifecycle':'OK','single_instance':'OK'}))
     finally:
         if state and process.poll() is None:

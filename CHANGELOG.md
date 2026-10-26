@@ -1,5 +1,11 @@
 # Alterações do RedLab Editor
 
+## Medidas Editor 1.0.1 — 26/10/2026
+
+- Galeria de preparação com prévias, ampliação e carregamento reduzido sob demanda.
+- Interface simplificada e download automático sem painel de arquivos prontos.
+- Progresso e cancelamento integrados, com avisos de falhas quando necessário.
+
 ## Medidas Editor 1.0.0 — 26/10/2026
 
 - Terceira ferramenta para fotografias em medidas personalizadas, com 27 folhas oficiais e seleção pela menor área compatível.

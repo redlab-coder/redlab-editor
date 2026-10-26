@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | Bottons Editor | `apps/bottons-editor` | `bottons-v1.1.0` | `updates/bottons-editor.json` |
 | Polaroid Editor | `apps/polaroid-editor` | `polaroid-v1.1.2` | `updates/polaroid-editor.json` |
-| Medidas Editor | `apps/medidas-editor` | `medidas-v1.0.0` | `updates/medidas-editor.json` |
+| Medidas Editor | `apps/medidas-editor` | `medidas-v1.0.1` | `updates/medidas-editor.json` |
 
 Cada produto mantém sua própria versão em `version.py`. Atualize também o changelog, as notas, os links de download e a versão padrão do instalador antes de criar uma tag. As tags têm prefixos distintos para impedir que uma atualização de um aplicativo seja oferecida ao outro.
 

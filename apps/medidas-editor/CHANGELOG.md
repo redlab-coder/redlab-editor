@@ -1,5 +1,13 @@
 # Alterações
 
+## 1.0.1 — 26/10/2026
+
+- Preparação com miniaturas da composição final e prévia ampliada, seguindo os outros editores.
+- Download automático sem painel de arquivos prontos; progresso e cancelamento discretos.
+- Interface com menos textos repetidos e detalhes técnicos recolhidos.
+- Miniaturas reduzidas, carregadas sob demanda em fila única e reutilizadas até os ajustes mudarem.
+- Documentação e capturas atualizadas.
+
 ## 1.0.0 — 26/10/2026
 
 - Preparação de fotografias em medidas personalizadas com 27 folhas oficiais.

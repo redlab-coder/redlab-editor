@@ -32,6 +32,15 @@ def run(url):
         page.wait_for_function("document.querySelector('#output-summary').textContent.includes('3602 × 4724')")
         page.wait_for_function("!document.querySelector('#review-photo').disabled")
         assert '30×40' in page.locator('#output-summary').inner_text()
+        assert page.locator('#job-panel').count()==0
+        page.wait_for_function("document.querySelector('.preparation-card img').naturalWidth>0")
+        assert page.locator('.preparation-card img').first.evaluate('img=>Math.max(img.naturalWidth,img.naturalHeight)')<=320
+        page.locator('.preparation-card').first.click()
+        page.wait_for_function("!document.querySelector('#sheet-dialog-image').hidden&&document.querySelector('#sheet-dialog-image').naturalWidth>0")
+        assert page.locator('#sheet-dialog-image').evaluate('img=>[img.naturalWidth,img.naturalHeight]')==[762,1000]
+        assert 'Paisagem' in page.locator('#sheet-dialog-title').inner_text()
+        page.locator('#edit-preview').click()
+        assert page.locator('#sheet-dialog').is_hidden()
         assert 'Pronta para exportar' not in page.locator('#sheets').inner_text()
         # Pending crop cannot be silently included.
         page.locator('#export-photo').click();page.locator('#export-dialog').wait_for(state='visible')
@@ -53,6 +62,9 @@ def run(url):
         with page.expect_download(timeout=60000) as download:
             page.locator('#export-photo').click()
         result=download.value;result.save_as(OUT/'example-30x36.jpg')
+        page.wait_for_function("!exporting&&document.querySelector('#cancel-export').hidden")
+        assert page.locator('#job-panel').count()==0
+        assert 'Download iniciado' in page.locator('#toast').inner_text()
         with Image.open(OUT/'example-30x36.jpg') as image:
             assert image.size==(3602,4724) and image.info['dpi']==(300,300)
             assert min(image.getpixel((3570,100)))>=253 and min(image.getpixel((100,4600)))>=253
@@ -65,7 +77,9 @@ def run(url):
         assert page.locator('#content-outline').is_visible()
         assert 'branco' in page.locator('#resolution').inner_text().lower()
         page.locator('#position').select_option('bottom_right');page.wait_for_timeout(350)
+        page.locator('#output-summary summary').click()
         assert 'Canto inferior direito' in page.locator('#output-summary').inner_text()
+        page.locator('#output-summary summary').click()
         page.locator('#sheet').select_option('40x50');page.wait_for_timeout(350)
         assert '40×50' in page.locator('#output-summary').inner_text()
         # Save and reload the session with its original metadata.
@@ -94,11 +108,13 @@ def run(url):
         second.close()
         # Screenshot of native product style, with both internal and external white.
         page.locator('#position').select_option('top_left');page.wait_for_timeout(350)
+        page.wait_for_function("[...document.querySelectorAll('.preparation-card img')].every(img=>!img.hidden&&img.complete&&img.naturalWidth>0)")
         page.screenshot(path=str(ROOT/'docs/images/contain.png'),full_page=True)
         page.locator('#sheet').select_option('auto');page.wait_for_timeout(300)
         page.locator('#fit-mode').select_option('cover');page.wait_for_timeout(300)
         page.locator('#width-cm').fill('30');page.locator('#height-cm').fill('36');page.locator('#apply-size').click()
         page.wait_for_function("document.querySelector('#output-summary').textContent.includes('3602 × 4724')&&!document.querySelector('#review-photo').disabled")
+        page.wait_for_function("document.querySelector('.preparation-card img').complete&&document.querySelector('.preparation-card img').naturalWidth>0")
         page.screenshot(path=str(OUT/'workspace.png'),full_page=True)
         (ROOT/'docs/images').mkdir(parents=True,exist_ok=True)
         page.screenshot(path=str(ROOT/'docs/images/workspace.png'),full_page=True)

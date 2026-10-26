@@ -46,6 +46,16 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(restored['settings']['width_cm'],'30');self.assertTrue(restored['reviewed'])
         self.assertEqual(restored['metadata'],photo['metadata'])
 
+    def test_gallery_preview_size_is_bounded_and_keeps_sheet_geometry(self):
+        photo,_=self.upload()
+        settings=dict(width_cm='30',height_cm='36')
+        with Image.open(io.BytesIO(self.api('preview',dict(id=photo['id'],settings=settings,maximum=320)))) as preview:
+            self.assertEqual(preview.size,(244,320))
+            self.assertEqual(preview.getpixel((243,10)),(255,255,255))
+        for maximum in (0,127,1001,True,'320'):
+            with self.subTest(maximum=maximum),self.assertRaises(urllib.error.HTTPError):
+                self.api('preview',dict(id=photo['id'],settings=settings,maximum=maximum))
+
     def test_batch_rejects_pending_crop_but_exports_other_photo(self):
         first,_=self.upload();second,_=self.upload()
         job=json.loads(self.api('export/start',dict(items=[
