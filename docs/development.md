@@ -1,6 +1,6 @@
 # Desenvolvimento
 
-As ferramentas são independentes em `apps/bottons-editor` e `apps/polaroid-editor`. Cada pasta contém o aplicativo Python, a interface local, o instalador e os testes. Consulte também o guia de desenvolvimento de cada aplicativo.
+As ferramentas são independentes em `apps/bottons-editor`, `apps/polaroid-editor` e `apps/medidas-editor`. Cada pasta contém o aplicativo Python, a interface local, o instalador e os testes. Consulte também o guia de desenvolvimento de cada aplicativo.
 
 Use um ambiente Python próprio para cada ferramenta e instale seu `requirements-build.txt`. Os testes de navegador usam Playwright e Chromium; os testes de instalação exigem Windows e uma conta isolada sem instalações reais dessas ferramentas.
 
@@ -11,3 +11,5 @@ Os workflows de cada produto compilam e testam o executável portátil, a interf
 Os commits originais foram importados com `git subtree`, sem compactar o histórico. O teste de regressão consulta o motor original pelo commit preservado; mantenha o histórico completo no checkout de CI.
 
 Alterações no Bottons Editor devem preservar Square e Round G/M/P, medidas físicas, sangria, guias e montagem das folhas. Melhorias de interface compartilhadas não devem introduzir a conferência do Polaroid no Bottons.
+
+O Medidas Editor usa Pillow para entrada/ICC e prévias, e libvips empacotada para exportar as maiores folhas por partes. Seu teste `tests/large_export_check.py` gera de fato o formato máximo e mede memória. A tabela oficial fica somente em `formats.json`; a interface recebe a mesma fonte. Consulte sua documentação para revisão, projetos, cor e os testes físicos pendentes na Noritsu.

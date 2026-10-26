@@ -1,0 +1,8 @@
+VERSION = "1.0.0"
+REPOSITORY = "redlab-coder/redlab-editor"
+PRODUCT_ID = "medidas-editor"
+RELEASE_PREFIX = "medidas-v"
+PORTABLE_NAMESPACE = "MedidasEditor-Portable"
+INSTALLED_NAMESPACE = "MedidasEditor-Installed"
+INSTALLED_MUTEX = "Local\\MedidasEditor.Installed.Running"
+UPDATE_URL = "https://raw.githubusercontent.com/redlab-coder/redlab-editor/main/updates/medidas-editor.json"

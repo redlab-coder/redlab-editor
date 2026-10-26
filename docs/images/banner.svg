@@ -11,4 +11,7 @@
  <text x="432" y="340" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" fill="white">Polaroid Editor</text>
  <circle cx="1040" cy="210" r="93" fill="white"/><circle cx="1040" cy="210" r="71" fill="#80a798"/>
  <g transform="translate(1160 100) rotate(10 72 110)"><rect width="144" height="216" rx="5" fill="white"/><rect x="13" y="13" width="118" height="118" fill="#80a2b0"/></g>
+ <rect x="560" y="310" width="224" height="46" rx="23" fill="#805d3e"/>
+ <text x="672" y="340" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" fill="white">Medidas Editor</text>
+ <g transform="translate(820 118) rotate(-8 60 90)"><rect width="112" height="178" rx="4" fill="white"/><rect width="78" height="128" x="8" y="8" fill="#bf9b73"/><path d="M12 155h86m-70-5v12m15-12v8m15-8v12m15-12v8" stroke="#805d3e" stroke-width="3"/></g>
 </svg>

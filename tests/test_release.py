@@ -11,6 +11,21 @@ publish = importlib.util.module_from_spec(spec);spec.loader.exec_module(publish)
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_medidas_has_a_separate_release_contract(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            installer=root/'MedidasEditor-Setup-1.0.0.exe';installer.write_bytes(b'new product fixture')
+            portable=root/'MedidasEditor-Portable.exe';portable.write_bytes(b'portable fixture')
+            manifest=dict(product='medidas-editor',version='1.0.0',
+                url='https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.0.0/'+installer.name,
+                sha256=hashlib.sha256(installer.read_bytes()).hexdigest(),size=installer.stat().st_size)
+            (root/'update.json').write_text(json.dumps(manifest),encoding='utf-8')
+            (root/'SHA256SUMS.txt').write_text(''.join(hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name+'\n'
+                for path in (installer,portable,root/'update.json')),encoding='utf-8')
+            self.assertEqual(publish.validate_artifacts('medidas-editor','medidas-v1.0.0',root)[0],manifest)
+            for other in ('bottons-editor','polaroid-editor'):
+                with self.assertRaises(ValueError):publish.validate_artifacts(other,'medidas-v1.0.0',root)
+
     def test_channels_are_independent_and_cannot_downgrade_or_replace_version(self):
         first = {'product':'bottons-editor','version':'1.1.0','sha256':'a'}
         self.assertTrue(publish.should_advance(None, first))
