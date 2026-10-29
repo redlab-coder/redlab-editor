@@ -7,3 +7,5 @@
 - [NumPy](https://github.com/numpy/numpy): matrizes usadas na detecção, BSD-3-Clause.
 
 O modelo é distribuído com o aplicativo e processa as imagens localmente. As ilustrações das capturas são geradas pelo script de demonstração do projeto. Fontes do sistema usadas para gerar essas imagens não são distribuídas como arquivos de fonte.
+
+O painel da bandeja usa [Tkinter](https://docs.python.org/3/library/tkinter.html) e os componentes Tcl/Tk distribuídos com o Python. Seus recursos são incluídos pelo empacotador e conservam os avisos e licenças de origem. Os ícones da família são vetores próprios, gerados por `branding.py`; não há fontes adicionais distribuídas para desenhá-los.

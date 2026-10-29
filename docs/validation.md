@@ -54,3 +54,9 @@ Os testes de cada aplicativo cobrem cópia de originais, ajustes e rascunhos, es
 `python scripts/check_update_flow.py <produto>` exercita a interface e a API HTTP reais, em armazenamento temporário: aba proprietária, espera por exportação, falha de salvamento sem perda de sessão e recuperação em uma nova origem local. Os bytes simulados nesse teste nunca são executados. O teste do instalador executa também o instalador genuíno compilado no workflow: encerra, instala, reinicia e recupera duas fotos com estados distintos, incluindo os campos ainda não aplicados do Medidas. A cópia precisa existir antes de abrir a interface nova e ser removida somente após a confirmação.
 
 Os testes de instalação permanecem restritos a uma conta Windows isolada, sem usar as instalações do operador. Versões, tags e canais públicos permanecem preservados nesta etapa.
+
+## Revisão da família — etapa 4: identidade e bandeja
+
+Os três produtos usam a mesma geometria de ícone, padding e resoluções Windows (16, 20, 24, 32, 40, 48, 64, 128 e 256 px). Os testes verificam geometria comum, paletas distintas e contraste mínimo de 4,5:1 para textos e ações principais. O tema é aplicado aos estados de importação, foco, hover, seleção e controles; as medidas e o processamento de impressão permanecem preservados.
+
+A interface é exercitada em 320, 390, 520, 768, 1024 e 1440 px, com metas de toque, abertura de ajuda, ausência de sobreposição do cabeçalho e preferência por redução de movimento. As capturas reais ficam nos artefatos do workflow. O painel nativo é exercitado com cinco escalas, navegação por teclado, abrir, fechar e destruição da thread. O teste do executável abre também a janela empacotada e encerra com o painel visível, verificando a inclusão de Tcl/Tk. A publicação dos novos instaladores permanece para a etapa final.

@@ -53,4 +53,4 @@ O código das ferramentas está reunido aqui, mantendo seus motores de impressã
 
 ## Revisão em desenvolvimento
 
-A próxima versão inclui modelos individuais e lotes salvos no Bottons, encerramento direto e atualização pela interface com reinício e recuperação do trabalho nas três ferramentas. A instalação verificará atualizações periodicamente, sem ação manual na bandeja. Os downloads acima continuam correspondendo às versões publicadas; novos instaladores serão disponibilizados após concluir e validar a revisão. Consulte [funcionamento das atualizações](docs/maintenance.md).
+A próxima versão padroniza os ícones, as paletas e o painel da bandeja dos três editores. Inclui modelos individuais e lotes salvos no Bottons, encerramento direto e atualização pela interface com reinício e recuperação do trabalho nas três ferramentas. A instalação verificará atualizações periodicamente, sem ação manual na bandeja. Os downloads acima continuam correspondendo às versões publicadas; novos instaladores serão disponibilizados após concluir e validar a revisão. Consulte [funcionamento das atualizações](docs/maintenance.md).

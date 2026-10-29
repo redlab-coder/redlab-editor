@@ -43,6 +43,11 @@ with tempfile.TemporaryDirectory(prefix='BottonsEditor-packaged-test-') as tempo
         assert json.loads(state_path.read_text())['instance']==state['instance']
         for script in ('browser_check.py','round_browser_check.py','refinement_browser_check.py','sheet_navigation_browser_check.py','header_status_browser_check.py','general_browser_check.py','mixed_browser_check.py'):
             subprocess.run([sys.executable,str(ROOT/'tests'/script),state['url']],check=True)
+        sys.path.insert(0,str(ROOT.parents[1]/'scripts'))
+        from check_family_ui import run as check_family
+        from packaged_panel_check import check as check_panel
+        check_family('bottons-editor',state['url'])
+        check_panel(state['pid'],'bottons-editor')
         print(json.dumps({'portable':'OK','tray_lifecycle':'OK','single_instance':'OK'}))
     finally:
         if state and process.poll() is None:

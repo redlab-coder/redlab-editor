@@ -7,21 +7,11 @@ import time
 import urllib.request
 import webbrowser
 from pathlib import Path
-from PIL import Image, ImageDraw
+from branding import icon_image, THEME
+from tray_panel import create_tray
 from version import VERSION
 
 
-def icon_image():
-    image = Image.new('RGBA', (256, 256), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle((5, 5, 251, 251), radius=58, fill='#365e43')
-    color='#f0f5e8'
-    for points in [[(44,88),(44,44),(88,44)],[(168,44),(212,44),(212,88)],[(212,168),(212,212),(168,212)],[(88,212),(44,212),(44,168)]]:
-        draw.line(points,fill=color,width=9,joint='curve')
-        for x,y in (points[0],points[-1]):draw.ellipse((x-4,y-4,x+4,y+4),fill=color)
-    draw.rounded_rectangle((75,75,181,181),radius=26,outline=color,width=8)
-    draw.ellipse((99,99,157,157),outline=color,width=8)
-    return image.resize((64,64),Image.Resampling.LANCZOS)
 
 
 class SingleInstance:
@@ -114,5 +104,5 @@ def run_tray(url, request_shutdown, has_photos, updater=None):
         pystray.Menu.SEPARATOR,
         pystray.MenuItem('Encerrar Bottons Editor', quit_app),
     ]
-    icon = pystray.Icon('BottonsEditor', icon_image(), f'Bottons Editor {VERSION} · Estúdio de impressão', menu=pystray.Menu(*items))
+    icon = create_tray('BottonsEditor', icon_image(256), f'Bottons Editor {VERSION} · RedLab Editor', pystray.Menu(*items), THEME, VERSION, lambda:open_app(None,None), lambda:quit_app(None,None))
     return icon

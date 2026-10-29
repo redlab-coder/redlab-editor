@@ -12,7 +12,7 @@ const MedidasEditorIcons=(()=>{
     check:'<path d="m5 12 4 4L19 6"/>',
 
     update:'<path d="M4.6 8a8 8 0 1 1-.3 7M4 3v5h5m3 0v8m-3-3 3 3 3-3"/>',
-    brand:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M7 5h10v9H7zm0 13h10m-8-2v4m3-4v3m3-3v4"/>' ,
+    brand:'<polyline points="4.5,7.875 4.5,4.5 7.875,4.5"/><polyline points="16.125,4.5 19.5,4.5 19.5,7.875"/><polyline points="19.5,16.125 19.5,19.5 16.125,19.5"/><polyline points="7.875,19.5 4.5,19.5 4.5,16.125"/><rect x="7.3125" y="6.8438" width="9.375" height="10.312" rx="0.46875"/><rect x="8.625" y="8.1562" width="6.75" height="4.9688" rx="0"/><polyline points="8.7188,15.094 15.281,15.094"/><polyline points="9.2812,14.531 9.2812,16.031"/><polyline points="11.156,14.531 11.156,15.656"/><polyline points="13.031,14.531 13.031,16.031"/><polyline points="14.906,14.531 14.906,15.656"/>' ,
     square:'<rect x="3" y="3" width="18" height="18" rx="4" stroke-dasharray="2.5 2.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
     round_g:'<circle cx="12" cy="12" r="9" stroke-dasharray="2.5 2.5"/><circle cx="12" cy="12" r="6.5"/>',
     round_m:'<circle cx="12" cy="12" r="7.6" stroke-dasharray="2.5 2.5"/><circle cx="12" cy="12" r="5"/>',

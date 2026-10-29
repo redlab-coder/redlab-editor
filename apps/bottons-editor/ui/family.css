@@ -1,0 +1,27 @@
+/* Shared RedLab Editor components. Product values live in theme.json/theme.css. */
+.brand-family{font-size:9px;font-weight:650;letter-spacing:1.8px;line-height:12px;color:var(--muted)}
+.brand-copy{gap:2px}.brand-line{gap:10px}.brand strong{font-size:25px;letter-spacing:-.9px;font-weight:650}
+.brand-icon{width:42px;height:42px;border-radius:12px;color:#f8faf6;background:var(--accent)}
+.brand-icon svg{width:31px;height:31px;stroke-width:1.5}
+.app-header{background:var(--header)}
+.canvas-area{background-color:var(--stage);background-image:radial-gradient(var(--stage-dots) .7px,transparent .7px);background-size:12px 12px}
+.drop{color:var(--muted);background:var(--header);border-color:var(--line)}
+.drop:hover:not(:has(input:disabled)){color:var(--accent);background:var(--soft);border-color:var(--focus)}
+.import-area.file-drop-active::after{border-color:var(--accent);background:rgb(var(--accent-rgb) / .055)}
+.import-area.file-drop-active::before{box-shadow:0 4px 16px rgb(var(--ink-rgb) / .12)}
+.photo-row.active{border-color:var(--focus);background:var(--soft)}
+.tool-button:hover:not(:disabled),.icon-button:hover:not(:disabled),.precise-control button:hover:not(:disabled){background:var(--soft);color:var(--accent)}
+.secondary:hover:not(:disabled),.template-buttons button:hover:not(:disabled){border-color:var(--focus);color:var(--accent)}
+.tool-button[aria-pressed=true]{background:var(--soft);color:var(--accent)}
+.primary{background:var(--accent);border-color:var(--accent)}.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
+.primary.danger{background:var(--danger);border-color:var(--danger)}.primary.danger:hover:not(:disabled){background:var(--danger-hover);border-color:var(--danger-hover)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible,#photo-list:focus-visible,.photo-select:focus-visible,#tile-frame:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+input[type=range],input[type=checkbox]{accent-color:var(--accent)}
+.update-status{min-height:22px;padding:3px 7px;line-height:16px;border:1px solid transparent;border-radius:7px}
+.update-status:not(:disabled){border-color:var(--line)}.update-status:not(:disabled):hover{background:var(--soft);border-color:var(--focus);box-shadow:none}
+.empty-editor>[data-icon]{color:var(--focus)}
+dialog{background:var(--header);border-color:var(--line)}
+dialog::backdrop{background:rgb(var(--ink-rgb) / .36)}
+#toast{background:var(--ink);line-height:1.6}
+@media(max-width:520px){.brand-family{font-size:8px;line-height:10px;letter-spacing:1.5px}.brand strong{font-size:23px}.brand-icon{width:36px;height:36px;border-radius:10px}.brand-icon svg{width:28px;height:28px}.app-header{min-height:104px}.brand-copy{gap:2px}.header-actions{gap:4px}}
+@media(pointer:coarse){.header-actions .icon-button{width:40px;min-height:40px}.library-actions .icon-button{width:38px;min-height:38px}.tool-button{min-height:40px}.precise-control button{width:36px;min-height:36px}.adjustment label{height:auto;min-height:36px}.photo-row .remove-photo{width:34px;min-height:38px}.photo-row .row-actions button{width:32px;min-height:32px}.drop{min-height:48px}input[type=checkbox]{min-width:20px;min-height:20px}}

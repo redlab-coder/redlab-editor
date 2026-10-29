@@ -22,7 +22,7 @@ def run(url):
         page=context.new_page();errors=[];uploads=[]
         page.on('pageerror',lambda error:errors.append(str(error)))
         page.on('request',lambda request:uploads.append(request) if request.url.endswith('/api/upload') else None)
-        page.goto(url);page.wait_for_function('editingAllowed&&!restoring')
+        page.goto(url);page.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring")
         assert page.title()=='Bottons Editor'
         assert page.locator('#review-photo,#filter-review,[aria-keyshortcuts="F"]').count()==0
         data=page.evaluate_handle("()=>{const d=new DataTransfer();d.items.add(new File([Uint8Array.from([137,80,78,71])],'ignored.png',{type:'image/png'}));return d;}")
@@ -48,12 +48,12 @@ def run(url):
             page.locator('#brightness-number').fill('0.01');page.locator('#brightness-number').press('Enter')
             assert page.evaluate('current().edits.brightness')==1.0001
             page.locator('#brightness-zero').click()
-        readonly=context.new_page();readonly.goto(url);readonly.wait_for_function('photos.length===3&&!restoring')
+        readonly=context.new_page();readonly.on('pageerror',lambda error:errors.append(str(error)));readonly.on('requestfailed',lambda request:print({'failed_resource':request.url,'failure':request.failure},flush=True));readonly.goto(url);readonly.wait_for_function("typeof photos!=='undefined'&&photos.length===3&&!bootRecovery&&!restoring")
         assert readonly.locator('#clear-all').is_disabled()
         for _ in range(3):
-            readonly.locator('#takeover').click();readonly.wait_for_function('editingAllowed&&!restoring');page.wait_for_function('!editingAllowed')
+            readonly.locator('#takeover').click();readonly.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring");page.wait_for_function('!editingAllowed')
             page.evaluate("window.dispatchEvent(new Event('focus'))");assert not page.evaluate('editingAllowed')
-            page.locator('#takeover').click();page.wait_for_function('editingAllowed&&!restoring');readonly.wait_for_function('!editingAllowed')
+            page.locator('#takeover').click();page.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring");readonly.wait_for_function('!editingAllowed')
         readonly.close()
         page.locator('#clear-all').click();page.locator('#clear-cancel').click();assert page.evaluate('photos.length')==3
         page.route('**/api/clear',lambda route:route.fulfill(status=503,content_type='application/json',body='{"error":"Falha simulada"}'))
@@ -62,7 +62,7 @@ def run(url):
         page.unroute('**/api/clear');page.locator('#clear-confirm').click();page.wait_for_function('!photos.length&&!clearing')
         assert page.evaluate('previewSources.size===0&&objectUrls.size===0&&sheetCache.size===0&&orientedSource===null')
         assert page.evaluate('activeTemplate')=='round_p'
-        page.reload();page.wait_for_function('editingAllowed&&!restoring');assert page.evaluate('photos.length')==0
+        page.reload();page.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring");assert page.evaluate('photos.length')==0
         for path,digest in hashes.items():assert hashlib.sha256(path.read_bytes()).hexdigest()==digest
         assert not errors,errors
         browser.close()

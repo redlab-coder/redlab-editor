@@ -1,0 +1,17 @@
+{
+  "name": "Medidas Editor",
+  "symbol": "medidas",
+  "accent": "#805d3e",
+  "accent-hover": "#684a30",
+  "bg": "#f7f4ef",
+  "header": "#fffdfb",
+  "ink": "#443526",
+  "muted": "#786957",
+  "line": "#e6ddcf",
+  "soft": "#f3ece2",
+  "focus": "#9c7a56",
+  "stage": "#f2eee7",
+  "stage-dots": "#dbceba",
+  "family": "RedLab Editor",
+  "product": "medidas-editor"
+}
