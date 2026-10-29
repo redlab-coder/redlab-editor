@@ -1,16 +1,16 @@
 # Pacote completo RedLab Editor
 
-[Baixar para Windows](https://github.com/redlab-coder/redlab-editor/releases/download/redlab-v1.0.1/RedlabEditor-Setup-1.0.1.exe)
+[Baixar para Windows](https://github.com/redlab-coder/redlab-editor/releases/download/redlab-v1.0.2/RedlabEditor-Setup-1.0.2.exe)
 
 Um único instalador reúne Bottons Editor, Polaroid Editor e Medidas Editor. Depois do download, a instalação funciona sem internet. Requer Windows 10 ou 11 de 64 bits e não exige administrador.
 
 1. Salve seu trabalho e encerre os editores que serão instalados.
-2. Abra `RedlabEditor-Setup-1.0.1.exe`.
+2. Abra `RedlabEditor-Setup-1.0.2.exe`.
 3. Mantenha **Pacote completo** ou escolha as ferramentas desejadas.
 4. Escolha se deseja atalhos na área de trabalho e instale.
 5. Abra a ferramenta pela pasta **RedLab Editor** do menu Iniciar.
 
-O pacote 1.0.1 inclui Bottons 1.2.2, Polaroid 1.2.1 e Medidas 1.1.1. Também é possível baixar [cada editor separadamente](../README.md#downloads-individuais).
+O pacote 1.0.2 inclui Bottons 1.2.3, Polaroid 1.2.1 e Medidas 1.1.1. Também é possível baixar [cada editor separadamente](../README.md#downloads-individuais).
 
 ## Instalações existentes
 

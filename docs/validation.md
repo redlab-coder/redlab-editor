@@ -1,5 +1,10 @@
 # Validação da integração
 
+## Alinhamento individual do Bottons Editor 1.2.3
+
+A validação exige o centro vertical do quadrado no centro da folha e da coluna de dois P. Modelos G, M, P e quadrado lado a lado também devem compartilhar esse eixo, com tolerância de 1 pixel. Colunas só se movem independentemente quando seus limites de corte já estão separados pelo espaçamento completo de segurança; peças de uma mesma coluna movem-se juntas. Os testes exaustivos e aleatórios conferem ausência de sobreposição, margens, renderização e consistência entre lote completo e folha individual.
+
+
 ## Centralização do Bottons Editor 1.2.2
 
 Os testes conferem margens opostas com diferença máxima de 1 pixel, tamanhos de corte, segurança das bordas e ausência de sobreposição. Incluem o exemplo com G e quadrado numa folha e M e P na seguinte, além do quadrado com dois P, combinações exaustivas e lotes aleatórios. A renderização é validada antes da codificação e a prévia pela API, junto à exportação e à reabertura de projetos.

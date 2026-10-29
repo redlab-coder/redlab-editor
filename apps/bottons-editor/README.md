@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Bottons Editor — RedLab Editor" width="100%"></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.2/BottonsEditor-Setup-1.2.2.exe"><img src="docs/images/download.svg" alt="Baixar Bottons Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Setup-1.2.3.exe"><img src="docs/images/download.svg" alt="Baixar Bottons Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.2">Versão 1.2.2 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.3">Versão 1.2.3 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
 
 ![Interface atual do Bottons Editor com artes de demonstração](docs/images/workspace.png)
 

@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.2.3 — 29/10/2026
+
+- Quadrado centralizado verticalmente ao lado da coluna de dois redondos.
+- Peças de tamanhos diferentes lado a lado passam a compartilhar o eixo central vertical.
+- Colunas independentes são alinhadas sem sobreposição, preservando corte, sangria e o espaçamento de segurança.
+- Prévia, exportação e capturas atualizadas com o alinhamento individual.
+
+
 ## 1.2.2 — 29/10/2026
 
 - Conjunto de bottons centralizado nos dois eixos nas folhas com modelos diferentes.
