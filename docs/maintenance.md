@@ -2,9 +2,9 @@
 
 | Aplicativo | Pasta | Tag | Canal |
 | --- | --- | --- | --- |
-| Bottons Editor | `apps/bottons-editor` | `bottons-v1.1.0` | `updates/bottons-editor.json` |
-| Polaroid Editor | `apps/polaroid-editor` | `polaroid-v1.1.2` | `updates/polaroid-editor.json` |
-| Medidas Editor | `apps/medidas-editor` | `medidas-v1.0.1` | `updates/medidas-editor.json` |
+| Bottons Editor | `apps/bottons-editor` | `bottons-v1.2.0` | `updates/bottons-editor.json` |
+| Polaroid Editor | `apps/polaroid-editor` | `polaroid-v1.2.0` | `updates/polaroid-editor.json` |
+| Medidas Editor | `apps/medidas-editor` | `medidas-v1.1.0` | `updates/medidas-editor.json` |
 
 Cada produto mantém sua própria versão em `version.py`. Atualize também o changelog, as notas, os links de download e a versão padrão do instalador antes de criar uma tag. As tags têm prefixos distintos para impedir que uma atualização de um aplicativo seja oferecida ao outro.
 
@@ -20,7 +20,7 @@ O Bottons Editor mantém o AppId do Moldura para atualizar a instalação existe
 
 Os repositórios anteriores são históricos após essa transição; não devem continuar gerando releases independentes. Preserve seus commits, tags, downloads e a release de transição. O teste `scripts/check_migration.py` verifica a passagem do Moldura para Bottons Editor em uma conta Windows isolada.
 
-## Atualização com reinício — próxima versão
+## Atualização com reinício
 
 A versão instalada verifica o canal ao iniciar e a cada 30 minutos; falhas de conexão ou download são tentadas novamente após 5 minutos. O download ocorre em segundo plano, com validação de produto, versão, origem, tamanho e SHA-256. O menu da bandeja não precisa oferecer uma verificação manual.
 
@@ -28,4 +28,6 @@ Quando o instalador está verificado, a interface oferece **Atualizar e reinicia
 
 O instalador aguarda o processo encerrar e reabre somente a ferramenta atualizada. A nova sessão recupera o lote, os modelos individuais, os recortes, a seleção e, no Medidas, os campos ainda não aplicados. A cópia permanece até a interface confirmar a recuperação. Se a instalação ou a reabertura falhar, ela continua disponível ao abrir o programa novamente; não há promessa de reversão automática de uma instalação interrompida. Uma falha na leitura informa onde a cópia foi preservada.
 
-A atualização ao encerrar normalmente continua disponível. O reinício com recuperação é solicitado pelo botão da interface; não é um salvamento geral de sessões ao fechar. A edição portátil e a execução isolada não instalam atualizações nem acessam cópias da instalação do operador. Os instaladores e canais públicos só serão atualizados na etapa final de entrega da revisão.
+A atualização ao encerrar normalmente continua disponível. O reinício com recuperação é solicitado pelo botão da interface; não é um salvamento geral de sessões ao fechar. A edição portátil e a execução isolada não instalam atualizações nem acessam cópias da instalação do operador.
+
+Os guias de uso apontam para [instalação e atualizações](updates.md). O catálogo sempre usa links explícitos por produto; a indicação global Latest do GitHub representa somente uma release e não substitui os três canais.

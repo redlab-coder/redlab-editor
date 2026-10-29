@@ -11,6 +11,21 @@ publish = importlib.util.module_from_spec(spec);spec.loader.exec_module(publish)
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_current_downloads_notes_and_installer_share_the_product_version(self):
+        import re
+        catalog=(ROOT/'README.md').read_text(encoding='utf-8')
+        for product,(executable,name,prefix) in publish.PRODUCTS.items():
+            root=ROOT/'apps'/product;namespace={}
+            exec((root/'version.py').read_text(encoding='utf-8'),namespace)
+            version=namespace['VERSION'];publish.version_tuple(version)
+            url=f'https://github.com/{publish.REPOSITORY}/releases/download/{prefix}{version}/{executable}-Setup-{version}.exe'
+            self.assertIn(url,catalog);self.assertIn(url,(root/'README.md').read_text(encoding='utf-8'))
+            self.assertIn(f'# {name} {version}',(root/'RELEASE_NOTES.md').read_text(encoding='utf-8'))
+            installer=(root/'installer'/f'{product}.iss').read_text(encoding='utf-8')
+            self.assertEqual(re.search(r'#define AppVersion "([^"]+)"',installer).group(1),version)
+            changelog=(root/'CHANGELOG.md').read_text(encoding='utf-8')
+            self.assertIn(version,re.search(r'^## (.+)$',changelog,re.M).group(1))
+
     def test_shared_update_modules_do_not_drift_between_products(self):
         for filename in ('recovery.py','ui/update.js'):
             contents=[(ROOT/'apps'/product/filename).read_bytes() for product in publish.PRODUCTS]

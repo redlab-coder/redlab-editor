@@ -8,6 +8,6 @@ A distribuição deste aplicativo é mantida no repositório [RedLab Editor](htt
 
 O workflow próprio compila e testa no Windows. Depois de validar executável, interface e instalador, publica os mesmos binários e atualiza somente `updates/polaroid-editor.json`. As releases de outro aplicativo não interferem neste canal. O envio é feito por um job Linux.
 
-O instalador é conferido por tamanho, SHA-256, produto e endereço esperado. A instalação acontece ao encerrar normalmente. A edição portátil não instala atualizações.
+O instalador é conferido por tamanho, SHA-256, produto e endereço esperado. A instalação pode acontecer ao encerrar normalmente ou pelo botão **Atualizar e reiniciar**, com recuperação do lote. A edição portátil não instala atualizações.
 
 [Processo completo e transição](../../../docs/maintenance.md) · [← Documentação](README.md)

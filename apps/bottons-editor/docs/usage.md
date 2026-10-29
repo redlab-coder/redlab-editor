@@ -1,12 +1,12 @@
 # Usar o Bottons Editor
 
-Baixe o `BottonsEditor-Setup-<versão>.exe` na página de [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.1.0) e execute o instalador. A instalação é por usuário, com atalho no menu Iniciar e desinstalação pelas configurações do Windows. A interface abre no navegador padrão e o ícone fica na bandeja, ao lado do relógio. Não precisa instalar Python ou conectar uma conta. A edição e a exportação funcionam offline. Windows 10/11 de 64 bits.
+Baixe o `BottonsEditor-Setup-<versão>.exe` na página de [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.0) e execute o instalador. A instalação é por usuário, com atalho no menu Iniciar e desinstalação pelas configurações do Windows. A interface abre no navegador padrão e o ícone fica na bandeja, ao lado do relógio. Não precisa instalar Python ou conectar uma conta. A edição e a exportação funcionam offline. Windows 10/11 de 64 bits.
 
-Depois de instalado, o Bottons Editor consulta novas versões em segundo plano, baixa o instalador e verifica seu SHA-256. A atualização é aplicada somente depois que você encerra normalmente o aplicativo. Não fecha sua sessão para atualizar e não exige baixar/substituir o EXE manualmente. Na bandeja, **Verificar atualizações** permite consultar o estado. Sem conexão, o programa continua funcionando e tenta novamente depois.
+A versão instalada consulta atualizações ao iniciar e a cada 30 minutos, baixa e verifica o instalador. Quando estiver pronto, o cabeçalho oferece **Atualizar e reiniciar**, que guarda uma cópia local do lote e reabre o programa com o trabalho recuperado. Sem conexão, a edição continua disponível. [Funcionamento das atualizações](../../../docs/updates.md).
 
 A cópia portátil **BottonsEditor-Portable.exe** funciona sem instalação e não aplica atualizações automáticas.
 
-Clique no ícone para abrir a interface. Com o botão direito, escolha **Abrir Bottons Editor** ou **Encerrar Bottons Editor**. Abrir o executável novamente reutiliza o mesmo processo e a mesma porta. O serviço escuta apenas em `127.0.0.1`: outros computadores da rede não têm acesso. As versões anteriores foram preservadas. Exporte sua sessão antiga antes de encerrá-la e passe a usar o atalho da versão instalada. A bandeja e o cabeçalho identificam a versão em execução.
+Clique no ícone para abrir a interface. Com o botão direito, escolha **Abrir editor** ou **Encerrar editor**. Abrir o executável novamente reutiliza o mesmo processo e a mesma porta. O serviço escuta apenas em `127.0.0.1`: outros computadores da rede não têm acesso. As versões anteriores foram preservadas. Exporte sua sessão antiga antes de encerrá-la e passe a usar o atalho da versão instalada. A bandeja e o cabeçalho identificam a versão em execução.
 
 1. Clique em **Adicionar fotos** ou arraste arquivos para qualquer ponto da coluna Fotos ou da área de enquadramento. Um destaque mostra onde soltar; o painel Ajustes não importa arquivos.
 2. Selecione uma foto na coluna esquerda e escolha seu modelo (Quadrado ou Redondo G/M/P). Essa escolha afeta somente ela. Arraste a imagem na prévia para enquadrar, use o zoom e ajuste as cores. O contorno pontilhado delimita a área visível do modelo escolhido. **Guias** mostra/oculta as marcações; **Centralizar** reposiciona sem alterar zoom ou cores. O botão **?** reúne as orientações de uso. Clique na prévia e use as setas para mover um pixel da imagem original; Shift + seta move dez pixels.
@@ -29,7 +29,7 @@ Aceita JPG, PNG, WebP, BMP e TIFF (primeira página). Transparência é composta
 
 ## Versão e atualizações
 
-A versão em execução aparece ao lado do nome Bottons Editor. Quando uma nova versão estiver sendo baixada, o cabeçalho mostra **Baixando atualização**. Depois da verificação, mostra **Atualização disponível**; a instalação acontece ao encerrar normalmente o aplicativo. A consulta também pode ser feita em **Verificar atualizações**, na bandeja do Windows.
+A versão aparece ao lado do nome do aplicativo. A verificação é automática; use **Atualizar e reiniciar** quando o botão estiver disponível. Antes desta primeira atualização a partir de uma versão anterior, salve ou exporte o trabalho.
 
 [← Documentação](README.md) · [Bottons Editor](../README.md)
 
@@ -37,11 +37,11 @@ A versão em execução aparece ao lado do nome Bottons Editor. Quando uma nova 
 
 A versão de transição no repositório antigo permite chegar ao Bottons Editor pelo atualizador existente. O programa deve ser encerrado normalmente depois de exportar as folhas. A identidade de instalação é preservada; o nome, executável e atalhos passam a Bottons Editor. Uma instalação atualizada pode manter a pasta antiga para preservar o caminho registrado; instalações novas usam a pasta Bottons Editor.
 
-## Encerramento — próxima versão
+## Encerramento
 
 O botão de desligar e a opção Encerrar na bandeja finalizam o editor diretamente, sem confirmação. Uma operação em andamento é interrompida; resultados incompletos não são disponibilizados. Exporte ou salve seu trabalho antes de encerrar. Os originais e lotes já salvos são preservados. A aba poderá permanecer na tela de encerramento, mas o processo e o serviço local são finalizados.
 
-## Salvar e abrir lote — próxima versão
+## Salvar e abrir lote
 
 O cabeçalho oferece **Salvar lote** e **Abrir lote**, no mesmo padrão dos outros editores. O arquivo `.bottons` contém cópias integrais dos originais, nomes, ordem, modelo de cada imagem, enquadramento, rotação e filtros. Ele pode ser aberto em outra sessão sem depender dos caminhos dos arquivos originais. Não há etapa de conferência no Bottons.
 

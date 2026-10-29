@@ -1,9 +1,13 @@
-# Medidas Editor 1.0.1
+# Medidas Editor 1.1.0
 
-A seção Preparação agora mostra a composição final em miniaturas, com recorte e branco da folha. Clique para ampliar, voltar à edição ou exportar a foto, seguindo o padrão dos outros editores RedLab.
+Esta versão alinha o aplicativo à identidade da família RedLab Editor, com ícones consistentes, paleta própria e novo painel na bandeja.
 
-O painel Arquivos prontos foi removido. O download continua automático, com progresso no botão de exportação e cancelamento discreto junto à Preparação. Falhas individuais aparecem apenas quando necessário.
+- Painel da bandeja com ações de abrir e encerrar, navegação por teclado e ajuste à escala da tela.
+- Encerramento direto pelo cabeçalho ou pela bandeja, inclusive com fotos carregadas.
+- Verificação de atualizações ao iniciar e a cada 30 minutos; novas tentativas após 5 minutos quando necessário.
+- Botão **Atualizar e reiniciar** com cópia local do lote e recuperação dos originais, ajustes e seleção.
+- Interface revisada em telas estreitas, com toque, contraste e cores de interação da própria ferramenta.
 
-Textos repetidos foram retirados e os detalhes técnicos ficam recolhidos. As miniaturas são reduzidas, carregadas sob demanda em fila única e reutilizadas até os ajustes mudarem.
+Salve seu lote ou exporte o trabalho antes desta primeira atualização a partir de uma versão anterior. A recuperação pelo novo botão passa a funcionar nas versões atuais. O encerramento comum não substitui salvar o lote.
 
-Medidas físicas, JPEG a 300 dpi, recortes, revisão, projetos e canais dos outros editores permanecem compatíveis. A impressão física de escala e cor na Noritsu continua pendente.
+A recuperação preserva também as medidas digitadas ainda não aplicadas. A validação física de escala e cor na Noritsu permanece pendente.

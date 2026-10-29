@@ -1,5 +1,15 @@
 # Alterações do RedLab Editor
 
+## Revisão da família — 29/10/2026
+
+- **[Bottons Editor 1.2.0](https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.0):** modelos individuais, composição mista segura e lotes `.bottons`.
+- **[Polaroid Editor 1.2.0](https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.2.0)** e **[Medidas Editor 1.1.0](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.1.0):** identidade alinhada à família, com ícones e paletas próprias.
+- Painel da bandeja, encerramento direto e revisão de contraste, toque e telas estreitas nos três editores.
+- Atualização periódica e botão para instalar, reiniciar e recuperar o lote.
+- Banners, capturas reais, catálogo, guias e notas de versão padronizados.
+- Instalação, atualização e canais de distribuição continuam independentes.
+
+
 ## Medidas Editor 1.0.1 — 26/10/2026
 
 - Galeria de preparação com prévias, ampliação e carregamento reduzido sob demanda.

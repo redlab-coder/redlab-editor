@@ -1,6 +1,6 @@
 # Guia de uso
 
-Instale `MedidasEditor-Setup-1.0.1.exe` ou abra a [versão portátil](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.0.1). A interface abre no navegador padrão; o programa fica disponível na bandeja do Windows até ser encerrado. Não é necessário instalar Python. A edição e a exportação funcionam offline.
+Instale `MedidasEditor-Setup-1.1.0.exe` ou abra a [versão portátil](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.1.0). A interface abre no navegador padrão; o programa fica disponível na bandeja do Windows até ser encerrado. Não é necessário instalar Python. A edição e a exportação funcionam offline.
 
 ## Preparar uma foto
 
@@ -12,7 +12,7 @@ Adicione as fotos pelo botão ou arrastando os arquivos para a biblioteca ou a �
 
 **Conter imagem inteira** preserva todo o conteúdo, com branco interno quando a proporção for diferente. O zoom e o arraste ficam desabilitados nesse modo para garantir que nenhuma parte seja cortada.
 
-O contorno azul indica a área física solicitada. No modo inteira, o verde indica o conteúdo visível. O branco externo pertence à folha comercial. Esses contornos existem somente na interface.
+Os contornos e a legenda distinguem a área física solicitada do conteúdo visível no modo inteira. O branco externo pertence à folha comercial. Esses contornos existem somente na interface.
 
 ## Folha e revisão
 
@@ -44,10 +44,10 @@ Entradas: JPG, PNG, WebP, BMP e TIFF, primeira página. Até 100 fotos, 50 MB e 
 
 As prévias usam imagens de até 1600 pixels por lado. A exportação usa os originais e suporta todas as folhas cadastradas, inclusive 61 × 250 cm. O limite de 60 megapixels pertence à entrada, não à folha gerada.
 
-Na versão instalada, atualizações verificadas são aplicadas ao encerrar normalmente. A versão portátil não instala atualizações automaticamente.
+A versão instalada consulta atualizações ao iniciar e a cada 30 minutos, baixa e verifica o instalador. Quando estiver pronto, o cabeçalho oferece **Atualizar e reiniciar**, que guarda uma cópia local do lote e reabre o programa com o trabalho recuperado. Sem conexão, a edição continua disponível. [Funcionamento das atualizações](../../../docs/updates.md). A edição portátil não instala atualizações automaticamente.
 
 [← Medidas Editor](../README.md)
 
-## Encerramento — próxima versão
+## Encerramento
 
 O botão de desligar e a opção Encerrar na bandeja finalizam o editor diretamente, sem confirmação. Uma operação em andamento é interrompida; resultados incompletos não são disponibilizados. Exporte ou salve seu trabalho antes de encerrar. Os originais e lotes já salvos são preservados. A aba poderá permanecer na tela de encerramento, mas o processo e o serviço local são finalizados.

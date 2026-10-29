@@ -1,5 +1,11 @@
-O **Polaroid Editor** agora faz parte do repositório **RedLab Editor**, mantendo instalação, versão e canal de atualização independentes do Bottons Editor.
+# Polaroid Editor 1.2.0
 
-As funcionalidades da versão 1.1.1 permanecem: prévias em pé, exportação horizontal a 300 DPI, conferência por F, filtros graduais, arraste proporcional e lotes `.polaroid` com abertura dos lotes antigos.
+Esta versão alinha o aplicativo à identidade da família RedLab Editor, com ícones consistentes, paleta própria e novo painel na bandeja.
 
-Salve o lote antes de encerrar. As instalações anteriores podem receber esta versão de transição pelo repositório antigo; depois dela, o aplicativo consulta seu canal próprio no RedLab Editor.
+- Painel da bandeja com ações de abrir e encerrar, navegação por teclado e ajuste à escala da tela.
+- Encerramento direto pelo cabeçalho ou pela bandeja, inclusive com fotos carregadas.
+- Verificação de atualizações ao iniciar e a cada 30 minutos; novas tentativas após 5 minutos quando necessário.
+- Botão **Atualizar e reiniciar** com cópia local do lote e recuperação dos originais, ajustes e seleção.
+- Interface revisada em telas estreitas, com toque, contraste e cores de interação da própria ferramenta.
+
+Salve seu lote ou exporte o trabalho antes desta primeira atualização a partir de uma versão anterior. A recuperação pelo novo botão passa a funcionar nas versões atuais. O encerramento comum não substitui salvar o lote.
