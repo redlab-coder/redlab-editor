@@ -47,3 +47,7 @@ As prévias usam imagens de até 1600 pixels por lado. A exportação usa os ori
 Na versão instalada, atualizações verificadas são aplicadas ao encerrar normalmente. A versão portátil não instala atualizações automaticamente.
 
 [← Medidas Editor](../README.md)
+
+## Encerramento — próxima versão
+
+O botão de desligar e a opção Encerrar na bandeja finalizam o editor diretamente, sem confirmação. Uma operação em andamento é interrompida; resultados incompletos não são disponibilizados. Exporte ou salve seu trabalho antes de encerrar. Os originais e lotes já salvos são preservados. A aba poderá permanecer na tela de encerramento, mas o processo e o serviço local são finalizados.

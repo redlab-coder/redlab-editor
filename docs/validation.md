@@ -34,3 +34,9 @@ Evidência: [integração aprovada](https://github.com/redlab-coder/redlab-edito
 Evidência de publicação: [Bottons Editor](https://github.com/redlab-coder/redlab-editor/actions/runs/39481393608) · [Polaroid Editor](https://github.com/redlab-coder/redlab-editor/actions/runs/39481393793).
 
 Os testes automatizados usam imagens sintéticas e cenários definidos; não cobrem todas as combinações possíveis de arquivos, drivers e computadores.
+
+## Etapa 1 — encerramento (29/10/2026, em desenvolvimento)
+
+Validação local com os três aplicativos em processos isolados no Windows, usando a bandeja real e a interface no Edge: fechar com fotos carregadas, sem diálogo; fechar com o cache deliberadamente ocupado; fechar durante uma exportação real de 61 × 250 cm no Medidas; verificar término do processo e indisponibilidade da porta local. O teste aciona o callback real do menu pela janela pertencente ao processo de teste. Não acessa instalações ou fotos do operador.
+
+Comando: `apps/medidas-editor/.venv/Scripts/python.exe scripts/check_shutdown.py`. Os workflows executam o mesmo teste por produto antes da compilação. Os testes da API, processamento e distribuição continuam obrigatórios. A publicação dos instaladores atualizados fica para a etapa de entrega prevista no plano; os canais públicos não foram alterados nesta etapa.

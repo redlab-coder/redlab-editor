@@ -14,7 +14,7 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote
 from PIL import UnidentifiedImageError, Image
 from engine import load_image, render_tile, compose_page, jpeg_bytes, template_info, TEMPLATES
-from desktop import SingleInstance, run_tray
+from desktop import SingleInstance, run_tray, clear_session
 from photo_store import PhotoRecord, PhotoCache
 from updater import Updater, installed_directory
 from version import VERSION, PORTABLE_NAMESPACE, INSTALLED_NAMESPACE, INSTALLED_MUTEX
@@ -34,7 +34,13 @@ class Handler(BaseHTTPRequestHandler):
         if not getattr(sys, 'frozen', False):
             super().log_message(format, *args)
 
+    def check_open(self):
+        if getattr(self.server, 'closing', threading.Event()).is_set():
+            raise ValueError('O editor está encerrando.')
+
     def reply(self, data, content_type='application/json', status=200, filename=None):
+        if content_type in ('image/jpeg', 'application/zip'):
+            self.check_open()
         self.send_response(status)
         self.send_header('Content-Type', content_type)
         self.send_header('Content-Length', str(len(data)))
@@ -80,6 +86,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_reply({'error': 'Acesso inválido.'}, 403)
         LAST_ACTIVE = time.monotonic()
         path = urlparse(self.path).path
+        if getattr(self.server, 'closing', threading.Event()).is_set():
+            return self.json_reply({'error': 'O editor está encerrando.'}, 503)
         try:
             length = int(self.headers.get('Content-Length', '0'))
             if length < 0 or length > (50 * 1024 * 1024 if path == '/api/upload' else 1024 * 1024):
@@ -152,6 +160,7 @@ class Handler(BaseHTTPRequestHandler):
                 def compose(records_for_page):
                     tiles = []
                     for record, edits in records_for_page:
+                        self.check_open()
                         with CACHE.lock:
                             source = CACHE.get(record, full=path == '/api/export')
                             tiles.append(render_tile(source, edits, template))
@@ -175,6 +184,7 @@ class Handler(BaseHTTPRequestHandler):
                         for start in range(0, len(items), capacity):
                             page = compose(records[start:start + capacity])
                             archive.writestr(f'BottonsEditor-{start // capacity + 1:02}.jpg', jpeg_bytes(page))
+                    self.check_open()
                     size = output.tell()
                     output.seek(0)
                     self.send_response(200)
@@ -245,15 +255,22 @@ def main():
         instance.publish(url, INSTANCE)
     stopped = threading.Event()
     shutdown_lock=threading.Lock()
+    server.closing = stopped
     tray = None
     def request_shutdown():
         with shutdown_lock:
             if stopped.is_set():
                 return
             stopped.set()
-        server.shutdown()
-        if tray:
-            tray.stop()
+        # The tray callback must return to the Windows message loop promptly.
+        # Both entry points share this idempotent, asynchronous shutdown path.
+        def stop_service():
+            try:
+                server.shutdown()
+            finally:
+                if tray:
+                    tray.stop()
+        threading.Thread(target=stop_service, daemon=True, name='RedLab-shutdown').start()
     server.request_shutdown = request_shutdown
     if sys.platform == 'win32' and not args.no_tray:
         tray = run_tray(url, request_shutdown, lambda: bool(IMAGES), updates)
@@ -282,9 +299,7 @@ def main():
             server.serve_forever()
     finally:
         server.server_close()
-        with LOCK:
-            IMAGES.clear()
-        CACHE.clear()
+        clear_session(IMAGES, LOCK, CACHE)
         if instance:
             instance.close()
         if updates:

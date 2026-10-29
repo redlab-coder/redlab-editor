@@ -140,12 +140,13 @@ class ExportManager:
         with self.lock:
             return any(job['state'] == 'running' for job in self.jobs.values())
 
-    def close(self):
+    def close(self, timeout=15):
         with self.lock:
             jobs = list(self.jobs.values())
             for job in jobs:
                 job['cancel'].set()
+        deadline = time.monotonic() + timeout
         for job in jobs:
-            job['thread'].join(timeout=15)
+            job['thread'].join(timeout=max(0, deadline-time.monotonic()))
             if not job['thread'].is_alive():
                 job['directory'].cleanup()

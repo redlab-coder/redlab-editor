@@ -15,7 +15,7 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote, quote
 from PIL import Image, UnidentifiedImageError
 from engine import render_tile, jpeg_bytes, normalized_edits, output_names, APERTURE, PAGE, PHOTO, RED_START
-from desktop import SingleInstance, run_tray
+from desktop import SingleInstance, run_tray, clear_session
 from photo_store import PhotoRecord, PhotoCache
 from projects import read_project, write_project, MAX_FILE, MAX_TOTAL, MAX_PHOTOS
 from orientation import suggest
@@ -26,6 +26,7 @@ ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).parent))
 TOKEN = secrets.token_urlsafe(24)
 INSTANCE = secrets.token_hex(16)
 IMAGES, JOBS = {}, {}
+CLOSING = threading.Event()
 LOCK = threading.RLock()
 CACHE = PhotoCache()
 LAST_ACTIVE = time.monotonic()
@@ -68,10 +69,14 @@ def start_export(records):
             archive = zipfile.ZipFile(job['path'], 'w', zipfile.ZIP_STORED) if len(records) > 1 else None
             try:
                 for index, (record, meta) in enumerate(records):
+                    if CLOSING.is_set():
+                        raise InterruptedError('Encerrando')
                     current_name = meta['name']
                     with CACHE.lock:
                         image = render_tile(CACHE.get(record, full=True), meta['edits'])
                         data = jpeg_bytes(image)
+                    if CLOSING.is_set():
+                        raise InterruptedError('Encerrando')
                     if archive:
                         archive.writestr(names[index], data)
                     else:
@@ -80,12 +85,15 @@ def start_export(records):
             finally:
                 if archive:
                     archive.close()
+            if CLOSING.is_set():
+                raise InterruptedError('Encerrando')
             job['state'] = 'ready'
         except Exception:
             job['error'] = f'Falha em {current_name}. Nenhum arquivo parcial foi disponibilizado; tente exportar novamente.'
-            job['state'] = 'failed'
+            job['state'] = 'cancelled' if CLOSING.is_set() else 'failed'
             job['path'].unlink(missing_ok=True)
-    threading.Thread(target=work, daemon=True, name='PolaroidEditor-export').start()
+    job['thread'] = threading.Thread(target=work, daemon=True, name='PolaroidEditor-export')
+    job['thread'].start()
     return job_id
 
 
@@ -151,6 +159,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_reply({'error': 'Acesso inválido.'}, 403)
         LAST_ACTIVE = time.monotonic()
         path = urlparse(self.path).path
+        if getattr(self.server, 'closing', threading.Event()).is_set():
+            return self.json_reply({'error': 'O editor está encerrando.'}, 503)
         try:
             length = int(self.headers.get('Content-Length', '0'))
             limit = MAX_TOTAL + 2 * 1024**2 if path == '/api/project/open' else MAX_FILE if path == '/api/upload' else 1024**2
@@ -307,8 +317,10 @@ def main():
     url = f'http://127.0.0.1:{server.server_port}'
     if instance:
         instance.publish(url, INSTANCE)
-    stopped = threading.Event()
+    CLOSING.clear()
+    stopped = CLOSING
     shutdown_lock = threading.Lock()
+    server.closing = stopped
     diagnostic = None
     if os.environ.get('POLAROID_EDITOR_TEST_TRACE'):
         import faulthandler
@@ -322,9 +334,15 @@ def main():
             stopped.set()
         if diagnostic:
             faulthandler.dump_traceback_later(8, file=diagnostic)
-        server.shutdown()
-        if tray:
-            tray.stop()
+        # The tray callback must return to the Windows message loop promptly.
+        # Both entry points share this idempotent, asynchronous shutdown path.
+        def stop_service():
+            try:
+                server.shutdown()
+            finally:
+                if tray:
+                    tray.stop()
+        threading.Thread(target=stop_service, daemon=True, name='RedLab-shutdown').start()
     server.request_shutdown = request_shutdown
     if sys.platform == 'win32' and not args.no_tray:
         tray = run_tray(url, request_shutdown, lambda: bool(IMAGES), updates)
@@ -353,9 +371,14 @@ def main():
             server.serve_forever()
     finally:
         server.server_close()
-        with LOCK:
-            IMAGES.clear()
-        CACHE.clear()
+        deadline = time.monotonic() + 3
+        for job in list(JOBS.values()):
+            worker = job.get('thread')
+            if worker:
+                worker.join(timeout=max(0, deadline-time.monotonic()))
+            if not worker or not worker.is_alive():
+                job['directory'].cleanup()
+        clear_session(IMAGES, LOCK, CACHE)
         if instance:
             instance.close()
         if updates:

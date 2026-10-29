@@ -85,10 +85,22 @@ class SingleInstance:
             self.handle = None
 
 
-def confirm_shutdown():
-    if os.name != 'nt':
-        return True
-    return ctypes.windll.user32.MessageBoxW(None, 'Encerrar o Bottons Editor? Exporte suas folhas antes de continuar.\nAs fotos e ajustes desta sessão serão descartados.', 'Bottons Editor', 0x24 | 0x10000) == 6
+def clear_session(images, lock, cache, timeout=1):
+    """Do not wait indefinitely for an in-flight daemon image operation.
+
+    Busy buffers remain owned by their worker and are reclaimed on process exit.
+    Never close a Pillow image while another thread is using it.
+    """
+    if lock.acquire(timeout=timeout):
+        try:
+            images.clear()
+        finally:
+            lock.release()
+    if cache.lock.acquire(timeout=timeout):
+        try:
+            cache.clear()
+        finally:
+            cache.lock.release()
 
 
 def run_tray(url, request_shutdown, has_photos, updater=None):
@@ -96,8 +108,6 @@ def run_tray(url, request_shutdown, has_photos, updater=None):
     def open_app(icon, item):
         webbrowser.open(url)
     def quit_app(icon, item):
-        if has_photos() and not confirm_shutdown():
-            return
         request_shutdown()
     items = [
         pystray.MenuItem('Abrir Bottons Editor', open_app, default=True),

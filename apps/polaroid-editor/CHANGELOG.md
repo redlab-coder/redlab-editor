@@ -1,5 +1,11 @@
 # Histórico
 
+## Em desenvolvimento — encerramento
+
+- Encerramento direto pela interface e bandeja, inclusive com fotos carregadas.
+- Limpeza com espera limitada para operações de imagem e cancelamento de tarefas ao sair.
+- Validação em processos Windows isolados com a bandeja real e o navegador.
+
 ## 1.1.2 — 2026-10-20
 
 - Aplicativo integrado ao RedLab Editor, com histórico preservado e canal de atualização exclusivo.

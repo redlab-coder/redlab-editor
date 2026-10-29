@@ -19,7 +19,7 @@ from engine import FORMATS, layout, normalized_settings, proportional_size, cm_t
 from photo_store import PhotoRecord, PhotoCache, MAX_FILE, MAX_PHOTOS, MAX_TOTAL
 from projects import read_project, write_project
 from jobs import ExportManager
-from desktop import SingleInstance, run_tray
+from desktop import SingleInstance, run_tray, clear_session
 from updater import Updater, installed_directory
 from version import VERSION, PORTABLE_NAMESPACE, INSTALLED_NAMESPACE, INSTALLED_MUTEX
 
@@ -135,6 +135,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_reply({'error':'Acesso inválido.'}, 403)
         LAST_ACTIVE = time.monotonic()
         path = urlparse(self.path).path
+        if getattr(self.server, 'closing', threading.Event()).is_set():
+            return self.json_reply({'error': 'O editor está encerrando.'}, 503)
         try:
             length = int(self.headers.get('Content-Length', '0'))
             limit = MAX_TOTAL+2*1024**2 if path == '/api/project/open' else MAX_FILE if path == '/api/upload' else 1024**2
@@ -184,8 +186,6 @@ class Handler(BaseHTTPRequestHandler):
                 updater = getattr(self.server, 'updater', None)
                 return self.json_reply(dict(version=VERSION, update=updater.snapshot() if updater else {'state':'disabled'}))
             if path == '/api/quit':
-                if EXPORTS.running():
-                    raise ValueError('Cancele ou aguarde a exportação antes de encerrar.')
                 self.json_reply({'ok':True})
                 threading.Thread(target=getattr(self.server, 'request_shutdown', self.server.shutdown), daemon=True).start()
                 return
@@ -300,6 +300,7 @@ def main():
         instance.publish(url, INSTANCE)
     stopped = threading.Event()
     shutdown_lock = threading.Lock()
+    server.closing = stopped
     diagnostic = None
     if os.environ.get('MEDIDAS_EDITOR_TEST_TRACE'):
         import faulthandler
@@ -313,9 +314,15 @@ def main():
             stopped.set()
         if diagnostic:
             faulthandler.dump_traceback_later(8, file=diagnostic)
-        server.shutdown()
-        if tray:
-            tray.stop()
+        # The tray callback must return to the Windows message loop promptly.
+        # Both entry points share this idempotent, asynchronous shutdown path.
+        def stop_service():
+            try:
+                server.shutdown()
+            finally:
+                if tray:
+                    tray.stop()
+        threading.Thread(target=stop_service, daemon=True, name='RedLab-shutdown').start()
     server.request_shutdown = request_shutdown
     if sys.platform == 'win32' and not args.no_tray:
         tray = run_tray(url, request_shutdown, lambda: bool(IMAGES), updates)
@@ -344,10 +351,8 @@ def main():
             server.serve_forever()
     finally:
         server.server_close()
-        with LOCK:
-            IMAGES.clear()
-        EXPORTS.close()
-        CACHE.clear()
+        EXPORTS.close(timeout=3)
+        clear_session(IMAGES, LOCK, CACHE)
         if instance:
             instance.close()
         if updates:
