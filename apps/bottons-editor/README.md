@@ -38,3 +38,7 @@ Imprima em **tamanho real / 100%**. Exporte suas folhas antes de encerrar o apli
 [Documentação](docs/README.md) · [Gabaritos](docs/templates.md) · [Desenvolvimento](docs/development.md) · [Histórico](CHANGELOG.md) · [Contribuir](CONTRIBUTING.md)
 
 [← Todas as ferramentas RedLab](../../README.md)
+
+## Próxima versão em desenvolvimento
+
+Modelos individuais por imagem, folhas com modelos diferentes quando houver encaixe seguro e arquivos de lote `.bottons` para continuar o trabalho em outra sessão. As medidas de corte e sangria são preservadas. Consulte [gabaritos e montagem](docs/templates.md) e [guia de uso](docs/usage.md). A publicação dos novos instaladores ocorrerá após concluir as etapas de revisão da família RedLab Editor.

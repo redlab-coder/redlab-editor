@@ -40,3 +40,9 @@ Os testes automatizados usam imagens sintéticas e cenários definidos; não cob
 Validação local com os três aplicativos em processos isolados no Windows, usando a bandeja real e a interface no Edge: fechar com fotos carregadas, sem diálogo; fechar com o cache deliberadamente ocupado; fechar durante uma exportação real de 61 × 250 cm no Medidas; verificar término do processo e indisponibilidade da porta local. O teste aciona o callback real do menu pela janela pertencente ao processo de teste. Não acessa instalações ou fotos do operador.
 
 Comando: `apps/medidas-editor/.venv/Scripts/python.exe scripts/check_shutdown.py`. Os workflows executam o mesmo teste por produto antes da compilação. Os testes da API, processamento e distribuição continuam obrigatórios. A publicação dos instaladores atualizados fica para a etapa de entrega prevista no plano; os canais públicos não foram alterados nesta etapa.
+
+## Etapa 2 — Bottons por imagem e lote (em desenvolvimento)
+
+40 testes locais do Bottons aprovados: inclui planejamento físico, posições antigas, todas as combinações dos quatro modelos até cinco imagens, lotes aleatórios de 100 itens, colisões, limites, modelo e ajustes por foto, arquivos de lote inválidos e recuperação dos originais. O caso de um quadrado e dois P gera uma única folha de 1795 × 1205 pixels a 300 DPI.
+
+No navegador, a exportação antes e depois de salvar/reabrir `.bottons` produziu JPEGs idênticos. O download da folha ampliada também foi idêntico ao da exportação completa de uma folha mista. Foram verificados modelo individual, preservação de zoom, sessão legada com modelo global, falha de abertura sem substituir o lote, troca entre abas e telas de 320 a 1440 pixels. O workflow exige ainda compilação, executável e instalador no Windows antes da integração. Versões e canais públicos permanecem preservados até a etapa final de publicação.

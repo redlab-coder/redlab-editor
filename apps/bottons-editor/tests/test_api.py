@@ -130,5 +130,33 @@ class ApiTests(unittest.TestCase):
                 archive=zipfile.ZipFile(io.BytesIO(response.read()))
                 self.assertEqual(len(archive.namelist()),2)
 
+    def test_mixed_sheet_and_project_roundtrip_use_identical_composition(self):
+        items=[]
+        for key,color in [('square','red'),('round_p','green'),('round_p','blue')]:
+            stream=io.BytesIO();Image.new('RGB',(800,800),color).save(stream,'PNG')
+            with self.request('upload',stream.getvalue(),True) as response:photo=json.load(response)
+            items.append(dict(id=photo['id'],template=key,edits={}))
+        with self.request('layout',dict(items=items)) as response:plan=json.load(response)['pages']
+        self.assertEqual(len(plan),1)
+        with self.request('export',dict(items=items)) as response:
+            image=Image.open(io.BytesIO(response.read()));image.load()
+            self.assertEqual(image.size,(1795,1205));self.assertEqual(image.info['dpi'],(300,300))
+            colors=[(255,0,0),(0,128,0),(0,0,255)]
+            from engine import template_info
+            for index,(x,y) in zip(plan[0]['indices'],plan[0]['positions']):
+                size=template_info(items[index]['template'])['cut_px'];actual=image.getpixel((x+size//2,y+size//2))
+                self.assertTrue(all(abs(a-b)<6 for a,b in zip(actual,colors[index])))
+        with self.request('project/save',dict(items=items)) as response:saved=response.read()
+        # A malformed project must leave every current image available.
+        with self.assertRaises(urllib.error.HTTPError) as error:self.request('project/open',b'broken',True)
+        error.exception.close()
+        with self.request('layout',dict(items=items)) as response:self.assertEqual(json.load(response)['pages'],plan)
+        with self.request('export',dict(items=items)) as response:before=response.read()
+        with self.request('project/open',saved,True) as response:restored=json.load(response)['photos']
+        self.assertEqual([p['template'] for p in restored],['square','round_p','round_p'])
+        with self.request('export',dict(items=restored)) as response:self.assertEqual(response.read(),before)
+        for photo in restored:
+            with self.request('delete',dict(id=photo['id'])):pass
+
 
 if __name__ == '__main__':unittest.main()

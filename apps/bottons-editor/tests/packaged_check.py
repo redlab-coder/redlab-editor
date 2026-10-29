@@ -41,7 +41,7 @@ with tempfile.TemporaryDirectory(prefix='BottonsEditor-packaged-test-') as tempo
         second=subprocess.Popen([str(executable),'--no-browser','--no-updates'],env=env,creationflags=flags)
         assert second.wait(timeout=25)==0
         assert json.loads(state_path.read_text())['instance']==state['instance']
-        for script in ('browser_check.py','round_browser_check.py','refinement_browser_check.py','sheet_navigation_browser_check.py','header_status_browser_check.py','general_browser_check.py'):
+        for script in ('browser_check.py','round_browser_check.py','refinement_browser_check.py','sheet_navigation_browser_check.py','header_status_browser_check.py','general_browser_check.py','mixed_browser_check.py'):
             subprocess.run([sys.executable,str(ROOT/'tests'/script),state['url']],check=True)
         print(json.dumps({'portable':'OK','tray_lifecycle':'OK','single_instance':'OK'}))
     finally:
