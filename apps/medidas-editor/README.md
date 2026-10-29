@@ -6,6 +6,15 @@
 
 ![Interface atual do Medidas Editor com artes de demonstração](docs/images/workspace.png)
 
+<details>
+<summary>Prévia ampliada e tela estreita</summary>
+
+![Prévia ampliada](docs/images/sheet.png)
+
+[Ver interface em tela estreita](docs/images/mobile.png)
+
+</details>
+
 ## Na medida certa
 
 1. Adicione as fotos e informe largura e altura em centímetros.

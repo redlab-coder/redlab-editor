@@ -6,6 +6,15 @@
 
 ![Interface atual do Bottons Editor com artes de demonstração](docs/images/workspace.png)
 
+<details>
+<summary>Prévia ampliada e tela estreita</summary>
+
+![Prévia ampliada](docs/images/sheet.png)
+
+[Ver interface em tela estreita](docs/images/mobile.png)
+
+</details>
+
 ## Monte suas folhas
 
 1. Adicione as imagens e escolha o modelo de cada uma.
