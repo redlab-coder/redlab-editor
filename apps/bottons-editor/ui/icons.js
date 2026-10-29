@@ -2,6 +2,8 @@
 // Local vector family: crop corners, nested cuts and consistent rounded strokes.
 const BottonsEditorIcons=(()=>{
   const paths={
+    save:'<path d="M5 3h12l4 4v14H3V3h2zm2 0v6h10V3M7 21v-8h10v8"/>',
+    folder:'<path d="M3 7h7l2 2h9v11H3zM3 7V4h7l2 3"/>',
     'clear-all':'<rect x="6" y="6" width="15" height="15" rx="3"/><path d="M16 3H6a3 3 0 0 0-3 3v10m7-6 7 7m-7 0 7-7"/>',
     update:'<path d="M4.6 8a8 8 0 1 1-.3 7M4 3v5h5m3 0v8m-3-3 3 3 3-3"/>',
     brand:'<path d="M3 8V4a1 1 0 0 1 1-1h4m8 0h4a1 1 0 0 1 1 1v4m0 8v4a1 1 0 0 1-1 1h-4m-8 0H4a1 1 0 0 1-1-1v-4"/><rect x="6" y="6" width="12" height="12" rx="3"/><circle cx="12" cy="12" r="3.4"/>',

@@ -13,7 +13,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, unquote
 from PIL import UnidentifiedImageError, Image
-from engine import load_image, render_tile, compose_page, jpeg_bytes, template_info, TEMPLATES
+from engine import render_tile, jpeg_bytes, template_info, TEMPLATES
+from layout import plan_pages, compose_sheet
+from projects import read_project, write_project, normalized_edits, MAX_FILE, MAX_TOTAL
 from desktop import SingleInstance, run_tray, clear_session
 from photo_store import PhotoRecord, PhotoCache
 from updater import Updater, installed_directory
@@ -90,8 +92,28 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_reply({'error': 'O editor está encerrando.'}, 503)
         try:
             length = int(self.headers.get('Content-Length', '0'))
-            if length < 0 or length > (50 * 1024 * 1024 if path == '/api/upload' else 1024 * 1024):
-                raise ValueError('O arquivo excede 50 MB ou a solicitação é muito grande.')
+            limit = MAX_TOTAL+2*1024**2 if path=='/api/project/open' else MAX_FILE if path=='/api/upload' else 1024**2
+            if length < 0 or length > limit:
+                raise ValueError('O arquivo ou a solicitação excede o limite permitido.')
+            if path == '/api/project/open':
+                with tempfile.SpooledTemporaryFile(max_size=8*1024**2) as stream:
+                    remaining=length
+                    while remaining:
+                        chunk=self.rfile.read(min(remaining,256*1024))
+                        if not chunk:raise ValueError('O envio do lote foi interrompido.')
+                        stream.write(chunk);remaining-=len(chunk)
+                    stream.seek(0)
+                    with CACHE.lock:
+                        staged=read_project(stream,PhotoRecord)
+                        replacement,response={},[]
+                        for record,meta in staged:
+                            id_=secrets.token_hex(12);replacement[id_]=dict(record=record,name=meta['name'])
+                            response.append(dict(id=id_,width=record.width,height=record.height,**meta))
+                        self.check_open()
+                        with LOCK:
+                            IMAGES.clear();IMAGES.update(replacement)
+                        CACHE.clear()
+                return self.json_reply(dict(photos=response))
             body = self.rfile.read(length)
             if path == '/api/upload':
                 with CACHE.lock:
@@ -102,8 +124,9 @@ class Handler(BaseHTTPRequestHandler):
                     with LOCK:
                         self.check_capacity(length)
                         id_ = secrets.token_hex(12)
-                        IMAGES[id_] = {'record': record}
-                return self.json_reply({'id': id_, 'width': record.width, 'height': record.height, 'name': unquote(self.headers.get('X-Filename', 'Foto'))})
+                        name=unquote(self.headers.get('X-Filename','Foto'))[:512] or 'Foto'
+                        IMAGES[id_] = {'record': record,'name':name}
+                return self.json_reply({'id': id_, 'width': record.width, 'height': record.height, 'name': name})
             payload = json.loads(body or b'{}')
             if not isinstance(payload, dict):
                 raise ValueError('Solicitação inválida.')
@@ -147,60 +170,57 @@ class Handler(BaseHTTPRequestHandler):
             if path == '/api/source':
                 record = self.record(payload['id'])
                 return self.reply(record.live.read_bytes(), 'image/jpeg')
-            if path in ('/api/sheet', '/api/export'):
-                items = payload['items']
-                template = payload.get('template', 'square')
-                capacity = template_info(template)['capacity']
-                if not isinstance(items, list) or not 1 <= len(items) <= 100:
-                    raise ValueError('Selecione entre 1 e 100 imagens.')
-                # Keep original references for the entire operation, even if
-                # another tab removes a photo while a large export is running.
+            if path == '/api/layout':
+                return self.json_reply(dict(pages=plan_pages(payload.get('items'),payload.get('template','square'))))
+            if path in ('/api/sheet', '/api/export', '/api/project/save'):
+                items=payload['items'];default=payload.get('template','square')
+                plans=plan_pages(items,default)
                 with LOCK:
-                    records = [(IMAGES[item['id']]['record'], item.get('edits', {})) for item in items]
-                def compose(records_for_page):
-                    tiles = []
-                    for record, edits in records_for_page:
-                        self.check_open()
-                        with CACHE.lock:
-                            source = CACHE.get(record, full=path == '/api/export')
-                            tiles.append(render_tile(source, edits, template))
-                            del source
-                    return compose_page(tiles, template)
+                    records=[(IMAGES[item['id']]['record'],dict(name=IMAGES[item['id']].get('name','Foto'),
+                             edits=normalized_edits(item.get('edits',{})),template=item.get('template',default))) for item in items]
+                if path == '/api/project/save':
+                    with tempfile.SpooledTemporaryFile(max_size=8*1024**2) as output:
+                        write_project(output,records)
+                        self.send_stream(output,'Meu lote.bottons','application/zip')
+                    return
+                def compose(plan):
+                    tiles=[]
+                    try:
+                        for index in plan['indices']:
+                            self.check_open();record,meta=records[index]
+                            with CACHE.lock:
+                                tiles.append(render_tile(CACHE.get(record,full=path=='/api/export'),meta['edits'],meta['template']))
+                        return compose_sheet(tiles,plan['positions'])
+                    finally:
+                        for tile in tiles:tile.close()
                 if path == '/api/sheet':
-                    if len(items) > capacity:
-                        raise ValueError('A prévia excede a capacidade deste gabarito.')
-                    page = compose(records)
-                    page.thumbnail((1000, 1000), Image.Resampling.LANCZOS)
-                    output = io.BytesIO()
-                    page.save(output, 'PNG')
-                    return self.reply(output.getvalue(), 'image/png')
-                if len(items) <= capacity:
-                    page = compose(records)
-                    return self.reply(jpeg_bytes(page), 'image/jpeg', filename='BottonsEditor-01.jpg')
-                # Large ZIPs spill to disk and are sent in chunks instead of
-                # duplicating the entire archive in server memory.
-                with tempfile.SpooledTemporaryFile(max_size=8 * 1024**2) as output:
-                    with zipfile.ZipFile(output, 'w', zipfile.ZIP_STORED) as archive:
-                        for start in range(0, len(items), capacity):
-                            page = compose(records[start:start + capacity])
-                            archive.writestr(f'BottonsEditor-{start // capacity + 1:02}.jpg', jpeg_bytes(page))
-                    self.check_open()
-                    size = output.tell()
-                    output.seek(0)
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/zip')
-                    self.send_header('Content-Length', str(size))
-                    self.send_header('Content-Disposition', 'attachment; filename="BottonsEditor-folhas.zip"')
-                    self.send_header('Cache-Control', 'no-store')
-                    self.send_header('X-Content-Type-Options', 'nosniff')
-                    self.end_headers()
-                    while chunk := output.read(256 * 1024):
-                        self.wfile.write(chunk)
+                    if len(plans)!=1:raise ValueError('A prévia excede a capacidade da folha.')
+                    with compose(plans[0]) as page:
+                        page.thumbnail((1000,1000),Image.Resampling.LANCZOS)
+                        output=io.BytesIO();page.save(output,'PNG')
+                    return self.reply(output.getvalue(),'image/png')
+                if len(plans)==1:
+                    with compose(plans[0]) as page:data=jpeg_bytes(page)
+                    return self.reply(data,'image/jpeg',filename='BottonsEditor-01.jpg')
+                with tempfile.SpooledTemporaryFile(max_size=8*1024**2) as output:
+                    with zipfile.ZipFile(output,'w',zipfile.ZIP_STORED) as archive:
+                        for index,plan in enumerate(plans):
+                            with compose(plan) as page:archive.writestr(f'BottonsEditor-{index+1:02}.jpg',jpeg_bytes(page))
+                    self.send_stream(output,'BottonsEditor-folhas.zip','application/zip')
                 return
             self.json_reply({'error': 'Não encontrado.'}, 404)
         except (ValueError, KeyError, TypeError, AttributeError, OverflowError, UnidentifiedImageError, OSError, Image.DecompressionBombError) as error:
             message = str(error) if isinstance(error, ValueError) else 'Não foi possível processar a imagem ou a solicitação. Use JPG, PNG, WebP, BMP ou TIFF.'
             self.json_reply({'error': message}, 400)
+
+    def send_stream(self, stream, filename, content_type):
+        self.check_open();size=stream.tell();stream.seek(0)
+        self.send_response(200)
+        for key,value in [('Content-Type',content_type),('Content-Length',str(size)),
+                          ('Content-Disposition',f'attachment; filename="{filename}"'),
+                          ('Cache-Control','no-store'),('X-Content-Type-Options','nosniff')]:self.send_header(key,value)
+        self.end_headers()
+        while chunk:=stream.read(256*1024):self.wfile.write(chunk)
 
     @staticmethod
     def check_capacity(length):

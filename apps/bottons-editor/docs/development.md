@@ -74,3 +74,9 @@ Os testes adicionais verificam a área ampliada de importação, filtros graduai
 O serviço escuta somente em 127.0.0.1, usa porta livre automaticamente e valida Host, Origin e token da sessão. Um mutex do Windows impede instâncias duplicadas; `%LOCALAPPDATA%/BottonsEditor-Installed/runtime.json` (instalada) ou `%LOCALAPPDATA%/BottonsEditor-Portable/runtime.json` (portátil) guarda somente a URL, PID e identificador de execução para localizar a instância existente, e é removido ao encerrar. Não há telemetria, banco de dados ou envio de fotos à nuvem. A versão instalada consulta somente os arquivos de atualização do repositório oficial no GitHub, sem credenciais embutidas.
 
 [← Documentação](README.md) · [Bottons Editor](../README.md)
+
+## Modelos individuais e lotes (etapa 2)
+
+`layout.py` é a fonte única de posicionamento: mantém `engine.page_positions` para lotes uniformes e usa MaxRects conservador para lotes mistos, com cortes completos, 2 mm entre limites e 2 mm na borda. Não calcula posições no navegador. `projects.py` valida o contêiner `.bottons`, copiando os originais e guardando ajustes e modelo por imagem. O motor `engine.py` aprovado foi preservado.
+
+Os testes verificam todas as combinações dos quatro modelos até cinco imagens, lotes aleatórios de 100 imagens, limites e ausência de colisões, equivalência do download isolado de uma folha e posições antigas para quantidades de 1 a 100. `mixed_browser_check.py` cobre edição individual, download em qualidade final, lote salvo/restaurado, migração da sessão antiga, abas e telas de 320 a 1440 pixels.

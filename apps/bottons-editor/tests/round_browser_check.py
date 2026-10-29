@@ -30,7 +30,10 @@ with sync_playwright() as p:
     page.wait_for_function("document.querySelector('#count').textContent==='7' && !document.querySelector('#export').disabled")
     models=[('square',827,4),('round_g',833,4),('round_m',650,4),('round_p',531,2)]
     for key,size,sheets in models:
-        page.locator(f'[data-template="{key}"]').click()
+        for index in range(7):
+            page.get_by_role('button',name=f'Editar Round-{index+1}.png',exact=True).click()
+            page.locator(f'[data-template="{key}"]').click()
+        page.get_by_role('button',name='Editar Round-1.png',exact=True).click()
         page.wait_for_function("([size,sheets])=>document.querySelector('#tile-image').width===size && document.querySelectorAll('.sheet-card img').length===sheets && [...document.querySelectorAll('.sheet-card img')].every(i=>i.complete&&i.naturalWidth>0)",arg=[size,sheets])
         page.wait_for_timeout(700)
         expected_badge={'square':'7 × 7 cm','round_g':'Ø 7,05 cm','round_m':'Ø 5,5 cm','round_p':'Ø 4,5 cm'}[key]

@@ -1,5 +1,13 @@
 # Histórico
 
+## Em desenvolvimento — modelos individuais e lotes
+
+- Modelo por foto, com preservação de enquadramento e filtros.
+- Folhas mistas com cortes completos, espaçamentos seguros e planejamento único para prévia e produção.
+- Disposição original mantida nos lotes com um único modelo.
+- Abrir/salvar `.bottons` com originais íntegros, modelos e ajustes individuais.
+- Migração da sessão antiga, que usava modelo global, e cabeçalho responsivo com ações de lote.
+
 ## Em desenvolvimento — encerramento
 
 - Encerramento direto pela interface e bandeja, inclusive com fotos carregadas.

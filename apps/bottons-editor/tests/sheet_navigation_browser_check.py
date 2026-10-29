@@ -66,7 +66,9 @@ with sync_playwright() as p:
     assert image.getpixel((450,600))[2]>image.getpixel((450,600))[0]+100
     assert image.getpixel((1300,600))[0]>200
     page.keyboard.press('Escape')
-    page.get_by_role('button',name='Button Redondo P',exact=True).click()
+    for index in range(7):
+        page.get_by_role('button',name=f'Editar Foto-{index+1}.png',exact=True).click()
+        page.get_by_role('button',name='Button Redondo P',exact=True).click()
     page.wait_for_function("document.querySelectorAll('.sheet-card img').length===2&&document.querySelector('#tile-image').width===531")
     page.wait_for_timeout(850)
     page.get_by_role('button',name='Ampliar folha 2',exact=True).click()

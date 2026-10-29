@@ -1,10 +1,10 @@
 # Gabaritos e impressão
 
-Escolha o modelo nos quatro botões acima do editor. O selecionado fica verde. O modelo escolhido se aplica a todas as fotos do lote; as folhas não misturam tamanhos. Ao trocar o modelo, o zoom, o enquadramento e os ajustes atuais são reaproveitados, e a prévia é recalculada.
+Selecione uma foto e escolha seu modelo nos quatro botões acima do editor. O selecionado fica verde. A mudança afeta somente essa foto; zoom, enquadramento e filtros são preservados. Novas fotos usam a última escolha como modelo inicial. Ao selecionar outra foto, seus próprios modelo e ajustes são recuperados.
 
 Todas as medidas abaixo são em centímetros; nos redondos, são diâmetros.
 
-| Modelo | Área visível | Corte total | Área segura | Por folha |
+| Modelo | Área visível | Corte total | Área segura | Por folha uniforme |
 |---|---|---|---|---:|
 | Button Quadrado | 5 × 5 | 7 × 7 | Foto central | 2 |
 | Button Redondo G | Ø 5,8 | Ø 7,05 | Ø 4,8 a 5 | 2 |
@@ -15,7 +15,11 @@ Nos redondos, o círculo externo é o corte total; o guia amarelo marca a área 
 
 O zoom e o arraste enquadram a área visível. Na sangria dos redondos (0,625 cm por lado no G, 0,55 cm no M e 0,65 cm no P), o programa usa a continuação da própria foto, refletindo as bordas da imagem original somente onde faltam pixels. No quadrado, permanece a extensão espelhada de 1 cm por lado.
 
-As folhas têm 15,2 × 10,2 cm, na horizontal. P usa até três colunas e duas linhas, com espaços iguais dentro de cada eixo. Nas folhas incompletas, cada linha fica centralizada; quando há somente uma linha, ela também é centralizada verticalmente. Uma foto fica centralizada nos dois eixos.
+As folhas têm 15,2 × 10,2 cm, na horizontal. Em lotes com um único modelo, a disposição aprovada permanece igual.  P usa até três colunas e duas linhas, com espaços iguais dentro de cada eixo. Nas folhas uniformes incompletas, cada linha fica centralizada; quando há somente uma linha, ela também é centralizada verticalmente. Uma foto fica centralizada nos dois eixos.
+
+Em lotes mistos, o planejador distribui primeiro os cortes maiores, com desempate pela ordem da lista. O corte completo (com sangria) é considerado; círculos usam seus quadrados delimitadores para uma separação conservadora. Folhas mistas mantêm pelo menos 2 mm entre esses limites e na borda externa. Nenhum gabarito é reduzido ou deformado; os itens restantes seguem para outras folhas. A ordem na lista é preservada no lote, mas a posição na folha pode mudar para aproveitar espaço. O algoritmo é determinístico e não promete o menor número matematicamente possível de folhas.
+
+Um quadrado (7 × 7 cm de corte) e dois P (Ø 4,5 cm de corte) cabem juntos em uma folha. Prévia, exportação completa e download de uma folha usam a mesma lógica de posicionamento.
 
 JPG único quando o lote cabe em uma folha; ZIP com JPGs quando precisa de mais folhas. Exemplos: 6 fotos P geram um JPG; 7 fotos P geram dois JPGs em ZIP. A seleção do modelo é recuperada com a sessão no mesmo navegador/perfil.
 
