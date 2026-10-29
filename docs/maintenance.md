@@ -19,3 +19,13 @@ Os clientes antigos consultam o `update.json` da release mais recente de seu rep
 O Bottons Editor mantém o AppId do Moldura para atualizar a instalação existente, remove o executável e os atalhos antigos e passa a usar sua nova identidade e canal. Uma instalação nova usa a pasta Bottons Editor. O Polaroid Editor preserva sua identidade instalada e troca somente a origem de suas atualizações.
 
 Os repositórios anteriores são históricos após essa transição; não devem continuar gerando releases independentes. Preserve seus commits, tags, downloads e a release de transição. O teste `scripts/check_migration.py` verifica a passagem do Moldura para Bottons Editor em uma conta Windows isolada.
+
+## Atualização com reinício — próxima versão
+
+A versão instalada verifica o canal ao iniciar e a cada 30 minutos; falhas de conexão ou download são tentadas novamente após 5 minutos. O download ocorre em segundo plano, com validação de produto, versão, origem, tamanho e SHA-256. O menu da bandeja não precisa oferecer uma verificação manual.
+
+Quando o instalador está verificado, a interface oferece **Atualizar e reiniciar**. Se houver importação, exportação ou manipulação da imagem em andamento, a ação aguarda sua conclusão. Antes de encerrar, o aplicativo grava uma cópia local dos originais, ajustes e estado da interface em `%LOCALAPPDATA%/<Aplicativo>/updates/recovery`. A escrita é atômica e uma falha mantém o editor aberto.
+
+O instalador aguarda o processo encerrar e reabre somente a ferramenta atualizada. A nova sessão recupera o lote, os modelos individuais, os recortes, a seleção e, no Medidas, os campos ainda não aplicados. A cópia permanece até a interface confirmar a recuperação. Se a instalação ou a reabertura falhar, ela continua disponível ao abrir o programa novamente; não há promessa de reversão automática de uma instalação interrompida. Uma falha na leitura informa onde a cópia foi preservada.
+
+A atualização ao encerrar normalmente continua disponível. O reinício com recuperação é solicitado pelo botão da interface; não é um salvamento geral de sessões ao fechar. A edição portátil e a execução isolada não instalam atualizações nem acessam cópias da instalação do operador. Os instaladores e canais públicos só serão atualizados na etapa final de entrega da revisão.

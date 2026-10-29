@@ -17,7 +17,7 @@ with sync_playwright() as p:
     browser=p.chromium.launch(channel='msedge',headless=True)
     context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True)
     page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
-    page.goto(URL);page.wait_for_function('editingAllowed&&!restoring')
+    page.goto(URL);page.wait_for_function('editingAllowed&&!bootRecovery&&!restoring')
     page.locator('#files').set_input_files(files)
     page.wait_for_function('photos.length===3&&!importing&&pagesCurrent()')
     page.locator('#zoom-number').fill('1.25');page.locator('#zoom-number').press('Enter')

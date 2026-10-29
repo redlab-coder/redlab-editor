@@ -16,6 +16,9 @@ import urllib.request
 
 from version import VERSION, REPOSITORY, PRODUCT_ID, RELEASE_PREFIX, UPDATE_URL
 
+CHECK_INTERVAL = 30 * 60
+RETRY_INTERVAL = 5 * 60
+
 MAX_DOWNLOAD = 150 * 1024**2
 LOG = logging.getLogger('polaroid-editor.updater')
 
@@ -59,6 +62,9 @@ class Updater:
         self.opener = opener
         self.lock = threading.Lock()
         self.stopped = threading.Event()
+        self.restart_no_browser = False
+        self.restart_requested = False
+        self._check_failed = False
         self.pending = None
         self._ui_state = {'state': 'idle', 'version': None}
         self.status = 'Atualizações automáticas ativadas'
@@ -99,13 +105,16 @@ class Updater:
         try:
             if self.stopped.is_set():
                 return
+            self._check_failed = False
             self.status = 'Verificando atualizações…'
-            request = urllib.request.Request(UPDATE_URL, headers={'User-Agent':f'PolaroidEditor/{self.current}'})
+            request = urllib.request.Request(UPDATE_URL, headers={'Cache-Control':'no-cache','User-Agent':f'PolaroidEditor/{self.current}'})
             with self.opener(request, timeout=20) as response:
                 raw = response.read(65537)
                 if len(raw) > 65536:
                     raise ValueError('Manifesto de atualização excede o tamanho permitido.')
                 manifest = validate_manifest(json.loads(raw))
+            if self.pending and version_tuple(self.pending['version']) > version_tuple(manifest['version']) and self.valid_download(self.pending):
+                manifest = self.pending
             if version_tuple(manifest['version']) <= version_tuple(self.current):
                 self.pending = None
                 self._ui_state = {'state': 'idle', 'version': None}
@@ -119,7 +128,7 @@ class Updater:
                 self._ui_state = {'state': 'downloading', 'version': candidate}
                 temporary = target.with_suffix('.part')
                 try:
-                    request = urllib.request.Request(manifest['url'], headers={'User-Agent':f'PolaroidEditor/{self.current}'})
+                    request = urllib.request.Request(manifest['url'], headers={'Cache-Control':'no-cache','User-Agent':f'PolaroidEditor/{self.current}'})
                     count, digest = 0, hashlib.sha256()
                     with self.opener(request, timeout=30) as response, temporary.open('wb') as stream:
                         while chunk := response.read(256 * 1024):
@@ -142,6 +151,7 @@ class Updater:
             self._ui_state = {'state': 'ready', 'version': candidate}
             self.status = 'Atualização pronta · será instalada ao encerrar'
         except (OSError, ValueError, TypeError) as error:
+            self._check_failed = True
             LOG.info('Atualização adiada: %s', type(error).__name__)
             self.status = 'Atualização pronta · será instalada ao encerrar' if self.pending else 'Sem conexão · tentaremos novamente depois'
             self._ui_state = ({'state': 'ready', 'version': self.pending['version']} if self.pending else
@@ -152,11 +162,11 @@ class Updater:
 
     def start(self):
         def watch():
-            if self.stopped.wait(15):
+            if self.stopped.wait(1):
                 return
             while not self.stopped.is_set():
                 self.check()
-                if self.stopped.wait(6 * 60 * 60):
+                if self.stopped.wait(RETRY_INTERVAL if self._check_failed else CHECK_INTERVAL):
                     return
         threading.Thread(target=watch, daemon=True, name='PolaroidEditor-updates').start()
 
@@ -171,6 +181,9 @@ class Updater:
             if not self.pending or not self.valid_download(self.pending):
                 return False
             args = [str(self.destination(self.pending)), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', f'/WAITPID={os.getpid()}', f'/DIR={self.directory}', f'/LOG={self.root / "install.log"}']
+            if self.restart_requested:
+                args.append('/RESTARTEDITOR=1')
+                if self.restart_no_browser:args.append('/RESTARTNOBROWSER=1')
             subprocess.Popen(args, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0), close_fds=True)
             return True
         except OSError:

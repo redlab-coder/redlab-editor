@@ -20,6 +20,7 @@ from photo_store import PhotoRecord, PhotoCache
 from projects import read_project, write_project, MAX_FILE, MAX_TOTAL, MAX_PHOTOS
 from orientation import suggest
 from updater import Updater, installed_directory
+from recovery import CheckpointStore, UpdateSession, UpdateBusy
 from version import VERSION, PORTABLE_NAMESPACE, INSTALLED_NAMESPACE, INSTALLED_MUTEX
 
 ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).parent))
@@ -142,7 +143,7 @@ class Handler(BaseHTTPRequestHandler):
             html = (ROOT / 'ui/index.html').read_text(encoding='utf-8')
             html = html.replace('__TOKEN__', TOKEN).replace('__VERSION__', VERSION)
             return self.reply(html.encode(), 'text/html; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/style.css'):
+        if path in ('/app.js', '/icons.js', '/update.js', '/style.css'):
             return self.reply((ROOT / 'ui' / path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image
@@ -151,7 +152,55 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(stream.getvalue(), 'image/x-icon')
         return self.json_reply({'error': 'Não encontrado.'}, 404)
 
+    def update_records(self,items):
+        if not isinstance(items,list) or len(items)>100:raise ValueError('Lote inválido.')
+        if not items:return []
+        return snapshot(items)
+
+    def update_api(self,path,data):
+        session=getattr(self.server,'update_session',None)
+        if not session:
+            return self.json_reply({} if path=='/api/update/recovery' else {'error':'Atualização indisponível.'},200 if path=='/api/update/recovery' else 400)
+        if path=='/api/update/recovery':
+            with session.load_lock:
+                if not session.loaded:
+                    try:
+                        recovered=session.store.load() if session.store else None
+                        if recovered:
+                            response=[];replacement={}
+                            for record,meta in recovered.pop('records'):
+                                identifier=secrets.token_hex(12)
+                                replacement[identifier]=dict(record=record,name=meta['name'])
+                                response.append(dict(id=identifier,width=record.width,height=record.height,content_box=record.content_box,**meta))
+                            with LOCK:
+                                IMAGES.clear();IMAGES.update(replacement)
+                            recovered['photos']=response;session.recovered=recovered
+                    except Exception:
+                        session.recovery_error='Não foi possível recuperar o lote automaticamente. A cópia foi preservada em: '+str(session.store.root)
+                    session.loaded=True
+            return self.json_reply(session.recovered or ({'error':session.recovery_error} if session.recovery_error else {}))
+        if path=='/api/update/ack':
+            if session.recovered and data.get('generation')==session.recovered['generation']:
+                session.store.acknowledge(data['generation']);session.recovered=None
+            return self.json_reply({'ok':True})
+        if path=='/api/update/apply':
+            session.apply(lambda:self.update_records(data.get('items')),data.get('ui',{}),busy=lambda:any(job['state']=='running' for job in JOBS.values()))
+            self.json_reply({'ok':True})
+            threading.Thread(target=self.server.request_shutdown,daemon=True).start()
+            return
+        return self.json_reply({'error':'Não encontrado.'},404)
+
     def do_POST(self):
+        session=getattr(self.server,'update_session',None);counted=False
+        try:
+            if session:counted=session.enter(urlparse(self.path).path)
+            return self.handle_POST()
+        except UpdateBusy as error:
+            return self.json_reply({'error':str(error)},409)
+        finally:
+            if counted:session.leave()
+
+    def handle_POST(self):
         global LAST_ACTIVE
         origin = self.headers.get('Origin')
         expected = f'http://127.0.0.1:{self.server.server_port}'
@@ -207,6 +256,8 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(body or b'{}')
             if not isinstance(data, dict):
                 raise ValueError('Solicitação inválida.')
+            if path.startswith('/api/update/'):
+                return self.update_api(path,data)
             if path == '/api/heartbeat':
                 updates = getattr(self.server, 'updater', None)
                 return self.json_reply({'version': VERSION, 'update': updates.snapshot() if updates else {'state': 'disabled'}})
@@ -269,6 +320,8 @@ class Handler(BaseHTTPRequestHandler):
                 image.save(stream, 'PNG')
                 return self.reply(stream.getvalue(), 'image/png')
             return self.json_reply({'error': 'Não encontrado.'}, 404)
+        except UpdateBusy as error:
+            return self.json_reply({'error':str(error)},409)
         except (ValueError, KeyError, TypeError, AttributeError, OverflowError, UnidentifiedImageError,
                 OSError, Image.DecompressionBombError, zipfile.BadZipFile) as error:
             message = str(error) if isinstance(error, ValueError) else 'Não foi possível processar o arquivo ou a solicitação.'
@@ -310,10 +363,14 @@ def main():
     if install_dir and not args.no_updates:
         try:
             updates = Updater(install_dir)
+            updates.restart_no_browser = args.no_browser
             updates.start()
         except OSError:
             pass  # An update failure must never prevent local editing.
     server.updater = updates
+    recovery_root=Path(os.environ.get('LOCALAPPDATA',Path.home()))/'PolaroidEditor'/'updates'/'recovery'
+    store=CheckpointStore(recovery_root,write_project,read_project,PhotoRecord,suffix='.polaroid') if install_dir else None
+    server.update_session=UpdateSession(updates,store)
     url = f'http://127.0.0.1:{server.server_port}'
     if instance:
         instance.publish(url, INSTANCE)

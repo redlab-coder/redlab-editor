@@ -22,7 +22,7 @@ with sync_playwright() as p:
     assert page.locator('.local').count()==0
     assert page.locator('#update-status').is_hidden()
     checked=[]
-    for phase,label in [('idle',None),('available','Atualização disponível'),('downloading','Baixando atualização'),('ready','Atualização disponível')]:
+    for phase,label in [('idle',None),('available','Atualização disponível'),('downloading','Baixando atualização'),('ready','Atualizar e reiniciar')]:
         state={'state':phase,'version':'1.0.2' if phase!='idle' else None}
         page.evaluate('refreshAppStatus()')
         assert page.locator('#update-status').is_visible()==(label is not None)
@@ -30,7 +30,7 @@ with sync_playwright() as p:
             assert page.locator('#update-label').inner_text()==label
             assert '1.0.2' in page.locator('#update-status').get_attribute('aria-label')
         checked.append(phase)
-    assert 'ao encerrar' in page.locator('#update-status').get_attribute('title')
+    assert 'Salva o lote' in page.locator('#update-status').get_attribute('title')
     page.screenshot(path=str(OUT/'header-ready-desktop.png'))
     data=io.BytesIO();Image.new('RGB',(500,500),'#729269').save(data,'PNG')
     page.locator('#files').set_input_files([{'name':'Demonstração.png','mimeType':'image/png','buffer':data.getvalue()}])

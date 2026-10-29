@@ -59,5 +59,6 @@ def read_project(stream, make_record):
                 staged.append((make_record(data), {'name': name, 'edits': edits,
                                                   'reviewed': bool(item.get('reviewed')), 'manual': bool(item.get('manual'))}))
         return staged
-    except (zipfile.BadZipFile, KeyError, TypeError, UnicodeError) as error:
+    except Exception as error:
+        for record,_ in staged:record._cleanup()
         raise ValueError('Não foi possível abrir este lote do Polaroid Editor.') from error
