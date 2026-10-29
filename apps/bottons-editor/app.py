@@ -73,7 +73,10 @@ class Handler(BaseHTTPRequestHandler):
             html = html.replace('__VERSION__', VERSION)
             html = html.replace('__TEMPLATES__', json.dumps({key: template_info(key) for key in TEMPLATES}, ensure_ascii=False))
             return self.reply(html.encode(), 'text/html; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/update.js', '/theme.css', '/family.css', '/style.css'):
+        if path == '/style.css':
+            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css'))
+            return self.reply(css,'text/css; charset=utf-8')
+        if path in ('/app.js', '/icons.js', '/update.js'):
             return self.reply((ROOT / 'ui' / path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image

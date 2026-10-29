@@ -120,7 +120,10 @@ class Handler(BaseHTTPRequestHandler):
             html = (ROOT/'ui/index.html').read_text(encoding='utf-8')
             html = html.replace('__TOKEN__', TOKEN).replace('__VERSION__', VERSION).replace('__FORMATS__', json.dumps(FORMATS, ensure_ascii=False))
             return self.reply(html.encode(), 'text/html; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/update.js', '/theme.css', '/family.css', '/style.css'):
+        if path == '/style.css':
+            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css'))
+            return self.reply(css,'text/css; charset=utf-8')
+        if path in ('/app.js', '/icons.js', '/update.js'):
             return self.reply((ROOT/'ui'/path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image

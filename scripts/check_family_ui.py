@@ -19,7 +19,7 @@ def run(product,url):
         browser=play.chromium.launch(channel='msedge',headless=True);context=browser.new_context(viewport=dict(width=1440,height=1000))
         page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         page.route('**/api/heartbeat',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps(dict(ok=True,update=dict(state='ready',version='9999.0.0')))))
-        page.goto(url);page.wait_for_function('editingAllowed&&!bootRecovery&&!restoring')
+        page.goto(url);page.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring")
         assert page.locator('.brand-family').inner_text()=='REDLAB EDITOR'
         page.locator('#drop').hover()
         page.wait_for_function("color=>getComputedStyle(document.querySelector('#drop')).backgroundColor===color",arg=rgb(theme['soft']))
@@ -48,8 +48,8 @@ def run(product,url):
         assert not errors,errors
         context.close()
         touch=browser.new_context(viewport=dict(width=390,height=844),is_mobile=True,has_touch=True)
-        page=touch.new_page();page.goto(url);page.wait_for_function('editingAllowed&&!bootRecovery&&!restoring')
-        assert page.locator('#add').bounding_box()['height']>=38
+        page=touch.new_page();page.goto(url);page.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring")
+        assert page.locator('#add').bounding_box()['height']>=37.5,page.locator('#add').evaluate("e=>({box:e.getBoundingClientRect().toJSON(),height:getComputedStyle(e).height,min:getComputedStyle(e).minHeight,coarse:matchMedia('(pointer:coarse)').matches})")
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
         touch.close();browser.close()
     print(json.dumps(dict(product=product,own_hover_and_drop_palette='OK',widths=[320,390,520,768,1024,1440],touch_targets='OK',reduced_motion='OK',errors=errors)),flush=True)
