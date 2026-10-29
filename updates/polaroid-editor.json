@@ -1,7 +1,7 @@
 {
   "product": "polaroid-editor",
-  "version": "1.2.0",
-  "url": "https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.0/PolaroidEditor-Setup-1.2.0.exe",
-  "sha256": "9c2848f7b43687769033ad9f9ce14f7b713422c9bbd5e2fc7f64e0fca231e3be",
-  "size": 78309025
+  "version": "1.2.1",
+  "url": "https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Setup-1.2.1.exe",
+  "sha256": "2ebbfac48208006a9b5a95a9de7adbb5870e2f4eb2be276bf063f958c064cf55",
+  "size": 78310715
 }
