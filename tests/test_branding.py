@@ -28,9 +28,12 @@ class BrandingTests(unittest.TestCase):
         accents=[]
         for product in (ROOT/'apps').glob('*-editor'):
             theme=json.loads((product/'ui/theme.json').read_text(encoding='utf-8'));accents.append(theme['accent'])
-            for foreground,background in ((theme['ink'],theme['header']),(theme['muted'],theme['header']),('#ffffff',theme['accent'])):
+            for foreground,background in [(theme[role],theme[background]) for role in ('ink','muted') for background in ('header','soft','bg','stage')]+[('#ffffff',theme['accent'])]:
                 low,high=sorted((luminance(foreground),luminance(background)))
                 self.assertGreaterEqual((high+.05)/(low+.05),4.5,(product.name,foreground,background))
+            for background in ('header','soft','bg','stage'):
+                low,high=sorted((luminance(theme['focus']),luminance(theme[background])))
+                self.assertGreaterEqual((high+.05)/(low+.05),3,(product.name,'focus',background))
         self.assertEqual(len(set(accents)),3)
 
     def test_popup_stays_inside_each_monitor_including_negative_coordinates(self):
