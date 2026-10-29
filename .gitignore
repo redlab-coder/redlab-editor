@@ -11,3 +11,5 @@ __pycache__/
 *.key
 *.pem
 artifacts/
+bundle/build/
+bundle/dist/

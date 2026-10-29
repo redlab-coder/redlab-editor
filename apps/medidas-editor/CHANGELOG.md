@@ -1,5 +1,12 @@
 # Alterações
 
+## 1.1.1 — 29/10/2026
+
+- Instalação individual ou pelo pacote completo RedLab Editor.
+- Atalho organizado na pasta RedLab Editor no menu Iniciar, inclusive após futuras atualizações.
+- Identidade instalada, projetos e canal de atualização preservados.
+
+
 ## 1.1.0 — 29/10/2026
 
 - Identidade da família, ícones consistentes e painel da bandeja.

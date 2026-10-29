@@ -2,15 +2,29 @@
 
 | Aplicativo | Pasta | Tag | Canal |
 | --- | --- | --- | --- |
-| Bottons Editor | `apps/bottons-editor` | `bottons-v1.2.0` | `updates/bottons-editor.json` |
-| Polaroid Editor | `apps/polaroid-editor` | `polaroid-v1.2.0` | `updates/polaroid-editor.json` |
-| Medidas Editor | `apps/medidas-editor` | `medidas-v1.1.0` | `updates/medidas-editor.json` |
+| Bottons Editor | `apps/bottons-editor` | `bottons-v1.2.1` | `updates/bottons-editor.json` |
+| Polaroid Editor | `apps/polaroid-editor` | `polaroid-v1.2.1` | `updates/polaroid-editor.json` |
+| Medidas Editor | `apps/medidas-editor` | `medidas-v1.1.1` | `updates/medidas-editor.json` |
 
 Cada produto mantém sua própria versão em `version.py`. Atualize também o changelog, as notas, os links de download e a versão padrão do instalador antes de criar uma tag. As tags têm prefixos distintos para impedir que uma atualização de um aplicativo seja oferecida ao outro.
 
 O workflow correspondente testa e compila no Windows antes da publicação. `scripts/publish.py` valida produto, tag, origem, tamanho e SHA-256; publica instalador, portátil, manifesto e checksums; confere os arquivos enviados; só então avança o canal desse produto. O canal não aceita regressão de versão nem troca do instalador de uma versão já publicada. O README aponta para releases explícitas, pois o conceito global de “latest” não representa vários produtos independentes.
 
 Se uma publicação falhar, examine o workflow e a release antes de retomar. Uma release pública deve permanecer imutável. Corrija o problema em uma nova versão quando os arquivos públicos precisarem mudar. O canal pode ser retomado com `update_feed` apenas usando o manifesto da release pública já verificada.
+
+## Pacote completo
+
+`bundle/package.json` fixa a versão do conjunto e a versão de cada editor incluído. O pacote 1.0.0 usa a tag `redlab-v1.0.0`. Ele não tem `update.json`, canal próprio, aplicativo residente ou desinstalador coletivo: distribui os três instaladores independentes. O Latest global passa a destacar o pacote, enquanto cada editor continua consultando seu canal explícito.
+
+1. Para uma nova composição, atualize a versão do pacote, seus produtos, notas e links. As versões fixadas podem ser diferentes das versões atuais do código; não é preciso republicar o pacote a cada atualização individual.
+2. O PR do pacote compila os editores do mesmo código e exercita o conjunto em Windows descartável. Para esse caminho, o código de cada produto deve corresponder à versão fixada.
+3. Publique as tags dos editores necessários e aguarde os três instaladores estáveis e seus canais.
+4. Envie a tag `redlab-v<versão>`. O workflow baixa as releases exatas, confere os quatro arquivos de cada uma, compila o pacote e repete a instalação real com esses binários públicos.
+5. Somente após os testes, `scripts/publish_bundle.py` publica o mesmo pacote aprovado, `contents.json` e `SHA256SUMS.txt`. Confere novamente os hashes e as origens dos componentes, sem escrever em `updates/`.
+
+Os testes do conjunto cobrem seleção parcial, pacote completo offline, execução das ferramentas reais, atalhos, instalações anteriores, versão mais recente preservada, editor aberto, falha individual e reparação/desinstalação independentes. Não execute os testes de instalação numa conta do operador. Os scripts recusam execução fora do runner Windows isolado.
+
+O pacote tem interface nativa do Inno Setup e usa os ícones e paletas existentes. `scripts/bundle_assets.py` regenera suas artes, sem nova dependência de execução. A [documentação de eventos do Inno Setup](https://jrsoftware.org/ishelp/topic_scriptevents.htm) define a checagem antes de instalar e a sinalização de instalação parcial.
 
 ## Transição dos repositórios anteriores
 

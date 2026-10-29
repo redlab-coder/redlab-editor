@@ -6,7 +6,7 @@
 - Fluxos de navegador: miniaturas da composição, ampliação, exportação pela prévia, download automático sem painel persistente, cancelamento sem janela de erro e falhas individuais em aviso específico.
 - Lote de 12 imagens: miniaturas fora da região visível não são renderizadas antecipadamente, uma requisição de composição por vez, reutilização ao conferir e invalidação após alterar a posição. Branco da composição conferido por pixel.
 - Recursos da galeria e da ampliação liberados ao fechar/remover. Projetos, revisão, recortes, dimensões do JPEG e telas de 320 a 1440 pixels cobertos pelos fluxos do produto.
-- Executável e instalador passam pelas verificações Windows do workflow antes de publicar `medidas-v1.1.0`. A geração dos arquivos de produção segue o mesmo motor da versão inicial.
+- Executável e instalador passam pelas verificações Windows do workflow antes de publicar `medidas-v1.1.1`. A geração dos arquivos de produção segue o mesmo motor da versão inicial.
 
 ## 1.0.0 — versão inicial
 

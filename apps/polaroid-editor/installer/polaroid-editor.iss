@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "1.2.0"
+  #define AppVersion "1.2.1"
 #endif
 [Setup]
 AppId={{F2777E7D-38D9-45D3-A932-F9E7F7BD5D71}
@@ -39,8 +39,11 @@ Name: "desktopicon"; Description: "Criar atalho na área de trabalho"; Flags: un
 Source: "..\dist\PolaroidEditor-Portable.exe"; DestDir: "{app}"; DestName: "PolaroidEditor.exe"; Flags: ignoreversion
 Source: "..\assets\installed.marker"; DestDir: "{app}"; Flags: ignoreversion
 
+[InstallDelete]
+Type: files; Name: "{userprograms}\Polaroid Editor.lnk"
+
 [Icons]
-Name: "{userprograms}\Polaroid Editor"; Filename: "{app}\PolaroidEditor.exe"
+Name: "{userprograms}\RedLab Editor\Polaroid Editor"; Filename: "{app}\PolaroidEditor.exe"
 Name: "{userdesktop}\Polaroid Editor"; Filename: "{app}\PolaroidEditor.exe"; Tasks: desktopicon
 
 [Run]
@@ -55,6 +58,8 @@ begin
   if ExpandConstant('{param:RESTARTNOBROWSER|0}') = '1' then
     Result := '--no-browser';
 end;
+
+#include "..\..\..\scripts\installer_version_guard.iss"
 
 function RestartEditorRequested(): Boolean;
 begin

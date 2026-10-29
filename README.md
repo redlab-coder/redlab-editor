@@ -1,12 +1,18 @@
 <p align="center"><img src="docs/images/banner.svg" alt="RedLab Editor — ferramentas para impressão" width="100%"></p>
 
-Três ferramentas para preparar imagens para impressão. Escolha a que atende ao seu trabalho; cada uma tem instalação e atualizações próprias.
+Três ferramentas para preparar imagens para impressão. Instale a família completa em um único download ou escolha seu editor.
+
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/redlab-v1.0.0/RedlabEditor-Setup-1.0.0.exe"><img src="docs/images/download-complete.svg" alt="Baixar pacote completo RedLab Editor para Windows" width="292" height="56"></a><br><sub>Windows 10 e 11 · 64 bits · Sem administrador · Instalação offline</sub></p>
+
+O pacote inclui **Bottons 1.2.1**, **Polaroid 1.2.1** e **Medidas 1.1.1**. Os três vêm selecionados; você pode escolher apenas os que precisa. As ferramentas ficam na pasta RedLab Editor do menu Iniciar e continuam recebendo atualizações individuais. [Instalação do pacote](docs/package.md).
+
+### Downloads individuais
 
 | Ferramenta | Para que serve | Windows 10 e 11 · 64 bits |
 | --- | --- | --- |
-| **Bottons Editor** | Modelos por imagem e montagem de folhas com bottons. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.0/BottonsEditor-Setup-1.2.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.0/BottonsEditor-Portable.exe) |
-| **Polaroid Editor** | Enquadramento, conferência e montagem de polaroids. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.0/PolaroidEditor-Setup-1.2.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.0/PolaroidEditor-Portable.exe) |
-| **Medidas Editor** | Fotos em medidas personalizadas na folha comercial compatível. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.0/MedidasEditor-Setup-1.1.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.0/MedidasEditor-Portable.exe) |
+| **Bottons Editor** | Modelos por imagem e montagem de folhas com bottons. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.1/BottonsEditor-Setup-1.2.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.1/BottonsEditor-Portable.exe) |
+| **Polaroid Editor** | Enquadramento, conferência e montagem de polaroids. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Setup-1.2.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Portable.exe) |
+| **Medidas Editor** | Fotos em medidas personalizadas na folha comercial compatível. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.1/MedidasEditor-Setup-1.1.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.1/MedidasEditor-Portable.exe) |
 
 A edição funciona localmente, sem conta. Os originais são preservados e as fotos não são enviadas à nuvem. O instalador é a opção recomendada para receber atualizações; a edição portátil funciona sem instalação e é atualizada manualmente.
 
@@ -38,7 +44,7 @@ Informe as medidas em centímetros e ajuste o recorte. A ferramenta escolhe a me
 
 ## Instalação e atualizações
 
-Execute o instalador da ferramenta desejada. A instalação é por usuário, sem administrador. O aplicativo abre no navegador padrão e fica disponível pela bandeja do Windows.
+Execute o pacote completo ou o instalador da ferramenta desejada. A instalação é por usuário, sem administrador. O aplicativo abre no navegador padrão e fica disponível pela bandeja do Windows.
 
 A versão instalada verifica atualizações ao iniciar e a cada 30 minutos. Quando o download estiver pronto, **Atualizar e reiniciar** guarda uma cópia local do lote, instala e reabre a ferramenta com o trabalho recuperado. A cópia permanece até a confirmação da recuperação. [Veja como funciona](docs/updates.md).
 

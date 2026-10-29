@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Medidas Editor — RedLab Editor" width="100%"></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.0/MedidasEditor-Setup-1.1.0.exe"><img src="docs/images/download.svg" alt="Baixar Medidas Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.1/MedidasEditor-Setup-1.1.1.exe"><img src="docs/images/download.svg" alt="Baixar Medidas Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.1.0">Versão 1.1.0 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.1.1">Versão 1.1.1 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
 
 ![Interface atual do Medidas Editor com artes de demonstração](docs/images/workspace.png)
 

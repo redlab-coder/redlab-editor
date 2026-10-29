@@ -25,3 +25,19 @@ O painel da bandeja usa Tkinter do Python, carregado sob demanda em uma única t
 `python scripts/check_family_ui.py <produto>` verifica cores de hover e arraste, seis larguras, toque e redução de movimento. `python scripts/check_tray_panel.py <produto>` exercita o callback real da bandeja em uma instância descartável, Tab, Escape, ações e escalas de 100% a 250%. O teste não procura nem controla as instalações do operador.
 
 Os banners são regenerados com `python scripts/docs_assets.py`; as capturas reais dos três editores com `python scripts/capture_release_docs.py`. Os scripts usam somente artes de demonstração e não acessam as instalações ou as fotos do operador.
+
+## Pacote completo Windows
+
+O distribuidor fica em `bundle/`. `package.json` fixa sua composição; `scripts/bundle.py` verifica os instaladores e gera as seções Inno com as identidades já declaradas por cada produto. `redlab-editor.iss` verifica versões e mutexes, valida todos os instaladores escolhidos antes de iniciar e executa-os sequencialmente. As ferramentas continuam sendo as únicas proprietárias dos arquivos, atalhos, registros e desinstaladores.
+
+Em uma conta de desenvolvimento, é possível compilar sem instalar nada:
+
+```powershell
+python scripts/bundle.py fetch
+./apps/bottons-editor/scripts/bootstrap_inno.ps1
+python scripts/bundle.py build
+```
+
+As versões fixadas precisam estar publicadas para `fetch`. Use uma pasta de entradas nova em uma nova tentativa (`--inputs <pasta>`). O workflow do PR obtém entradas compiladas do próprio código; a tag usa os instaladores públicos exatos. Não execute `check_bundle.py` ou `capture_bundle.py` na conta do operador: eles exigem o runner Windows descartável. A validação de interface captura somente a janela criada pelo próprio teste.
+
+O instalador suporta `/COMPONENTS=bottons_editor,polaroid_editor,medidas_editor` e `/TASKS=desktopicon`, além dos parâmetros padrão do Inno. Para implantação administrada e testes, `/INSTALLROOT=<pasta>` altera a base apenas das instalações novas; instalações registradas mantêm sua localização. `/LOGDIR=<pasta>` altera o destino dos registros e do resumo `result.ini`. Instalações parciais retornam 1; falhas de preparação usam o código padrão do Inno. O pacote não força o fechamento de editores nem reverte instalações já concluídas.
