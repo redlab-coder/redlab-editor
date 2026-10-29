@@ -26,6 +26,8 @@ Os testes do conjunto cobrem seleção parcial, pacote completo offline, execuç
 
 O pacote tem interface nativa do Inno Setup e usa os ícones e paletas existentes. `scripts/bundle_assets.py` regenera suas artes, sem nova dependência de execução. A [documentação de eventos do Inno Setup](https://jrsoftware.org/ishelp/topic_scriptevents.htm) define a checagem antes de instalar e a sinalização de instalação parcial.
 
+Se a validação da tag concluir com sucesso, mas a publicação não tiver começado, o mesmo `RedlabEditor-Windows-<run-id>` aprovado pode ser baixado com `gh run download` e publicado com `python scripts/publish_bundle.py redlab-v<versão> --directory <artefato>`. Confira antes o commit, a tag e a conclusão do job Windows. Não recompile nem substitua arquivos de uma release pública. A condição do job de publicação usa `!cancelled()` explicitamente para não herdar o `skipped` da compilação de editores, que é dispensada nas tags do pacote.
+
 ## Transição dos repositórios anteriores
 
 Os clientes antigos consultam o `update.json` da release mais recente de seu repositório original e exigem o formato de URL anterior. Por isso, cada repositório recebe uma release de transição com o instalador aprovado do monorepo, preservando o contrato antigo no manifesto. No Moldura, o nome do arquivo oferecido ao atualizador antigo continua `Moldura-Setup-1.1.0.exe`; seu conteúdo instala o Bottons Editor.

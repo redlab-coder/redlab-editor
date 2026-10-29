@@ -96,7 +96,7 @@ jobs:
           path: bundle/dist/*
           if-no-files-found: error
   publish:
-    if: startsWith(github.ref, 'refs/tags/redlab-v')
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/redlab-v') && needs.windows.result == 'success' }}
     needs: windows
     runs-on: ubuntu-latest
     permissions:
