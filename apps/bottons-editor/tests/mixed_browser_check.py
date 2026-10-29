@@ -45,11 +45,11 @@ with sync_playwright() as p:
     page.keyboard.press('Escape')
     with page.expect_download() as event:page.locator('#save-project').click()
     event.value.save_as(OUT/'misto.bottons')
-    page.reload();page.wait_for_function('photos.length===3&&editingAllowed&&!restoring&&pagesCurrent()')
+    page.reload();page.wait_for_function("typeof photos!=='undefined'&&photos.length===3&&editingAllowed&&!bootRecovery&&!restoring&&pagesCurrent()")
     assert page.evaluate('photos.map(p=>p.template)')==['square','round_p','round_p']
     # An older session only had a global model. It migrates every item explicitly.
     page.evaluate("()=>{activeTemplate='round_m';photos.forEach(p=>delete p.template);saveSession();}")
-    page.reload();page.wait_for_function('photos.length===3&&editingAllowed&&!restoring&&pagesCurrent()')
+    page.reload();page.wait_for_function("typeof photos!=='undefined'&&photos.length===3&&editingAllowed&&!bootRecovery&&!restoring&&pagesCurrent()")
     assert page.evaluate('photos.every(p=>p.template==="round_m")')
     # Opening errors are atomic; the loaded batch is still available.
     page.locator('#project-file').set_input_files(dict(name='invalido.bottons',mimeType='application/zip',buffer=b'broken'))
@@ -71,9 +71,9 @@ with sync_playwright() as p:
         assert page.locator('#open-project').is_visible() and page.locator('#save-project').is_visible()
         page.screenshot(path=str(OUT/f'misto-{width}.png'),full_page=True)
     # Other tabs must preserve each model and cannot mutate them while read-only.
-    second=context.new_page();second.goto(URL);second.wait_for_function('photos.length===3&&!restoring')
+    second=context.new_page();second.goto(URL);second.wait_for_function("typeof photos!=='undefined'&&photos.length===3&&!bootRecovery&&!restoring")
     assert second.locator('[data-template=round_g]').is_disabled()
-    second.locator('#takeover').click();second.wait_for_function('editingAllowed&&!restoring')
+    second.locator('#takeover').click();second.wait_for_function('editingAllowed&&!bootRecovery&&!restoring')
     assert second.evaluate('photos.map(p=>p.template)')==['square','round_p','round_p']
     second.close();page.close()
     assert not errors,errors
