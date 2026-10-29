@@ -2,7 +2,7 @@
 
 | Aplicativo | Pasta | Tag | Canal |
 | --- | --- | --- | --- |
-| Bottons Editor | `apps/bottons-editor` | `bottons-v1.2.2` | `updates/bottons-editor.json` |
+| Bottons Editor | `apps/bottons-editor` | `bottons-v1.2.3` | `updates/bottons-editor.json` |
 | Polaroid Editor | `apps/polaroid-editor` | `polaroid-v1.2.1` | `updates/polaroid-editor.json` |
 | Medidas Editor | `apps/medidas-editor` | `medidas-v1.1.1` | `updates/medidas-editor.json` |
 
@@ -14,7 +14,7 @@ Se uma publicação falhar, examine o workflow e a release antes de retomar. Uma
 
 ## Pacote completo
 
-`bundle/package.json` fixa a versão do conjunto e a versão de cada editor incluído. O pacote 1.0.1 usa a tag `redlab-v1.0.1`. Ele não tem `update.json`, canal próprio, aplicativo residente ou desinstalador coletivo: distribui os três instaladores independentes. O Latest global passa a destacar o pacote, enquanto cada editor continua consultando seu canal explícito.
+`bundle/package.json` fixa a versão do conjunto e a versão de cada editor incluído. O pacote 1.0.2 usa a tag `redlab-v1.0.2`. Ele não tem `update.json`, canal próprio, aplicativo residente ou desinstalador coletivo: distribui os três instaladores independentes. O Latest global passa a destacar o pacote, enquanto cada editor continua consultando seu canal explícito.
 
 1. Para uma nova composição, atualize a versão do pacote, seus produtos, notas e links. As versões fixadas podem ser diferentes das versões atuais do código; não é preciso republicar o pacote a cada atualização individual.
 2. O PR do pacote compila os editores do mesmo código e exercita o conjunto em Windows descartável. Para esse caminho, o código de cada produto deve corresponder à versão fixada.

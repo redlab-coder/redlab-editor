@@ -1,5 +1,10 @@
 # Alterações do RedLab Editor
 
+## Bottons Editor 1.2.3 e pacote 1.0.2 — 29/10/2026
+
+Quadrado alinhado ao centro da coluna de redondos, com centralização vertical por coluna independente. Tamanhos, sangrias e espaçamento de segurança preservados. Capturas atualizadas. Polaroid e Medidas mantêm suas versões.
+
+
 ## Bottons Editor 1.2.2 e pacote 1.0.1 — 29/10/2026
 
 - Centralização horizontal e vertical dos conjuntos de bottons nas folhas mistas, na prévia e na exportação.

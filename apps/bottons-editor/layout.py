@@ -1,8 +1,8 @@
 """Deterministic sheet planning; all bounds include the complete cut/bleed.
 
 Homogeneous batches retain the approved legacy layout. Mixed batches use
-conservative square bounds for circles and a 2 mm gap, then center the complete
-group on each sheet while keeping at least 2 mm outer clearance.
+conservative square bounds for circles and a 2 mm gap. Independent columns
+are centered vertically, and the full group is centered horizontally.
 """
 from engine import DPI, PAGE, page_positions, template_info
 
@@ -57,16 +57,28 @@ def plan_pages(items, default='square'):
         if len({keys[i] for i in indices})==1:
             points=page_positions(len(indices),keys[indices[0]])
         else:
-            # Translate the complete packed group; never resize tiles or change
-            # their relative spacing. Exclude the packer's trailing gap from
-            # the bounds so the actual cut areas have balanced outer margins.
+            # Columns separated horizontally by the full safety gap can move
+            # vertically without introducing collisions. Keep stacked pieces
+            # together; center a square next to the complete circular stack.
+            columns=[]
+            for i in sorted(indices,key=lambda i:(positions[i][0],i)):
+                x=positions[i][0];right=x+specs[i]['cut_px']
+                if not columns or x>=columns[-1]['right']+GAP:
+                    columns.append(dict(indices=[i],right=right))
+                else:
+                    columns[-1]['indices'].append(i)
+                    columns[-1]['right']=max(columns[-1]['right'],right)
+            centered={}
+            for column in columns:
+                top=min(positions[i][1] for i in column['indices'])
+                bottom=max(positions[i][1]+specs[i]['cut_px'] for i in column['indices'])
+                dy=(PAGE[1]-(bottom-top))//2-top
+                for i in column['indices']:
+                    centered[i]=(positions[i][0],positions[i][1]+dy)
             left=min(positions[i][0] for i in indices)
-            top=min(positions[i][1] for i in indices)
             right=max(positions[i][0]+specs[i]['cut_px'] for i in indices)
-            bottom=max(positions[i][1]+specs[i]['cut_px'] for i in indices)
             dx=(PAGE[0]-(right-left))//2-left
-            dy=(PAGE[1]-(bottom-top))//2-top
-            points=[(positions[i][0]+dx,positions[i][1]+dy) for i in indices]
+            points=[(centered[i][0]+dx,centered[i][1]) for i in indices]
         result.append(dict(indices=indices,positions=points))
     return result
 

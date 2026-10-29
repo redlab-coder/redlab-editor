@@ -22,6 +22,9 @@ class LayoutTests(unittest.TestCase):
             self.assertLessEqual(abs(top-bottom),1)
             if len({keys[index] for index in page['indices']})>1:
                 self.assertGreaterEqual(min(left,right,top,bottom),MARGIN)
+                for i,(x,y,size) in enumerate(boxes):
+                    for xx,yy,ss in boxes[i+1:]:
+                        self.assertTrue(x+size+GAP<=xx or xx+ss+GAP<=x or y+size+GAP<=yy or yy+ss+GAP<=y)
             # A page preview/download, planned from its own items, has identical geometry.
             subset=plan_pages([items[i] for i in page['indices']])
             self.assertEqual(len(subset),1);self.assertEqual(subset[0]['positions'],page['positions'])
@@ -39,6 +42,11 @@ class LayoutTests(unittest.TestCase):
         self.assertEqual([template_info(k)['cut_px'] for k in keys],[827,531,531])
         x,y=pages[0]['positions'][0]
         for xx,yy in pages[0]['positions'][1:]:self.assertGreaterEqual(xx-(x+827),GAP)
+        self.assertLessEqual(abs(2*y+827-PAGE[1]),1)
+        (_,upper),(_,lower)=pages[0]['positions'][1:]
+        self.assertEqual(lower-upper-531,GAP)
+        self.assertLessEqual(abs(upper+lower+531-PAGE[1]),1)
+        self.assertGreater(y,upper)
 
     def test_exhaustive_small_mixes_random_batches_and_determinism(self):
         for count in range(1,6):
@@ -54,7 +62,8 @@ class LayoutTests(unittest.TestCase):
         for page in pages:
             first,second=page['indices'];(x,y),(xx,yy)=page['positions']
             self.assertEqual(xx-x-template_info(keys[first])['cut_px'],GAP)
-            self.assertEqual(y,yy)
+            self.assertLessEqual(abs(2*y+template_info(keys[first])['cut_px']-PAGE[1]),1)
+            self.assertLessEqual(abs(2*yy+template_info(keys[second])['cut_px']-PAGE[1]),1)
 
     def test_rendered_mixed_sheet_has_symmetric_margins_and_original_tile_sizes(self):
         from PIL import Image,ImageChops
