@@ -1,4 +1,4 @@
-VERSION = "1.0.1"
+VERSION = "1.1.0"
 REPOSITORY = "redlab-coder/redlab-editor"
 PRODUCT_ID = "medidas-editor"
 RELEASE_PREFIX = "medidas-v"

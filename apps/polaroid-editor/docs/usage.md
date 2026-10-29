@@ -1,6 +1,6 @@
 # Usar o Polaroid Editor
 
-Instale o `PolaroidEditor-Setup-<versão>.exe` nas [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.1.2). A instalação é por usuário, com atalho no menu Iniciar. A interface abre no navegador padrão e o aplicativo permanece na bandeja do Windows. Não precisa instalar Python, criar conta ou enviar fotografias para um serviço externo.
+Instale o `PolaroidEditor-Setup-<versão>.exe` nas [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.2.0). A instalação é por usuário, com atalho no menu Iniciar. A interface abre no navegador padrão e o aplicativo permanece na bandeja do Windows. Não precisa instalar Python, criar conta ou enviar fotografias para um serviço externo.
 
 ## Preparar as fotos
 
@@ -33,7 +33,7 @@ Durante a execução, recarregar a aba no mesmo navegador/perfil recupera a sess
 
 ## Instalação e atualizações
 
-A versão aparece ao lado de Polaroid Editor. Na versão instalada, novas versões publicadas são baixadas e verificadas em segundo plano; a instalação acontece ao encerrar normalmente, sem interromper a edição. O ícone da bandeja permite reabrir, verificar atualizações ou encerrar. Sem internet, a edição continua disponível. A edição portátil `PolaroidEditor-Portable.exe` funciona sem instalação e não aplica atualizações automáticas.
+A versão instalada consulta atualizações ao iniciar e a cada 30 minutos, baixa e verifica o instalador. Quando estiver pronto, o cabeçalho oferece **Atualizar e reiniciar**, que guarda uma cópia local do lote e reabre o programa com o trabalho recuperado. Sem conexão, a edição continua disponível. [Funcionamento das atualizações](../../../docs/updates.md). A bandeja permite **Abrir editor** e **Encerrar editor**. A edição portátil não instala atualizações automaticamente.
 
 ## Limites
 
@@ -43,6 +43,6 @@ Imprima a **100% / tamanho real**. Confirme as medidas e o corte com uma amostra
 
 [← Documentação](README.md)
 
-## Encerramento — próxima versão
+## Encerramento
 
 O botão de desligar e a opção Encerrar na bandeja finalizam o editor diretamente, sem confirmação. Uma operação em andamento é interrompida; resultados incompletos não são disponibilizados. Exporte ou salve seu trabalho antes de encerrar. Os originais e lotes já salvos são preservados. A aba poderá permanecer na tela de encerramento, mas o processo e o serviço local são finalizados.

@@ -1,6 +1,17 @@
 # Validação da integração
 
-## Medidas Editor 1.0.1 — interface
+## Entrega da família — 29/10/2026
+
+Versões: Bottons 1.2.0, Polaroid 1.2.0 e Medidas 1.1.0. Cada tag executa novamente os testes do aplicativo, contratos de distribuição, encerramento, recuperação, interface e painel nativo antes de disponibilizar o instalador e a edição portátil. Os binários publicados são os mesmos aprovados no workflow Windows.
+
+As capturas da documentação são reproduzidas por `scripts/capture_release_docs.py`, com artes originais e instâncias locais descartáveis. Os banners são gerados por `scripts/docs_assets.py` a partir dos símbolos e das paletas dos produtos. Nenhuma fotografia de cliente é usada.
+
+A validação física na Noritsu para o Medidas continua pendente. Os testes digitais verificam geometria, resolução, perfil, posicionamento e exportação do maior formato; não substituem a impressão de uma amostra.
+
+## Registros anteriores
+
+
+## Histórico: Medidas Editor 1.0.1 — interface
 
 A interface passou a mostrar miniaturas da composição na Preparação e uma prévia ampliada. O download permanece automático, com progresso e cancelamento discretos. Foram removidos o painel persistente de arquivos prontos e as explicações repetidas.
 
@@ -35,17 +46,17 @@ Evidência de publicação: [Bottons Editor](https://github.com/redlab-coder/red
 
 Os testes automatizados usam imagens sintéticas e cenários definidos; não cobrem todas as combinações possíveis de arquivos, drivers e computadores.
 
-## Etapa 1 — encerramento (29/10/2026, em desenvolvimento)
+## Etapa 1 — encerramento (29/10/2026)
 
 Validação local com os três aplicativos em processos isolados no Windows, usando a bandeja real e a interface no Edge: fechar com fotos carregadas, sem diálogo; fechar com o cache deliberadamente ocupado; fechar durante uma exportação real de 61 × 250 cm no Medidas; verificar término do processo e indisponibilidade da porta local. O teste aciona o callback real do menu pela janela pertencente ao processo de teste. Não acessa instalações ou fotos do operador.
 
-Comando: `apps/medidas-editor/.venv/Scripts/python.exe scripts/check_shutdown.py`. Os workflows executam o mesmo teste por produto antes da compilação. Os testes da API, processamento e distribuição continuam obrigatórios. A publicação dos instaladores atualizados fica para a etapa de entrega prevista no plano; os canais públicos não foram alterados nesta etapa.
+Comando: `apps/medidas-editor/.venv/Scripts/python.exe scripts/check_shutdown.py`. Os workflows executam o mesmo teste por produto antes da compilação. Os testes da API, processamento e distribuição continuam obrigatórios. Durante a implementação desta etapa, os canais públicos foram preservados.
 
-## Etapa 2 — Bottons por imagem e lote (em desenvolvimento)
+## Etapa 2 — Bottons por imagem e lote
 
 40 testes locais do Bottons aprovados: inclui planejamento físico, posições antigas, todas as combinações dos quatro modelos até cinco imagens, lotes aleatórios de 100 itens, colisões, limites, modelo e ajustes por foto, arquivos de lote inválidos e recuperação dos originais. O caso de um quadrado e dois P gera uma única folha de 1795 × 1205 pixels a 300 DPI.
 
-No navegador, a exportação antes e depois de salvar/reabrir `.bottons` produziu JPEGs idênticos. O download da folha ampliada também foi idêntico ao da exportação completa de uma folha mista. Foram verificados modelo individual, preservação de zoom, sessão legada com modelo global, falha de abertura sem substituir o lote, troca entre abas e telas de 320 a 1440 pixels. O workflow exige ainda compilação, executável e instalador no Windows antes da integração. Versões e canais públicos permanecem preservados até a etapa final de publicação.
+No navegador, a exportação antes e depois de salvar/reabrir `.bottons` produziu JPEGs idênticos. O download da folha ampliada também foi idêntico ao da exportação completa de uma folha mista. Foram verificados modelo individual, preservação de zoom, sessão legada com modelo global, falha de abertura sem substituir o lote, troca entre abas e telas de 320 a 1440 pixels. O workflow exige ainda compilação, executável e instalador no Windows antes da integração. Durante a implementação, as versões e os canais públicos foram preservados.
 
 ## Revisão da família — etapa 3: atualização com recuperação
 
@@ -53,10 +64,10 @@ Os testes de cada aplicativo cobrem cópia de originais, ajustes e rascunhos, es
 
 `python scripts/check_update_flow.py <produto>` exercita a interface e a API HTTP reais, em armazenamento temporário: aba proprietária, espera por exportação, falha de salvamento sem perda de sessão e recuperação em uma nova origem local. Os bytes simulados nesse teste nunca são executados. O teste do instalador executa também o instalador genuíno compilado no workflow: encerra, instala, reinicia e recupera duas fotos com estados distintos, incluindo os campos ainda não aplicados do Medidas. A cópia precisa existir antes de abrir a interface nova e ser removida somente após a confirmação.
 
-Os testes de instalação permanecem restritos a uma conta Windows isolada, sem usar as instalações do operador. Versões, tags e canais públicos permanecem preservados nesta etapa.
+Os testes de instalação permanecem restritos a uma conta Windows isolada, sem usar as instalações do operador. Essa validação foi realizada antes de publicar os novos canais.
 
 ## Revisão da família — etapa 4: identidade e bandeja
 
 Os três produtos usam a mesma geometria de ícone, padding e resoluções Windows (16, 20, 24, 32, 40, 48, 64, 128 e 256 px). Os testes verificam geometria comum, paletas distintas e contraste mínimo de 4,5:1 para textos e ações principais. O tema é aplicado aos estados de importação, foco, hover, seleção e controles; as medidas e o processamento de impressão permanecem preservados.
 
-A interface é exercitada em 320, 390, 520, 768, 1024 e 1440 px, com metas de toque, abertura de ajuda, ausência de sobreposição do cabeçalho e preferência por redução de movimento. As capturas reais ficam nos artefatos do workflow. O painel nativo é exercitado com cinco escalas, navegação por teclado, abrir, fechar e destruição da thread. O teste do executável abre também a janela empacotada e encerra com o painel visível, verificando a inclusão de Tcl/Tk. A publicação dos novos instaladores permanece para a etapa final.
+A interface é exercitada em 320, 390, 520, 768, 1024 e 1440 px, com metas de toque, abertura de ajuda, ausência de sobreposição do cabeçalho e preferência por redução de movimento. As capturas reais ficam nos artefatos do workflow. O painel nativo é exercitado com cinco escalas, navegação por teclado, abrir, fechar e destruição da thread. O teste do executável abre também a janela empacotada e encerra com o painel visível, verificando a inclusão de Tcl/Tk.

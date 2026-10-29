@@ -1,18 +1,17 @@
 # Histórico
 
-## Em desenvolvimento — modelos individuais e lotes
+## 1.2.0 — 29/10/2026
 
-- Modelo por foto, com preservação de enquadramento e filtros.
-- Folhas mistas com cortes completos, espaçamentos seguros e planejamento único para prévia e produção.
-- Disposição original mantida nos lotes com um único modelo.
-- Abrir/salvar `.bottons` com originais íntegros, modelos e ajustes individuais.
-- Migração da sessão antiga, que usava modelo global, e cabeçalho responsivo com ações de lote.
+- Escolha por foto. Quadrado e Redondo G, M e P com modelos individuais.
+- Combine quando couber. Folhas mistas com encaixe seguro, mantendo corte e sangria.
+- Ajuste com precisão. Recorte, zoom e filtros graduais com controles numéricos.
+- Salve o lote. Arquivos `.bottons` guardam originais, ordem, modelos e ajustes.
+- Exporte a 300 dpi. Folha de 15,2 × 10,2 cm em JPG; várias folhas em ZIP.
+- Identidade da família, ícones consistentes e painel da bandeja.
+- Encerramento direto e atualização periódica com reinício e recuperação do lote.
+- Contraste, toque, telas estreitas e estados de interação revisados.
+- Documentação, banners e capturas atualizados.
 
-## Em desenvolvimento — encerramento
-
-- Encerramento direto pela interface e bandeja, inclusive com fotos carregadas.
-- Limpeza com espera limitada para operações de imagem e cancelamento de tarefas ao sair.
-- Validação em processos Windows isolados com a bandeja real e o navegador.
 
 ## 1.1.0 — 2026-10-20
 

@@ -1,44 +1,33 @@
-<p align="center">
-  <img src="docs/images/banner.svg" alt="Bottons Editor — suas fotos, prontas para imprimir" width="100%">
-</p>
+<p align="center"><img src="docs/images/banner.svg" alt="Bottons Editor — RedLab Editor" width="100%"></p>
 
-<p align="center">
-  <a href="https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.1.0/BottonsEditor-Setup-1.1.0.exe">
-    <img src="docs/images/download.svg" alt="Baixar o instalador do Bottons Editor para Windows" width="252" height="54">
-  </a>
-  <br>
-  <sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub>
-</p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.0/BottonsEditor-Setup-1.2.0.exe"><img src="docs/images/download.svg" alt="Baixar Bottons Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
 
-<p align="center">
-  <a href="https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.1.0">Versões e edição portátil</a>
-  &nbsp; · &nbsp;
-  <a href="docs/usage.md">Guia de uso</a>
-</p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.0">Versão 1.2.0 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
 
-![Interface do Bottons Editor com o gabarito Redondo G e artes de demonstração](docs/images/workspace.png)
+![Interface atual do Bottons Editor com artes de demonstração](docs/images/workspace.png)
 
-## Do arquivo ao papel
+## Monte suas folhas
 
-1. **Adicione suas fotos** e escolha o gabarito.
-2. **Enquadre e ajuste** a imagem na prévia.
-3. **Exporte as folhas** prontas para imprimir.
+1. Adicione as imagens e escolha o modelo de cada uma.
+2. Enquadre, ajuste e confira as folhas na galeria.
+3. Exporte os JPGs ou salve o lote para continuar depois.
 
 ## O essencial
 
-- **Quatro gabaritos.** Quadrado e Redondo G, M e P, com sangria e distribuição automática.
-- **Ajustes precisos.** Enquadramento, zoom, brilho, contraste, saturação e nitidez.
-- **Impressão a 300 DPI.** Folhas de 15,2 × 10,2 cm em JPG de qualidade máxima; vários arquivos vêm em ZIP.
-- **Trabalho local.** Edição offline, originais preservados e atualizações automáticas na versão instalada.
+- **Escolha por foto.** Quadrado e Redondo G, M e P com modelos individuais.
+- **Combine quando couber.** Folhas mistas com encaixe seguro, mantendo corte e sangria.
+- **Ajuste com precisão.** Recorte, zoom e filtros graduais com controles numéricos.
+- **Salve o lote.** Arquivos `.bottons` guardam originais, ordem, modelos e ajustes.
+- **Exporte a 300 dpi.** Folha de 15,2 × 10,2 cm em JPG; várias folhas em ZIP.
 
-Imprima em **tamanho real / 100%**. Exporte suas folhas antes de encerrar o aplicativo.
+O fluxo não tem etapa de conferência. Os gabaritos mantêm medidas, sangria espelhada e guias de impressão.
 
----
+## Seu trabalho, no computador
 
-[Documentação](docs/README.md) · [Gabaritos](docs/templates.md) · [Desenvolvimento](docs/development.md) · [Histórico](CHANGELOG.md) · [Contribuir](CONTRIBUTING.md)
+Os originais são preservados e as imagens são processadas localmente. Salve o lote para continuar após encerrar; o encerramento é direto, sem confirmação. Imprima em **tamanho real / 100%**.
+
+A versão instalada verifica atualizações periodicamente e oferece **Atualizar e reiniciar** quando o download estiver pronto, preservando o lote durante esse reinício. A edição portátil é atualizada manualmente.
+
+[Guia de uso](docs/usage.md) · [Gabaritos](docs/templates.md) · [Desenvolvimento](docs/development.md) · [Histórico](CHANGELOG.md)
 
 [← Todas as ferramentas RedLab](../../README.md)
-
-## Próxima versão em desenvolvimento
-
-Modelos individuais por imagem, folhas com modelos diferentes quando houver encaixe seguro e arquivos de lote `.bottons` para continuar o trabalho em outra sessão. As medidas de corte e sangria são preservadas. Consulte [gabaritos e montagem](docs/templates.md) e [guia de uso](docs/usage.md). A publicação dos novos instaladores ocorrerá após concluir as etapas de revisão da família RedLab Editor.

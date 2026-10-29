@@ -1,10 +1,12 @@
 # Alterações
 
-## Em desenvolvimento — encerramento
+## 1.1.0 — 29/10/2026
 
-- Encerramento direto pela interface e bandeja, inclusive com fotos carregadas.
-- Limpeza com espera limitada para operações de imagem e cancelamento de tarefas ao sair.
-- Validação em processos Windows isolados com a bandeja real e o navegador.
+- Identidade da família, ícones consistentes e painel da bandeja.
+- Encerramento direto e atualização periódica com reinício e recuperação do lote.
+- Contraste, toque, telas estreitas e estados de interação revisados.
+- Documentação, banners e capturas atualizados.
+
 
 ## 1.0.1 — 26/10/2026
 
