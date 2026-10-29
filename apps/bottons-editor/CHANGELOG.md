@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.2.2 — 29/10/2026
+
+- Conjunto de bottons centralizado nos dois eixos nas folhas com modelos diferentes.
+- Mesma posição na prévia, na folha ampliada e nos JPGs exportados.
+- Medidas, sangrias, espaçamentos e disposição das folhas uniformes preservados.
+- Capturas do repositório atualizadas com a composição centralizada.
+
+
 ## 1.2.1 — 29/10/2026
 
 - Instalação individual ou pelo pacote completo RedLab Editor.

@@ -1,5 +1,12 @@
 # Alterações do RedLab Editor
 
+## Bottons Editor 1.2.2 e pacote 1.0.1 — 29/10/2026
+
+- Centralização horizontal e vertical dos conjuntos de bottons nas folhas mistas, na prévia e na exportação.
+- Medidas, sangrias, espaçamento e encaixe preservados, com capturas reais atualizadas.
+- Pacote completo atualizado com Bottons 1.2.2; Polaroid 1.2.1 e Medidas 1.1.1 preservados.
+
+
 ## Pacote completo 1.0.0 — 29/10/2026
 
 - Um download para instalar Bottons 1.2.1, Polaroid 1.2.1 e Medidas 1.1.1, com seleção opcional por ferramenta.
