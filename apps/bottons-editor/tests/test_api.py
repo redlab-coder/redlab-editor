@@ -138,6 +138,17 @@ class ApiTests(unittest.TestCase):
             items.append(dict(id=photo['id'],template=key,edits={}))
         with self.request('layout',dict(items=items)) as response:plan=json.load(response)['pages']
         self.assertEqual(len(plan),1)
+        # The lossless preview must show the same centered group as production.
+        from engine import PAGE,template_info
+        from PIL import ImageChops
+        bounds=(min(x for x,y in plan[0]['positions']),min(y for x,y in plan[0]['positions']),
+                max(x+template_info(items[i]['template'])['cut_px'] for i,(x,y) in zip(plan[0]['indices'],plan[0]['positions'])),
+                max(y+template_info(items[i]['template'])['cut_px'] for i,(x,y) in zip(plan[0]['indices'],plan[0]['positions'])))
+        with self.request('sheet',dict(items=items)) as response:
+            with Image.open(io.BytesIO(response.read())) as preview,Image.new('RGB',preview.size,'white') as white:
+                actual=ImageChops.difference(preview,white).getbbox()
+                expected=[value*preview.size[axis%2]/PAGE[axis%2] for axis,value in enumerate(bounds)]
+                for value,target in zip(actual,expected):self.assertLessEqual(abs(value-target),3)
         with self.request('export',dict(items=items)) as response:
             image=Image.open(io.BytesIO(response.read()));image.load()
             self.assertEqual(image.size,(1795,1205));self.assertEqual(image.info['dpi'],(300,300))

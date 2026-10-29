@@ -1,5 +1,12 @@
 # Validação da integração
 
+## Centralização do Bottons Editor 1.2.2
+
+Os testes conferem margens opostas com diferença máxima de 1 pixel, tamanhos de corte, segurança das bordas e ausência de sobreposição. Incluem o exemplo com G e quadrado numa folha e M e P na seguinte, além do quadrado com dois P, combinações exaustivas e lotes aleatórios. A renderização é validada antes da codificação e a prévia pela API, junto à exportação e à reabertura de projetos.
+
+As folhas de modelo único mantêm todas as posições anteriores. A alteração é uma translação do conjunto misto: não redimensiona, recorta ou reorganiza as peças dentro dele.
+
+
 ## Pacote completo 1.0.0
 
 O conjunto usa Bottons 1.2.1, Polaroid 1.2.1 e Medidas 1.1.1, com o mesmo motor de impressão das versões anteriores. Os contratos da raiz incluem a composição fixa, origem e integridade dos componentes, identidade instalada e atalhos da família.

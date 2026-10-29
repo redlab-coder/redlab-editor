@@ -1,7 +1,8 @@
 """Deterministic sheet planning; all bounds include the complete cut/bleed.
 
 Homogeneous batches retain the approved legacy layout. Mixed batches use
-conservative square bounds for circles, a 2 mm gap and 2 mm outer clearance.
+conservative square bounds for circles and a 2 mm gap, then center the complete
+group on each sheet while keeping at least 2 mm outer clearance.
 """
 from engine import DPI, PAGE, page_positions, template_info
 
@@ -55,7 +56,17 @@ def plan_pages(items, default='square'):
         positions=dict(zip(page['indices'],page['positions']));indices=sorted(page['indices'])
         if len({keys[i] for i in indices})==1:
             points=page_positions(len(indices),keys[indices[0]])
-        else:points=[positions[i] for i in indices]
+        else:
+            # Translate the complete packed group; never resize tiles or change
+            # their relative spacing. Exclude the packer's trailing gap from
+            # the bounds so the actual cut areas have balanced outer margins.
+            left=min(positions[i][0] for i in indices)
+            top=min(positions[i][1] for i in indices)
+            right=max(positions[i][0]+specs[i]['cut_px'] for i in indices)
+            bottom=max(positions[i][1]+specs[i]['cut_px'] for i in indices)
+            dx=(PAGE[0]-(right-left))//2-left
+            dy=(PAGE[1]-(bottom-top))//2-top
+            points=[(positions[i][0]+dx,positions[i][1]+dy) for i in indices]
         result.append(dict(indices=indices,positions=points))
     return result
 

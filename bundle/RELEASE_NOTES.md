@@ -1,10 +1,12 @@
-# RedLab Editor · Pacote completo 1.0.0
+# RedLab Editor · Pacote completo 1.0.1
+
+Esta versão inclui o Bottons Editor 1.2.2, com os conjuntos centralizados nas folhas mistas. Polaroid e Medidas mantêm as mesmas versões.
 
 Um único download para instalar suas ferramentas de impressão. Os três editores vêm selecionados; você pode escolher apenas os que precisa.
 
 | Ferramenta incluída | Para que serve |
 | --- | --- |
-| Bottons Editor 1.2.1 | Modelos individuais e montagem de folhas |
+| Bottons Editor 1.2.2 | Modelos individuais e montagem de folhas |
 | Polaroid Editor 1.2.1 | Enquadramento e conferência de polaroids |
 | Medidas Editor 1.1.1 | Fotos em medidas personalizadas |
 

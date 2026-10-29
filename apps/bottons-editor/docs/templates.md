@@ -19,6 +19,8 @@ As folhas têm 15,2 × 10,2 cm, na horizontal. Em lotes com um único modelo, a 
 
 Em lotes mistos, o planejador distribui primeiro os cortes maiores, com desempate pela ordem da lista. O corte completo (com sangria) é considerado; círculos usam seus quadrados delimitadores para uma separação conservadora. Folhas mistas mantêm pelo menos 2 mm entre esses limites e na borda externa. Nenhum gabarito é reduzido ou deformado; os itens restantes seguem para outras folhas. A ordem na lista é preservada no lote, mas a posição na folha pode mudar para aproveitar espaço. O algoritmo é determinístico e não promete o menor número matematicamente possível de folhas.
 
+Nas folhas mistas, o conjunto completo fica centralizado na horizontal e na vertical, considerando os limites de corte e sangria. A centralização apenas desloca o conjunto: os tamanhos e as distâncias entre as peças não mudam. As margens opostas podem diferir em no máximo 1 pixel por arredondamento.
+
 Um quadrado (7 × 7 cm de corte) e dois P (Ø 4,5 cm de corte) cabem juntos em uma folha. Prévia, exportação completa e download de uma folha usam a mesma lógica de posicionamento.
 
 JPG único quando o lote cabe em uma folha; ZIP com JPGs quando precisa de mais folhas. Exemplos: 6 fotos P geram um JPG; 7 fotos P geram dois JPGs em ZIP. A seleção do modelo é recuperada com a sessão no mesmo navegador/perfil.
