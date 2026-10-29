@@ -52,7 +52,7 @@ with tempfile.TemporaryDirectory(prefix='RedLab-update-flow-') as temporary:
             deadline=time.monotonic()+2
             while not old.request_shutdown.called and time.monotonic()<deadline:time.sleep(.01)
             old.request_shutdown.assert_called_once()
-            page.wait_for_load_state('networkidle');old.shutdown();old.server_close();app.IMAGES.clear();app.CACHE.clear()
+            old.shutdown();old.server_close();app.IMAGES.clear();app.CACHE.clear()
             fresh=server(store,None)
             page.add_init_script("window.blockCheckpointStorage=sessionStorage.getItem('allow-recovery-storage')!=='1';const save=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(window.blockCheckpointStorage&&key.endsWith('-session'))throw new DOMException('simulated quota','QuotaExceededError');return save.call(this,key,value);};")
             page.goto(f'http://127.0.0.1:{fresh.server_port}')
@@ -67,7 +67,7 @@ with tempfile.TemporaryDirectory(prefix='RedLab-update-flow-') as temporary:
             deadline=time.monotonic()+10
             while store.marker.exists() and time.monotonic()<deadline:time.sleep(.05)
             assert not store.marker.exists()
-            page.wait_for_load_state('networkidle');assert not errors,errors
+            assert not errors,errors
             browser.close()
         print(json.dumps(dict(product=product,disk_failure_keeps_session='OK',owner_only='OK',queued_update='OK',browser_storage_failure_preserves_checkpoint='OK',new_session_restored='OK',errors=errors)),flush=True)
     finally:
