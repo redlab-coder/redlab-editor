@@ -1,0 +1,17 @@
+{
+  "name": "Bottons Editor",
+  "symbol": "bottons",
+  "accent": "#365e43",
+  "accent-hover": "#294c35",
+  "bg": "#f5f7f3",
+  "header": "#fcfdfb",
+  "ink": "#253c2d",
+  "muted": "#647361",
+  "line": "#dfe6da",
+  "soft": "#edf3e8",
+  "focus": "#71916c",
+  "stage": "#eff3eb",
+  "stage-dots": "#c9d6c1",
+  "family": "RedLab Editor",
+  "product": "bottons-editor"
+}

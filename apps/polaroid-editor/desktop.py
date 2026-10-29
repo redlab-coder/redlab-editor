@@ -7,18 +7,11 @@ import time
 import urllib.request
 import webbrowser
 from pathlib import Path
-from PIL import Image, ImageDraw
+from branding import icon_image, THEME
+from tray_panel import create_tray
 from version import VERSION
 
 
-def icon_image():
-    image = Image.new('RGBA', (256, 256), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle((5,5,251,251),radius=58,fill='#315b6a')
-    draw.rounded_rectangle((58,39,198,218),radius=10,fill='#f3f6f7')
-    draw.rectangle((73,54,183,164),fill='#315b6a')
-    draw.line((85,194,142,194),fill='#315b6a',width=6)
-    return image.resize((64,64),Image.Resampling.LANCZOS)
 
 
 class SingleInstance:
@@ -111,5 +104,5 @@ def run_tray(url, request_shutdown, has_photos, updater=None):
         pystray.Menu.SEPARATOR,
         pystray.MenuItem('Encerrar Polaroid Editor', quit_app),
     ]
-    icon = pystray.Icon('PolaroidEditor', icon_image(), f'Polaroid Editor {VERSION}', menu=pystray.Menu(*items))
+    icon = create_tray('PolaroidEditor', icon_image(256), f'Polaroid Editor {VERSION} · RedLab Editor', pystray.Menu(*items), THEME, VERSION, lambda:open_app(None,None), lambda:quit_app(None,None))
     return icon

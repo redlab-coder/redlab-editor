@@ -12,7 +12,7 @@ const PolaroidEditorIcons=(()=>{
     check:'<path d="m5 12 4 4L19 6"/>',
 
     update:'<path d="M4.6 8a8 8 0 1 1-.3 7M4 3v5h5m3 0v8m-3-3 3 3 3-3"/>',
-    brand:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 5h8v9H8zm1 13h6"/>' ,
+    brand:'<polyline points="4.5,7.875 4.5,4.5 7.875,4.5"/><polyline points="16.125,4.5 19.5,4.5 19.5,7.875"/><polyline points="19.5,16.125 19.5,19.5 16.125,19.5"/><polyline points="7.875,19.5 4.5,19.5 4.5,16.125"/><rect x="7.7812" y="6.375" width="8.4375" height="11.25" rx="0.46875"/><rect x="9.0938" y="7.6875" width="5.8125" height="5.8125" rx="0"/><polyline points="9.9375,15.75 14.062,15.75"/>' ,
     square:'<rect x="3" y="3" width="18" height="18" rx="4" stroke-dasharray="2.5 2.5"/><rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
     round_g:'<circle cx="12" cy="12" r="9" stroke-dasharray="2.5 2.5"/><circle cx="12" cy="12" r="6.5"/>',
     round_m:'<circle cx="12" cy="12" r="7.6" stroke-dasharray="2.5 2.5"/><circle cx="12" cy="12" r="5"/>',

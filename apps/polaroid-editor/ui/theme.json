@@ -1,0 +1,17 @@
+{
+  "name": "Polaroid Editor",
+  "symbol": "polaroid",
+  "accent": "#315b6a",
+  "accent-hover": "#244653",
+  "bg": "#f3f6f7",
+  "header": "#fcfdfd",
+  "ink": "#273e49",
+  "muted": "#627781",
+  "line": "#dce5e9",
+  "soft": "#ebf2f5",
+  "focus": "#7194a1",
+  "stage": "#eef3f5",
+  "stage-dots": "#c9d9df",
+  "family": "RedLab Editor",
+  "product": "polaroid-editor"
+}

@@ -49,6 +49,11 @@ with tempfile.TemporaryDirectory(prefix='PolaroidEditor-packaged-test-') as temp
         run_refinements(state['url'])
         run_imports(state['url'])
         run_interactions(state['url'])
+        sys.path.insert(0,str(ROOT.parents[1]/'scripts'))
+        from check_family_ui import run as check_family
+        from packaged_panel_check import check as check_panel
+        check_family('polaroid-editor',state['url'])
+        check_panel(state['pid'],'polaroid-editor')
         print(json.dumps({'portable':'OK','tray_lifecycle':'OK','single_instance':'OK'}))
     finally:
         if state and process.poll() is None:

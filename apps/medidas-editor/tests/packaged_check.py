@@ -47,6 +47,11 @@ with tempfile.TemporaryDirectory(prefix='MedidasEditor-packaged-test-') as tempo
         run(state['url'])
         run_refinements(state['url'])
         run_gallery(state['url'])
+        sys.path.insert(0,str(ROOT.parents[1]/'scripts'))
+        from check_family_ui import run as check_family
+        from packaged_panel_check import check as check_panel
+        check_family('medidas-editor',state['url'])
+        check_panel(state['pid'],'medidas-editor')
         print(json.dumps({'portable':'OK','tray_lifecycle':'OK','single_instance':'OK'}))
     finally:
         if state and process.poll() is None:

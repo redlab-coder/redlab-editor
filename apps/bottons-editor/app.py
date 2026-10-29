@@ -73,7 +73,7 @@ class Handler(BaseHTTPRequestHandler):
             html = html.replace('__VERSION__', VERSION)
             html = html.replace('__TEMPLATES__', json.dumps({key: template_info(key) for key in TEMPLATES}, ensure_ascii=False))
             return self.reply(html.encode(), 'text/html; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/update.js', '/style.css'):
+        if path in ('/app.js', '/icons.js', '/update.js', '/theme.css', '/family.css', '/style.css'):
             return self.reply((ROOT / 'ui' / path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image
@@ -127,6 +127,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if session:counted=session.enter(urlparse(self.path).path)
             return self.handle_POST()
+        except ConnectionError:
+            return
         except UpdateBusy as error:
             return self.json_reply({'error':str(error)},409)
         finally:
@@ -263,6 +265,8 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_stream(output,'BottonsEditor-folhas.zip','application/zip')
                 return
             self.json_reply({'error': 'Não encontrado.'}, 404)
+        except ConnectionError:
+            return
         except UpdateBusy as error:
             return self.json_reply({'error':str(error)},409)
         except (ValueError, KeyError, TypeError, AttributeError, OverflowError, UnidentifiedImageError, OSError, Image.DecompressionBombError) as error:

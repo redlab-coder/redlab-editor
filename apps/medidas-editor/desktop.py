@@ -7,19 +7,11 @@ import time
 import urllib.request
 import webbrowser
 from pathlib import Path
-from PIL import Image, ImageDraw
+from branding import icon_image, THEME
+from tray_panel import create_tray
 from version import VERSION
 
 
-def icon_image():
-    image = Image.new('RGBA', (256, 256), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle((5,5,251,251),radius=58,fill='#805d3e')
-    draw.rounded_rectangle((52,38,204,218),radius=9,fill='#fcf8f1')
-    draw.rectangle((70,56,175,165),fill='#bf9b73')
-    draw.line((70,190,184,190),fill='#805d3e',width=5)
-    for x in range(72,185,19):draw.line((x,184,x,201 if x%2 else 207),fill='#805d3e',width=4)
-    return image.resize((64,64),Image.Resampling.LANCZOS)
 
 
 class SingleInstance:
@@ -112,5 +104,5 @@ def run_tray(url, request_shutdown, has_photos, updater=None):
         pystray.Menu.SEPARATOR,
         pystray.MenuItem('Encerrar Medidas Editor', quit_app),
     ]
-    icon = pystray.Icon('MedidasEditor', icon_image(), f'Medidas Editor {VERSION}', menu=pystray.Menu(*items))
+    icon = create_tray('MedidasEditor', icon_image(256), f'Medidas Editor {VERSION} · RedLab Editor', pystray.Menu(*items), THEME, VERSION, lambda:open_app(None,None), lambda:quit_app(None,None))
     return icon

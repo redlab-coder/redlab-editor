@@ -34,6 +34,11 @@ jobs:
         run: python ../../scripts/check_shutdown.py bottons-editor
       - name: Validar atualização e recuperação na interface
         run: python ../../scripts/check_update_flow.py bottons-editor
+      - name: Validar identidade visual e painel da bandeja
+        run: |
+          python ../../scripts/generate_branding.py --check
+          python ../../scripts/check_tray_panel.py bottons-editor
+          python ../../scripts/check_family_ui.py bottons-editor
       - name: Testar contratos de distribuição
         working-directory: .
         run: python -m unittest discover -s tests -v
@@ -48,6 +53,13 @@ jobs:
       - name: Validar migração do Moldura para Bottons Editor
         working-directory: .
         run: python -u scripts/check_migration.py
+      - name: Guardar capturas da interface
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: bottons-interface-${{ github.run_id }}
+          path: apps/bottons-editor/tests/artifacts/*.png
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: BottonsEditor-Windows-${{ github.run_id }}
