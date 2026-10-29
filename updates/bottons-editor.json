@@ -1,7 +1,7 @@
 {
   "product": "bottons-editor",
-  "version": "1.2.0",
-  "url": "https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.0/BottonsEditor-Setup-1.2.0.exe",
-  "sha256": "9926f765544b43cabdaab17d1b6e31cb44bfc4260dc6de92d325b7dac38d0aa7",
-  "size": 23179435
+  "version": "1.2.1",
+  "url": "https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.1/BottonsEditor-Setup-1.2.1.exe",
+  "sha256": "cd3d2f13e15e48a5db27a0712a3b3a0191823bfa859590b15e6d2dd998b93da3",
+  "size": 23179427
 }
