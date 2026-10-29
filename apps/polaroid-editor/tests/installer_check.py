@@ -101,6 +101,11 @@ with tempfile.TemporaryDirectory(prefix='PolaroidEditor-install-test-') as tempo
         api(state,'quit',{})
         assert current.wait(timeout=20)==0
         current=None
+        current,state=start(no_updates=False)
+        sys.path.insert(0,str(ROOT.parents[1]/'scripts'))
+        from update_test_helpers import installed_restart
+        current,state=installed_restart('polaroid-editor',current,state,metadata,updates,staged,api)
+        api(state,'quit',{});assert current.wait(timeout=25)==0;current=None
         print(json.dumps({'installation':'OK','stable_single_instance':'OK','no_update_while_editing':'OK','actual_installer_on_normal_exit':'OK','reopen_after_update':'OK'}))
     finally:
         if current and current.poll() is None:

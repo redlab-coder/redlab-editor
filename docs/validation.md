@@ -46,3 +46,11 @@ Comando: `apps/medidas-editor/.venv/Scripts/python.exe scripts/check_shutdown.py
 40 testes locais do Bottons aprovados: inclui planejamento físico, posições antigas, todas as combinações dos quatro modelos até cinco imagens, lotes aleatórios de 100 itens, colisões, limites, modelo e ajustes por foto, arquivos de lote inválidos e recuperação dos originais. O caso de um quadrado e dois P gera uma única folha de 1795 × 1205 pixels a 300 DPI.
 
 No navegador, a exportação antes e depois de salvar/reabrir `.bottons` produziu JPEGs idênticos. O download da folha ampliada também foi idêntico ao da exportação completa de uma folha mista. Foram verificados modelo individual, preservação de zoom, sessão legada com modelo global, falha de abertura sem substituir o lote, troca entre abas e telas de 320 a 1440 pixels. O workflow exige ainda compilação, executável e instalador no Windows antes da integração. Versões e canais públicos permanecem preservados até a etapa final de publicação.
+
+## Revisão da família — etapa 3: atualização com recuperação
+
+Os testes de cada aplicativo cobrem cópia de originais, ajustes e rascunhos, escrita atômica, falha de disco, integridade do arquivo de recuperação, confirmação por geração, exclusão de operações concorrentes, intervalos de consulta e repetição, download verificado e falha ao iniciar o instalador. Uma versão já verificada não é descartada quando o canal remoto ainda apresenta uma versão anterior.
+
+`python scripts/check_update_flow.py <produto>` exercita a interface e a API HTTP reais, em armazenamento temporário: aba proprietária, espera por exportação, falha de salvamento sem perda de sessão e recuperação em uma nova origem local. Os bytes simulados nesse teste nunca são executados. O teste do instalador executa também o instalador genuíno compilado no workflow: encerra, instala, reinicia e recupera duas fotos com estados distintos, incluindo os campos ainda não aplicados do Medidas. A cópia precisa existir antes de abrir a interface nova e ser removida somente após a confirmação.
+
+Os testes de instalação permanecem restritos a uma conta Windows isolada, sem usar as instalações do operador. Versões, tags e canais públicos permanecem preservados nesta etapa.

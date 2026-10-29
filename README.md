@@ -50,3 +50,7 @@ O código das ferramentas está reunido aqui, mantendo seus motores de impressã
 - [Alterações](CHANGELOG.md)
 - [Contribuir](CONTRIBUTING.md)
 - [Relatar um problema](https://github.com/redlab-coder/redlab-editor/issues/new/choose)
+
+## Revisão em desenvolvimento
+
+A próxima versão inclui modelos individuais e lotes salvos no Bottons, encerramento direto e atualização pela interface com reinício e recuperação do trabalho nas três ferramentas. A instalação verificará atualizações periodicamente, sem ação manual na bandeja. Os downloads acima continuam correspondendo às versões publicadas; novos instaladores serão disponibilizados após concluir e validar a revisão. Consulte [funcionamento das atualizações](docs/maintenance.md).

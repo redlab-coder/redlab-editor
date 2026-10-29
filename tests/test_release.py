@@ -11,6 +11,11 @@ publish = importlib.util.module_from_spec(spec);spec.loader.exec_module(publish)
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_shared_update_modules_do_not_drift_between_products(self):
+        for filename in ('recovery.py','ui/update.js'):
+            contents=[(ROOT/'apps'/product/filename).read_bytes() for product in publish.PRODUCTS]
+            self.assertTrue(all(value==contents[0] for value in contents),filename)
+
     def test_medidas_has_a_separate_release_contract(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)

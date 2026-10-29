@@ -1,4 +1,5 @@
 'use strict';
+let bootRecovery=true,updateApplying=false,updateController=null;
 const $ = id => document.getElementById(id);
 const token = document.querySelector('meta[name="bottons-editor-token"]').content;
 const defaults = () => ({cx:.5,cy:.5,zoom:1,rotation:0,brightness:1,contrast:1,saturation:1,sharpness:1});
@@ -29,7 +30,7 @@ let authoritativeRevision=0;
 let editingAllowed=false, releaseOwnership=null, acquiring=false, passiveAfterYield=false, pendingRestore=null, sessionRevision=0;
 const tabId=crypto.randomUUID();
 const channel=typeof BroadcastChannel!=='undefined'?new BroadcastChannel('bottons-editor:'+token):null;
-const canEdit=()=>editingAllowed&&!closed&&!restoring&&!importing&&!exporting&&!clearing;
+const canEdit=()=>editingAllowed&&!bootRecovery&&!updateApplying&&!closed&&!restoring&&!importing&&!exporting&&!clearing;
 async function api(path, data, raw=false, filename='') {
   const response = await fetch('/api/'+path, {method:'POST',headers:{'X-BottonsEditor-Token':token,'Content-Type':raw?'application/octet-stream':'application/json',...(filename?{'X-Filename':encodeURIComponent(filename)}:{})},body:raw?data:JSON.stringify(data)});
   if (!response.ok) {const body = await response.json();const error=new Error(body.error || 'Não foi possível concluir.');error.status=response.status;throw error;}
@@ -72,13 +73,13 @@ async function thumbnailBlob(blob) {
   return new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
 }
 function saveSession() {
-  if(!canEdit())return;
+  if(!canEdit())return false;
   try{
     const latest=JSON.parse(localStorage.getItem(sessionKey));
-    if(latest?.token===token&&(latest.sessionRevision||0)>sessionRevision){queueRestore(latest);return;}
+    if(latest?.token===token&&(latest.sessionRevision||0)>sessionRevision){queueRestore(latest);return false;}
     sessionRevision++;
-    localStorage.setItem(sessionKey,JSON.stringify({token,sessionRevision,selected,template:activeTemplate,photos:photos.map(p=>({id:p.id,name:p.name,width:p.width,height:p.height,edits:{...p.edits},template:p.template}))}));
-  }catch(error){toast('Não foi possível guardar os ajustes. Mantenha esta aba aberta até exportar.');}
+    localStorage.setItem(sessionKey,JSON.stringify({token,sessionRevision,selected,template:activeTemplate,photos:photos.map(p=>({id:p.id,name:p.name,width:p.width,height:p.height,edits:{...p.edits},template:p.template}))}));return true;
+  }catch(error){toast('Não foi possível guardar os ajustes. Mantenha esta aba aberta até exportar.');return false;}
 }
 async function sourceFor(photo) {
   if(previewSources.has(photo.id))return previewSources.get(photo.id);
@@ -175,7 +176,7 @@ function renderLibrary() {
   $('sheet-summary').textContent=photos.length?`${photos.length} foto${photos.length>1?'s':''}${pages?' · '+pages+' folha'+(pages>1?'s':''):''}`:'';
   for(const id of ['add','drop','empty-add'])$(id).disabled=!canEdit()||importing||exporting;
   $('clear-all').hidden=!photos.length;$('clear-all').disabled=!photos.length||!canEdit();$('clear-confirm').disabled=clearing;$('clear-cancel').disabled=clearing;updateSliders();
-  if(keepListFocus)focusSelectedPhoto();
+  if(keepListFocus)focusSelectedPhoto();updateController?.paint();
 }
 function select(id) {if(selected!==id){drag=null;$('tile-frame').classList.remove('dragging');$('tile-image').getContext('2d').clearRect(0,0,$('tile-image').width,$('tile-image').height);}selected=id;revision++;renderLibrary();updateSliders();drawLive();renderEditor();saveSession();}
 function focusSelectedPhoto(){
@@ -317,18 +318,7 @@ $('export').onclick=async()=>{
   }catch(error){toast(error.message);}finally{exporting=false;renderLibrary();flushRestore();}
 };
 $('quit').onclick=async()=>{if(closed)return;try{await api('quit',{});closed=true;photos=[];editingAllowed=false;releaseOwnership?.();channel?.close();localStorage.removeItem(sessionKey);clearInterval(heartbeat);clearTimeout(debounce);clearTimeout(editorTimer);clearTimeout(syncTimer);clearTimeout(toastTimer);cancelAnimationFrame(liveFrame);document.querySelectorAll('body > :not(script)').forEach(el=>{if(el.tagName==='DIALOG')el.close();el.hidden=true;el.inert=true;});const goodbye=document.createElement('div');goodbye.innerHTML='<main style="padding-top:100px;text-align:center"><h1>Até a próxima memória.</h1><p>O Bottons Editor foi encerrado. Você pode fechar esta aba.</p></main>';document.body.append(goodbye);}catch(error){toast(error.message);}};
-async function refreshAppStatus(){
-  const state=await(await api('heartbeat',{})).json();if(closed)return;
-  const update=state.update,badge=$('update-status');
-  const visible=['available','downloading','ready'].includes(update?.state);
-  if(visible){
-    const label=update.state==='downloading'?'Baixando atualização':'Atualização disponível';
-    const detail=update.state==='ready'?`A versão ${update.version} está pronta e será instalada ao encerrar o Bottons Editor.`:update.state==='downloading'?`A versão ${update.version} está sendo baixada em segundo plano.`:`A versão ${update.version} está disponível. O download será tentado novamente; você também pode verificar pela bandeja.`;
-    if($('update-label').textContent!==label)$('update-label').textContent=label;
-    if(badge.title!==detail){badge.title=detail;badge.setAttribute('aria-label',label+'. '+detail);}
-  }
-  badge.hidden=!visible;
-}
+async function refreshAppStatus(){const response=await(await api('heartbeat',{})).json();if(!closed)updateController?.setState(response.update);}
 const heartbeat=setInterval(()=>refreshAppStatus().catch(()=>{clearInterval(heartbeat);toast('A sessão foi encerrada. Abra o Bottons Editor novamente.');}),20000);
 refreshAppStatus().catch(()=>{});
 async function restoreSession(saved) {
@@ -382,7 +372,7 @@ function tryAcquireEditor(wait=false){
     refreshOwnershipUI();await hold;releaseOwnership=null;editingAllowed=false;
   }).catch(error=>{clearTimeout(timeout);acquiring=false;toast(error.name==='AbortError'?'A outra aba está ocupada. Aguarde a operação terminar e tente novamente.':'Não foi possível ativar a edição nesta aba.');});
 }
-function yieldEditor(){if(!editingAllowed||importing||exporting||clearing||restoring)return false;saveSession();passiveAfterYield=true;editingAllowed=false;drag=null;$('tile-frame').classList.remove('dragging');clearTimeout(editorTimer);clearTimeout(debounce);refreshOwnershipUI();releaseOwnership?.();return true;}
+function yieldEditor(){if(bootRecovery||updateApplying||!editingAllowed||importing||exporting||clearing||restoring)return false;saveSession();passiveAfterYield=true;editingAllowed=false;drag=null;$('tile-frame').classList.remove('dragging');clearTimeout(editorTimer);clearTimeout(debounce);refreshOwnershipUI();releaseOwnership?.();return true;}
 if(channel)channel.onmessage=e=>{if(closed)return;if(e.data.type==='yield'&&editingAllowed){if(yieldEditor())channel.postMessage({type:'released',target:e.data.from});}if(e.data.type==='released'&&e.data.target===tabId){queueRestore(readSession());tryAcquireEditor(true);}};
 $('takeover').onclick=()=>{channel?.postMessage({type:'yield',from:tabId});tryAcquireEditor(true);};
 window.addEventListener('focus',()=>{if(!editingAllowed)tryAcquireEditor();});
@@ -447,3 +437,20 @@ $('clear-confirm').onclick=async()=>{
   try{await api('clear',{ids});for(const promise of previewSources.values())promise.then(bitmap=>bitmap.close()).catch(()=>{});previewSources.clear();for(const url of objectUrls.values())URL.revokeObjectURL(url);objectUrls.clear();sheetCache.clear();orientedSource=null;openedSheet=null;if(sheetDialogUrl)URL.revokeObjectURL(sheetDialogUrl);sheetDialogUrl=null;$('sheet-dialog-image').removeAttribute('src');photos=[];selected=null;$('clear-dialog').close();toast('Fotos removidas da sessão.');}
   catch(error){toast(error.message);}finally{clearing=false;renderLibrary();renderEditor();renderSheets();saveSession();flushRestore();if(!photos.length)$('empty-add').focus();}
 };
+
+function updateRestartScreen(){
+  closed=true;editingAllowed=false;releaseOwnership?.();channel?.close();clearInterval(heartbeat);
+  document.querySelectorAll('body > :not(script)').forEach(el=>{if(el.tagName==='DIALOG')el.close();el.hidden=true;el.inert=true;});
+  const notice=document.createElement('main');notice.style.paddingTop='100px';notice.style.textAlign='center';notice.innerHTML='<h1>Atualizando o editor…</h1><p>O programa será reaberto com seu lote. Você pode fechar esta aba.</p>';document.body.append(notice);
+}
+updateController=RedLabUpdate({
+  api,toast,closed:()=>closed,owner:()=>editingAllowed,canActivate:()=>editingAllowed&&!bootRecovery&&!closed,
+  starting:()=>acquiring||restoring,busy:()=>importing||exporting||clearing||restoring||sheetDownloading||!!drag,
+  setBootBusy:value=>{bootRecovery=value;},setApplying:value=>{updateApplying=value;},
+  snapshot:()=>({items:photos.map(item),ui:{selected_index:photos.findIndex(p=>p.id===selected),template:activeTemplate,guides:$('guides').getAttribute('aria-pressed')==='true'}}),
+  restore:async data=>{releaseBatch();photos=data.photos;activeTemplate=templates[data.ui.template]?data.ui.template:photos[0]?.template||'square';selected=photos[data.ui.selected_index]?.id||photos[0]?.id||null;
+      for(const photo of photos){try{const blob=await(await api('thumbnail',item(photo))).blob();photo.thumb=URL.createObjectURL(blob);objectUrls.set('thumb-'+photo.id,photo.thumb);}catch{photo.previewError=true;}}
+      const guides=data.ui.guides!==false;$('guides').setAttribute('aria-pressed',String(guides));$('tile-frame').classList.toggle('guides-off',!guides);},
+  refresh:()=>{renderLibrary();},afterRestore:()=>{renderEditor();drawLive();renderSheets();},save:saveSession,onRestart:updateRestartScreen
+});
+updateController.bootstrap();

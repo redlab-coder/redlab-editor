@@ -114,9 +114,5 @@ def run_tray(url, request_shutdown, has_photos, updater=None):
         pystray.Menu.SEPARATOR,
         pystray.MenuItem('Encerrar Bottons Editor', quit_app),
     ]
-    if updater:
-        items.extend([pystray.Menu.SEPARATOR,
-                      pystray.MenuItem(lambda item: updater.status, None, enabled=False),
-                      pystray.MenuItem('Verificar atualizações', lambda icon, item: updater.check_async())])
     icon = pystray.Icon('BottonsEditor', icon_image(), f'Bottons Editor {VERSION} · Estúdio de impressão', menu=pystray.Menu(*items))
     return icon

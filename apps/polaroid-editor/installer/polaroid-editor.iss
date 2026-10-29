@@ -46,7 +46,21 @@ Name: "{userdesktop}\Polaroid Editor"; Filename: "{app}\PolaroidEditor.exe"; Tas
 [Run]
 Filename: "{app}\PolaroidEditor.exe"; Description: "Abrir o Polaroid Editor"; Flags: nowait postinstall skipifsilent
 
+Filename: "{app}\PolaroidEditor.exe"; Parameters: "{code:RestartEditorParameters}"; Flags: nowait; Check: RestartEditorRequested
+
 [Code]
+function RestartEditorParameters(Param: String): String;
+begin
+  Result := '';
+  if ExpandConstant('{param:RESTARTNOBROWSER|0}') = '1' then
+    Result := '--no-browser';
+end;
+
+function RestartEditorRequested(): Boolean;
+begin
+  Result := ExpandConstant('{param:RESTARTEDITOR|0}') = '1';
+end;
+
 function OpenProcess(Access: LongWord; InheritHandle: Boolean; ProcessId: LongWord): THandle;
 external 'OpenProcess@kernel32.dll stdcall';
 function WaitForSingleObject(Handle: THandle; Milliseconds: LongWord): LongWord;

@@ -1,4 +1,5 @@
 'use strict';
+let bootRecovery=true,updateApplying=false,updateController=null;
 const $=id=>document.getElementById(id);
 const token=document.querySelector('meta[name="medidas-editor-token"]').content;
 const formats=JSON.parse($('formats-data').textContent);
@@ -12,7 +13,7 @@ let editingAllowed=false,acquiring=false,releaseOwnership=null,passiveAfterYield
 let revision=0,drag=null,frame=null,planTimer=null,toastTimer=null,draftDirty=false,lastJob=null,pendingExport=[];
 let oriented=null,restoreTask=null,cardQueue=[],cardLoading=false,openedPreview=null,dialogRevision=0;
 const sources=new Map(),urls=new Map(),cardPreviews=new Map();
-const canEdit=()=>editingAllowed&&!closed&&!importing&&!exporting&&!restoring&&!clearing;
+const canEdit=()=>editingAllowed&&!bootRecovery&&!updateApplying&&!closed&&!importing&&!exporting&&!restoring&&!clearing;
 const current=()=>photos.find(photo=>photo.id===selected);
 const item=photo=>({id:photo.id,name:photo.name,settings:{...photo.settings},reviewed:photo.reviewed});
 const pending=photo=>!!photo.planning||!photo.plan||!!photo.error||((photo.plan.needs_review||photo.metadata.warnings.length)&&!photo.reviewed);
@@ -22,12 +23,12 @@ const tabId=crypto.randomUUID();
 
 async function api(path,data={},raw=false,name=''){
   const response=await fetch('/api/'+path,{method:'POST',headers:{'X-MedidasEditor-Token':token,'Content-Type':raw?'application/octet-stream':'application/json',...(name?{'X-Filename':encodeURIComponent(name)}:{})},body:raw?data:JSON.stringify(data)});
-  if(!response.ok){const body=await response.json();throw new Error(body.error||'Não foi possível concluir.');}return response;
+  if(!response.ok){const body=await response.json();const error=new Error(body.error||'Não foi possível concluir.');error.status=response.status;throw error;}return response;
 }
 function toast(message){if(closed)return;clearTimeout(toastTimer);$('toast').textContent=message;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,6500);}
 function replaceUrl(key,blob){if(urls.has(key))URL.revokeObjectURL(urls.get(key));const url=URL.createObjectURL(blob);urls.set(key,url);return url;}
 function releaseImages(){cardObserver.disconnect();cardQueue=[];cardPreviews.clear();dialogRevision++;openedPreview=null;$('sheet-dialog').close();revision++;cancelAnimationFrame(frame);frame=null;clearTimeout(planTimer);drag=null;oriented=null;for(const promise of sources.values())promise.then(bitmap=>bitmap.close()).catch(()=>{});sources.clear();for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();}
-function saveSession(){if(!canEdit())return;try{const old=readSession();if(old?.token===token&&(old.sessionRevision||0)>sessionRevision){pendingRestore=old;flushRestore();return;}localStorage.setItem(sessionKey,JSON.stringify({token,sessionRevision:++sessionRevision,selected,filterReview,photos:photos.map(photo=>({...item(photo),width:photo.width,height:photo.height,metadata:photo.metadata}))}));}catch(error){toast('Não foi possível guardar os ajustes nesta aba. Salve o lote antes de fechar.');}}
+function saveSession(){if(!canEdit())return false;try{const old=readSession();if(old?.token===token&&(old.sessionRevision||0)>sessionRevision){pendingRestore=old;flushRestore();return false;}localStorage.setItem(sessionKey,JSON.stringify({token,sessionRevision:++sessionRevision,selected,filterReview,photos:photos.map(photo=>({...item(photo),width:photo.width,height:photo.height,metadata:photo.metadata}))}));return true;}catch(error){toast('Não foi possível guardar os ajustes nesta aba. Salve o lote antes de fechar.');return false;}}
 function readSession(){try{return JSON.parse(localStorage.getItem(sessionKey));}catch{return null;}}
 
 function statusText(photo){if(photo.error)return photo.error;if(!photo.plan)return 'Defina as medidas';if(pending(photo))return 'Recorte a conferir';return photo.plan.effective_ppi<299.9?'Pronta · resolução baixa':'Pronta para exportar';}
@@ -64,7 +65,7 @@ function refreshControls(){
   $('filter-review').setAttribute('aria-pressed',String(filterReview));$('filter-review').textContent=filterReview?'Mostrando a conferir':'Todas as fotos';
   $('session-banner').hidden=editingAllowed;$('selected-name').textContent=photo?.name||'Escolha uma foto';
   if(!exporting)$('export-label').textContent=photos.length>1?'Exportar lote':'Exportar JPEG';
-  $('export-preview').disabled=!canEdit()||!openedPreview;
+  $('export-preview').disabled=!canEdit()||!openedPreview;updateController?.paint();
 }
 function renderSettings(){
   const photo=current(),settings=photo?.settings||defaults();draftDirty=false;
@@ -274,7 +275,7 @@ $('project-file').onchange=async e=>{const file=e.target.files[0];if(!file||!can
 $('help').onclick=()=>$('help-dialog').showModal();document.querySelectorAll('[data-close-dialog]').forEach(button=>button.onclick=()=>button.closest('dialog').close());
 document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target!==dialog||clearing)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}));
 $('quit').onclick=async()=>{if(closed)return;try{await api('quit');closed=true;releaseImages();releaseOwnership?.();channel?.close();localStorage.removeItem(sessionKey);clearInterval(heartbeat);document.querySelectorAll('body > :not(script)').forEach(el=>{if(el.tagName==='DIALOG')el.close();el.hidden=true;el.inert=true;});const goodbye=document.createElement('div');goodbye.innerHTML='<main class="goodbye"><h1>Até a próxima impressão.</h1><p>O Medidas Editor foi encerrado. Você pode fechar esta aba.</p></main>';document.body.append(goodbye);}catch(error){toast(error.message);}};
-async function refreshStatus(){const state=await(await api('heartbeat')).json();const update=state.update||{};$('update-status').hidden=!['available','downloading','ready'].includes(update.state);$('update-label').textContent=update.state==='downloading'?'Baixando atualização':'Atualização disponível';}
+async function refreshStatus(){const response=await(await api('heartbeat',{})).json();if(!closed)updateController?.setState(response.update);}
 const heartbeat=setInterval(()=>{refreshStatus().catch(()=>{clearInterval(heartbeat);toast('A sessão foi encerrada. Abra o Medidas Editor novamente.');});},20000);
 
 function restoreSession(saved){
@@ -306,3 +307,18 @@ window.addEventListener('focus',()=>{if(!editingAllowed)tryAcquireEditor();});
 window.addEventListener('pagehide',()=>{saveSession();editingAllowed=false;releaseOwnership?.();});
 window.addEventListener('pageshow',e=>{if(e.persisted){pendingRestore=readSession();flushRestore();tryAcquireEditor();}});
 renderSettings();renderLibrary();drawLive();tryAcquireEditor();refreshStatus().catch(()=>{});
+
+function updateRestartScreen(){
+  closed=true;editingAllowed=false;releaseOwnership?.();channel?.close();clearInterval(heartbeat);
+  document.querySelectorAll('body > :not(script)').forEach(el=>{if(el.tagName==='DIALOG')el.close();el.hidden=true;el.inert=true;});
+  const notice=document.createElement('main');notice.style.paddingTop='100px';notice.style.textAlign='center';notice.innerHTML='<h1>Atualizando o editor…</h1><p>O programa será reaberto com seu lote. Você pode fechar esta aba.</p>';document.body.append(notice);
+}
+updateController=RedLabUpdate({
+  api,toast,closed:()=>closed,owner:()=>editingAllowed,canActivate:()=>editingAllowed&&!bootRecovery&&!closed,
+  starting:()=>acquiring||restoring,busy:()=>importing||exporting||clearing||restoring||!!drag||photos.some(p=>p.planning),
+  setBootBusy:value=>{bootRecovery=value;},setApplying:value=>{updateApplying=value;},
+  snapshot:()=>({items:photos.map(item),ui:{selected_index:photos.findIndex(p=>p.id===selected),filter_review:filterReview,draft_width:$('width-cm').value,draft_height:$('height-cm').value,draft_dirty:draftDirty,checked_indices:photos.map((p,i)=>checked.has(p.id)?i:-1).filter(i=>i>=0)}}),
+  restore:async data=>{releaseImages();photos=[];checked.clear();for(const photo of data.photos)await hydrate(photo);selected=photos[data.ui.selected_index]?.id||photos[0]?.id||null;filterReview=!!data.ui.filter_review;checked=new Set((data.ui.checked_indices||[]).map(i=>photos[i]?.id).filter(Boolean));renderSettings();if(data.ui.draft_dirty){$('width-cm').value=data.ui.draft_width||'';$('height-cm').value=data.ui.draft_height||'';draftDirty=true;}},
+  refresh:()=>{renderLibrary();},afterRestore:()=>{renderSummary();drawLive();renderCards();},save:saveSession,onRestart:updateRestartScreen
+});
+updateController.bootstrap();

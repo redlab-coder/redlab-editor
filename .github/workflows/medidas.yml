@@ -32,6 +32,8 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Validar encerramento pela bandeja e interface
         run: python ../../scripts/check_shutdown.py medidas-editor
+      - name: Validar atualização e recuperação na interface
+        run: python ../../scripts/check_update_flow.py medidas-editor
       - name: Testar contratos de distribuição
         working-directory: .
         run: python -m unittest discover -s tests -v

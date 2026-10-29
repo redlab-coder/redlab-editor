@@ -101,3 +101,40 @@ class UpdateTests(unittest.TestCase):
             release.set();thread.join(timeout=3)
         self.assertEqual(manager.snapshot(),{'state':'ready','version':'1.1.0'})
         self.assertEqual(self.manager().snapshot(),{'state':'ready','version':'1.1.0'})
+
+
+class RestartUpdateTests(unittest.TestCase):
+    setUp=UpdateTests.setUp
+    opener=UpdateTests.opener
+    manager=UpdateTests.manager
+    def test_restart_parameter_is_added_only_after_explicit_request(self):
+        manager=self.manager();manager.check()
+        with patch('updater.subprocess.Popen') as launch:
+            manager.restart_requested=True
+            self.assertTrue(manager.install_on_exit())
+            self.assertIn('/RESTARTEDITOR=1',launch.call_args.args[0])
+    def test_failed_installer_launch_keeps_verified_download_and_checkpoint(self):
+        manager=self.manager();manager.check();manager.restart_requested=True
+        recovery=manager.root/'recovery';recovery.mkdir();marker=recovery/'current.json';marker.write_text('checkpoint')
+        with patch('updater.subprocess.Popen',side_effect=OSError('installation blocked')):
+            self.assertFalse(manager.install_on_exit())
+        self.assertEqual(marker.read_text(),'checkpoint');self.assertTrue(manager.valid_download(manager.pending))
+    def test_no_browser_restart_is_explicit_and_separate_from_normal_updates(self):
+        manager=self.manager();manager.check();manager.restart_requested=True;manager.restart_no_browser=True
+        with patch('updater.subprocess.Popen') as launch:
+            self.assertTrue(manager.install_on_exit());self.assertIn('/RESTARTNOBROWSER=1',launch.call_args.args[0])
+    def test_cached_newer_update_survives_a_stale_feed(self):
+        manager=self.manager();manager.check()
+        older=dict(self.manifest,version='1.0.0')
+        older['url']=older['url'].replace('1.1.0','1.0.0')
+        manager.opener=lambda request,timeout:io.BytesIO(json.dumps(older).encode())
+        manager.check()
+        self.assertEqual(manager.snapshot(),{'state':'ready','version':'1.1.0'})
+    def test_periodic_checks_use_half_hour_and_retry_in_five_minutes(self):
+        for failed,interval in [(False,1800),(True,300)]:
+            manager=self.manager();manager.stopped=Mock(wait=Mock(side_effect=[False,False,True]),is_set=Mock(return_value=False))
+            def check():manager._check_failed=failed
+            manager.check=check
+            with patch('updater.threading.Thread') as thread:
+                manager.start();thread.call_args.kwargs['target']()
+            self.assertEqual([call.args[0] for call in manager.stopped.wait.call_args_list],[1,interval,interval])
