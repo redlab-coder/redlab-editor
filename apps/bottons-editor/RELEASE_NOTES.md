@@ -1,11 +1,10 @@
-# Bottons Editor 1.2.0
+# Bottons Editor 1.2.1
 
-Escolha um modelo por imagem, combine bottons na mesma folha quando houver espaço seguro e salve o trabalho em `.bottons`. Medidas de corte, sangria e qualidade de impressão permanecem preservadas. O Bottons continua sem etapa de conferência.
+Versão de manutenção para integrar o pacote completo RedLab Editor.
 
-- Painel da bandeja com ações de abrir e encerrar, navegação por teclado e ajuste à escala da tela.
-- Encerramento direto pelo cabeçalho ou pela bandeja, inclusive com fotos carregadas.
-- Verificação de atualizações ao iniciar e a cada 30 minutos; novas tentativas após 5 minutos quando necessário.
-- Botão **Atualizar e reiniciar** com cópia local do lote e recuperação dos originais, ajustes e seleção.
-- Interface revisada em telas estreitas, com toque, contraste e cores de interação da própria ferramenta.
+- Atalho na pasta **RedLab Editor** do menu Iniciar.
+- Remove o atalho antigo solto no menu Iniciar, mantendo o nome e o ícone da ferramenta.
+- Instalação, desinstalação e atualizações continuam independentes.
+- Projetos, ajustes e funções de edição e impressão preservados.
 
-Salve seu lote ou exporte o trabalho antes desta primeira atualização a partir de uma versão anterior. A recuperação pelo novo botão passa a funcionar nas versões atuais. O encerramento comum não substitui salvar o lote.
+Também pode ser instalado individualmente. Salve o lote e encerre o editor antes da instalação manual.

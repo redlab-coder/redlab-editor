@@ -1,5 +1,13 @@
 # Alterações do RedLab Editor
 
+## Pacote completo 1.0.0 — 29/10/2026
+
+- Um download para instalar Bottons 1.2.1, Polaroid 1.2.1 e Medidas 1.1.1, com seleção opcional por ferramenta.
+- Instalação offline e por usuário, sem um quarto aplicativo ou atualizador.
+- Atalhos reunidos na pasta RedLab Editor, com manutenção independente dos editores.
+- Verificação dos instaladores, proteção contra regressão de versão e resultado por ferramenta.
+
+
 ## Revisão da família — 29/10/2026
 
 - **[Bottons Editor 1.2.0](https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.0):** modelos individuais, composição mista segura e lotes `.bottons`.

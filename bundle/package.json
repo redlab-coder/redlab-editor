@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "products": {
+    "bottons-editor": "1.2.1",
+    "polaroid-editor": "1.2.1",
+    "medidas-editor": "1.1.1"
+  }
+}

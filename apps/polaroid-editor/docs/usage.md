@@ -1,6 +1,6 @@
 # Usar o Polaroid Editor
 
-Instale o `PolaroidEditor-Setup-<versão>.exe` nas [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.2.0). A instalação é por usuário, com atalho no menu Iniciar. A interface abre no navegador padrão e o aplicativo permanece na bandeja do Windows. Não precisa instalar Python, criar conta ou enviar fotografias para um serviço externo.
+Instale o `PolaroidEditor-Setup-<versão>.exe` nas [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.2.1). A instalação é por usuário, com atalho no menu Iniciar. A interface abre no navegador padrão e o aplicativo permanece na bandeja do Windows. Não precisa instalar Python, criar conta ou enviar fotografias para um serviço externo.
 
 ## Preparar as fotos
 

@@ -29,7 +29,7 @@ def main():
                 raise SystemExit('Teste cancelado: há uma instalação existente de Moldura/Bottons Editor.')
         except FileNotFoundError:pass
     programs=Path(os.environ['APPDATA'])/'Microsoft/Windows/Start Menu/Programs'
-    if any((programs/(name+'.lnk')).exists() for name in ('Moldura','Bottons Editor')):
+    if any((programs/(name+'.lnk')).exists() for name in ('Moldura','Bottons Editor')) or (programs/'RedLab Editor/Bottons Editor.lnk').exists():
         raise SystemExit('Teste cancelado: há atalhos existentes do usuário.')
     app=ROOT/'apps/bottons-editor';space=ROOT/'artifacts/migration';space.mkdir(parents=True,exist_ok=True)
     legacy=space/'source';legacy.mkdir(exist_ok=True)
@@ -82,7 +82,8 @@ def main():
             else:raise AssertionError('Migração não concluiu: '+log[-2000:])
             assert not (directory/'Moldura.exe').exists()
             assert not (programs/'Moldura.lnk').exists()
-            assert (programs/'Bottons Editor.lnk').exists()
+            assert not (programs/'Bottons Editor.lnk').exists()
+            assert (programs/'RedLab Editor/Bottons Editor.lnk').exists()
             brand='BottonsEditor';current,state,health=start('BottonsEditor.exe','BottonsEditor-Installed')
             assert health['product']=='Bottons Editor' and health['version']==config['VERSION']
             assert (directory/'installed.marker').read_text(encoding='utf-8').strip()=='BottonsEditor'

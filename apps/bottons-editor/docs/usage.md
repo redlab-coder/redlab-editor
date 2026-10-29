@@ -1,6 +1,6 @@
 # Usar o Bottons Editor
 
-Baixe o `BottonsEditor-Setup-<versão>.exe` na página de [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.0) e execute o instalador. A instalação é por usuário, com atalho no menu Iniciar e desinstalação pelas configurações do Windows. A interface abre no navegador padrão e o ícone fica na bandeja, ao lado do relógio. Não precisa instalar Python ou conectar uma conta. A edição e a exportação funcionam offline. Windows 10/11 de 64 bits.
+Baixe o `BottonsEditor-Setup-<versão>.exe` na página de [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.1) e execute o instalador. A instalação é por usuário, com atalho no menu Iniciar e desinstalação pelas configurações do Windows. A interface abre no navegador padrão e o ícone fica na bandeja, ao lado do relógio. Não precisa instalar Python ou conectar uma conta. A edição e a exportação funcionam offline. Windows 10/11 de 64 bits.
 
 A versão instalada consulta atualizações ao iniciar e a cada 30 minutos, baixa e verifica o instalador. Quando estiver pronto, o cabeçalho oferece **Atualizar e reiniciar**, que guarda uma cópia local do lote e reabre o programa com o trabalho recuperado. Sem conexão, a edição continua disponível. [Funcionamento das atualizações](../../../docs/updates.md).
 

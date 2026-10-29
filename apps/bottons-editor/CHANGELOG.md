@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.2.1 — 29/10/2026
+
+- Instalação individual ou pelo pacote completo RedLab Editor.
+- Atalho organizado na pasta RedLab Editor no menu Iniciar, inclusive após futuras atualizações.
+- Identidade instalada, projetos e canal de atualização preservados.
+
+
 ## 1.2.0 — 29/10/2026
 
 - Escolha por foto. Quadrado e Redondo G, M e P com modelos individuais.

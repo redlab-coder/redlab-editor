@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "1.1.0"
+  #define AppVersion "1.1.1"
 #endif
 [Setup]
 AppId={{5C989A6A-14CF-42F7-B187-3C1BF92EA9AA}
@@ -42,8 +42,11 @@ Source: "..\assets\installed.marker"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\THIRD-PARTY.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\licenses\*"; DestDir: "{app}\licenses"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[InstallDelete]
+Type: files; Name: "{userprograms}\Medidas Editor.lnk"
+
 [Icons]
-Name: "{userprograms}\Medidas Editor"; Filename: "{app}\MedidasEditor.exe"
+Name: "{userprograms}\RedLab Editor\Medidas Editor"; Filename: "{app}\MedidasEditor.exe"
 Name: "{userdesktop}\Medidas Editor"; Filename: "{app}\MedidasEditor.exe"; Tasks: desktopicon
 
 [Run]

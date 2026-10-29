@@ -1,5 +1,13 @@
 # Validação da integração
 
+## Pacote completo 1.0.0
+
+O conjunto usa Bottons 1.2.1, Polaroid 1.2.1 e Medidas 1.1.1, com o mesmo motor de impressão das versões anteriores. Os contratos da raiz incluem a composição fixa, origem e integridade dos componentes, identidade instalada e atalhos da família.
+
+O workflow `bundle.yml` exige instalação completa e parcial, execução dos três aplicativos reais, proteção contra regressão, reaproveitamento da pasta existente, preservação do trabalho, bloqueio de editores selecionados em uso, continuidade após falha de um instalador e manutenção independente. Captura a interface real de boas-vindas e seleção, inclusive redimensionada. Na tag, repete essas verificações usando as releases públicas exatas.
+
+Esses cenários usam exclusivamente uma conta Windows descartável. A validação física de escala e cor na Noritsu permanece pendente.
+
 ## Entrega da família — 29/10/2026
 
 Versões: Bottons 1.2.0, Polaroid 1.2.0 e Medidas 1.1.0. Cada tag executa novamente os testes do aplicativo, contratos de distribuição, encerramento, recuperação, interface e painel nativo antes de disponibilizar o instalador e a edição portátil. Os binários publicados são os mesmos aprovados no workflow Windows.

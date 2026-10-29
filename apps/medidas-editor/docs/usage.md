@@ -1,6 +1,6 @@
 # Guia de uso
 
-Instale `MedidasEditor-Setup-1.1.0.exe` ou abra a [versão portátil](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.1.0). A interface abre no navegador padrão; o programa fica disponível na bandeja do Windows até ser encerrado. Não é necessário instalar Python. A edição e a exportação funcionam offline.
+Instale `MedidasEditor-Setup-1.1.1.exe` ou abra a [versão portátil](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.1.1). A interface abre no navegador padrão; o programa fica disponível na bandeja do Windows até ser encerrado. Não é necessário instalar Python. A edição e a exportação funcionam offline.
 
 ## Preparar uma foto
 

@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "1.2.0"
+  #define AppVersion "1.2.1"
 #endif
 [Setup]
 AppId={{D75F765B-4424-4C77-B57B-E5B0C574E19D}
@@ -40,12 +40,13 @@ Source: "..\dist\BottonsEditor-Portable.exe"; DestDir: "{app}"; DestName: "Botto
 Source: "..\assets\installed.marker"; DestDir: "{app}"; Flags: ignoreversion
 
 [InstallDelete]
+Type: files; Name: "{userprograms}\Bottons Editor.lnk"
 Type: files; Name: "{app}\Moldura.exe"
 Type: files; Name: "{userprograms}\Moldura.lnk"
 Type: files; Name: "{userdesktop}\Moldura.lnk"
 
 [Icons]
-Name: "{userprograms}\Bottons Editor"; Filename: "{app}\BottonsEditor.exe"
+Name: "{userprograms}\RedLab Editor\Bottons Editor"; Filename: "{app}\BottonsEditor.exe"
 Name: "{userdesktop}\Bottons Editor"; Filename: "{app}\BottonsEditor.exe"; Tasks: desktopicon
 
 [Run]

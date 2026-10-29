@@ -1,5 +1,5 @@
 """Single version source for the application, installer and releases."""
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 REPOSITORY = "redlab-coder/redlab-editor"
 PORTABLE_NAMESPACE = 'BottonsEditor-Portable'
 INSTALLED_MUTEX = 'Local\\BottonsEditor.Installed.Running'
