@@ -36,3 +36,7 @@ A versão em execução aparece ao lado do nome Bottons Editor. Quando uma nova 
 ## Transição do Moldura
 
 A versão de transição no repositório antigo permite chegar ao Bottons Editor pelo atualizador existente. O programa deve ser encerrado normalmente depois de exportar as folhas. A identidade de instalação é preservada; o nome, executável e atalhos passam a Bottons Editor. Uma instalação atualizada pode manter a pasta antiga para preservar o caminho registrado; instalações novas usam a pasta Bottons Editor.
+
+## Encerramento — próxima versão
+
+O botão de desligar e a opção Encerrar na bandeja finalizam o editor diretamente, sem confirmação. Uma operação em andamento é interrompida; resultados incompletos não são disponibilizados. Exporte ou salve seu trabalho antes de encerrar. Os originais e lotes já salvos são preservados. A aba poderá permanecer na tela de encerramento, mas o processo e o serviço local são finalizados.

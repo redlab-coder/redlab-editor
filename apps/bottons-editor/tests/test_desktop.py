@@ -24,7 +24,7 @@ class DesktopTests(unittest.TestCase):
                 if second:second.close()
                 first.close()
 
-    def test_tray_open_and_confirmed_exit(self):
+    def test_tray_open_and_direct_exit(self):
         stop=Mock()
         tray=run_tray('http://127.0.0.1:12345',stop,lambda:True)
         items=list(tray.menu.items)
@@ -33,9 +33,9 @@ class DesktopTests(unittest.TestCase):
         with patch('desktop.webbrowser.open') as open_browser:
             items[0](tray)
             open_browser.assert_called_once_with('http://127.0.0.1:12345')
-        with patch('desktop.confirm_shutdown',return_value=False):items[2](tray)
-        stop.assert_not_called()
-        with patch('desktop.confirm_shutdown',return_value=True):items[2](tray)
+        # A loaded batch must not ask a question or block the command.
+        with patch('ctypes.windll.user32.MessageBoxW', side_effect=AssertionError('Unexpected confirmation')):
+            items[2](tray)
         stop.assert_called_once()
 
     def test_icon(self):

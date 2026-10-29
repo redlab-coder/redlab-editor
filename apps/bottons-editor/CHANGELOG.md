@@ -1,5 +1,11 @@
 # Histórico
 
+## Em desenvolvimento — encerramento
+
+- Encerramento direto pela interface e bandeja, inclusive com fotos carregadas.
+- Limpeza com espera limitada para operações de imagem e cancelamento de tarefas ao sair.
+- Validação em processos Windows isolados com a bandeja real e o navegador.
+
 ## 1.1.0 — 2026-10-20
 
 - Moldura passa a Bottons Editor na coleção RedLab Editor, com atualização independente e transição pelo instalador existente.

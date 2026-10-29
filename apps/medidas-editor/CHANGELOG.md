@@ -1,5 +1,11 @@
 # Alterações
 
+## Em desenvolvimento — encerramento
+
+- Encerramento direto pela interface e bandeja, inclusive com fotos carregadas.
+- Limpeza com espera limitada para operações de imagem e cancelamento de tarefas ao sair.
+- Validação em processos Windows isolados com a bandeja real e o navegador.
+
 ## 1.0.1 — 26/10/2026
 
 - Preparação com miniaturas da composição final e prévia ampliada, seguindo os outros editores.

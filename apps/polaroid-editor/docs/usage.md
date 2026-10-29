@@ -42,3 +42,7 @@ JPG, PNG, WebP, BMP e TIFF (primeira página), até 50 MB e 60 megapixels por fo
 Imprima a **100% / tamanho real**. Confirme as medidas e o corte com uma amostra antes de produzir um pedido inteiro.
 
 [← Documentação](README.md)
+
+## Encerramento — próxima versão
+
+O botão de desligar e a opção Encerrar na bandeja finalizam o editor diretamente, sem confirmação. Uma operação em andamento é interrompida; resultados incompletos não são disponibilizados. Exporte ou salve seu trabalho antes de encerrar. Os originais e lotes já salvos são preservados. A aba poderá permanecer na tela de encerramento, mas o processo e o serviço local são finalizados.
