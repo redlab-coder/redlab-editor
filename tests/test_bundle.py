@@ -111,6 +111,7 @@ class BundleTests(unittest.TestCase):
             self.assertIn('Name: "{userprograms}\\RedLab Editor\\'+name+'";', text)
             self.assertIn('Type: files; Name: "{userprograms}\\'+name+'.lnk"', text)
             self.assertIn('PrivilegesRequired=lowest', text)
+            self.assertEqual(text.count('#include "..\\..\\..\\scripts\\installer_version_guard.iss"'), 1)
 
     def test_suite_cannot_register_a_fourth_app_or_write_update_channels(self):
         script = (ROOT/'bundle/redlab-editor.iss').read_text(encoding='utf-8')

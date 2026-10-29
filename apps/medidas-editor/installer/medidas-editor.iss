@@ -62,6 +62,8 @@ begin
     Result := '--no-browser';
 end;
 
+#include "..\..\..\scripts\installer_version_guard.iss"
+
 function RestartEditorRequested(): Boolean;
 begin
   Result := ExpandConstant('{param:RESTARTEDITOR|0}') = '1';

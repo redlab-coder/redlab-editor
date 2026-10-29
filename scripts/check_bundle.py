@@ -135,6 +135,11 @@ def main():
             assert digest(application('bottons-editor')) == before
             assert sentinel.read_bytes() == b'preserve this user work'
             assert report['polaroid-editor']['state'] == 'updated'
+            child = BUNDLE/'build/inputs/bottons-editor'/f'BottonsEditor-Setup-{config["products"]["bottons-editor"]}.exe'
+            downgrade = subprocess.run([str(child), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'], timeout=90, creationflags=flags)
+            assert downgrade.returncode != 0
+            assert installed('bottons-editor')['DisplayVersion'] == '9999.0.0'
+            assert digest(application('bottons-editor')) == before
             set_version('bottons-editor', config['products']['bottons-editor'])
             # An in-use selected editor blocks the entire batch before any update.
             start('medidas-editor')
@@ -164,7 +169,6 @@ def main():
             assert installed('polaroid-editor') is None
             collision.unlink()
             # An independent installer still repairs its own app and shortcut.
-            child = BUNDLE/'build/inputs/bottons-editor'/f'BottonsEditor-Setup-{config["products"]["bottons-editor"]}.exe'
             subprocess.run([str(child), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS='], check=True, timeout=90, creationflags=flags)
             assert (programs/'RedLab Editor/Bottons Editor.lnk').exists()
             assert not (programs/'Bottons Editor.lnk').exists()
