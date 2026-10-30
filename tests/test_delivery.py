@@ -162,6 +162,12 @@ class ArtifactTests(unittest.TestCase):
         with patch.object(artifacts, 'source_sha', return_value='a'*40), patch.object(artifacts, 'gh', side_effect=[json.dumps({'workflow_runs': [candidate]}), json.dumps({'artifacts': []})]):
             self.assertIsNone(artifacts.find('bottons-editor', 0))
 
+    def test_manual_reuse_check_does_not_wait_for_itself(self):
+        own_run = dict(self.approved_run(), conclusion=None, status='in_progress', event='workflow_dispatch')
+        with patch.dict(artifacts.os.environ, {'GITHUB_RUN_ID': '12'}), patch.object(artifacts, 'source_sha', return_value='a'*40), patch.object(artifacts, 'gh', return_value=json.dumps({'workflow_runs': [own_run]})), patch.object(artifacts.time, 'sleep') as sleep:
+            self.assertIsNone(artifacts.find('bottons-editor'))
+            sleep.assert_not_called()
+
 
 class BundleInputTests(unittest.TestCase):
     def test_published_pins_are_reused_and_only_unpublished_versions_are_built(self):
