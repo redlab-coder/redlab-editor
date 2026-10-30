@@ -132,7 +132,9 @@ def find(product, wait_seconds=600):
     deadline = time.monotonic()+wait_seconds
     while True:
         response = json.loads(gh('api', f'repos/{REPOSITORY}/actions/workflows/{Path(workflow(product)).name}/runs?head_sha={commit}&per_page=100'))
-        candidates = response['workflow_runs']
+        # A manual reuse check runs on main too; it cannot wait for itself.
+        candidates = [run for run in response['workflow_runs']
+                      if str(run['id']) != os.environ.get('GITHUB_RUN_ID')]
         for run in candidates:
             if trusted_run(run, product, commit):
                 artifacts = json.loads(gh('api', f'repos/{REPOSITORY}/actions/runs/{run["id"]}/artifacts'))['artifacts']
