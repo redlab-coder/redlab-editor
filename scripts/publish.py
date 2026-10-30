@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import time
 
 REPOSITORY = 'redlab-coder/redlab-editor'
@@ -19,7 +20,12 @@ def gh(*args, body=None):
     command = ['gh', *args]
     if body is not None:
         command += ['--input', '-']
-    return subprocess.check_output(command, input=json.dumps(body).encode() if body is not None else None).decode('utf-8')
+    try:
+        return subprocess.check_output(command, input=json.dumps(body).encode() if body is not None else None,
+                                       stderr=subprocess.PIPE).decode('utf-8')
+    except subprocess.CalledProcessError as error:
+        sys.stderr.write(error.stderr.decode('utf-8', errors='replace'))
+        raise
 
 
 def version_tuple(value):

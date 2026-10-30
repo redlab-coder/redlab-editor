@@ -1,0 +1,4 @@
+# Test tools and build constraints. Application requirements remain independent.
+playwright==1.59.0
+Pillow==12.1.1
+PyYAML==6.0.3
