@@ -2,11 +2,11 @@
 
 As ferramentas são independentes em `apps/bottons-editor`, `apps/polaroid-editor` e `apps/medidas-editor`. Cada pasta contém o aplicativo Python, a interface local, o instalador e os testes. Consulte também o guia de desenvolvimento de cada aplicativo.
 
-Use um ambiente Python próprio para cada ferramenta e instale seu `requirements-build.txt`. Os testes de navegador usam Playwright e Chromium; os testes de instalação exigem Windows e uma conta isolada sem instalações reais dessas ferramentas.
+Use um ambiente Python próprio para cada ferramenta e instale seu `requirements-build.txt` junto ao `requirements-ci.txt` da raiz para reproduzir as ferramentas de teste aprovadas. Os testes de navegador usam Playwright e Chromium; os testes de instalação exigem Windows e uma conta isolada sem instalações reais dessas ferramentas.
 
 Na raiz, execute `python -m unittest discover -s tests -v` para validar os contratos de publicação e a comparação de impressão com o Moldura aprovado. Dentro da pasta do aplicativo, execute o mesmo comando para testar sua API, motor e atualização.
 
-Os workflows de cada produto compilam e testam o executável portátil, a interface e o instalador no Windows. O Bottons Editor também testa a atualização a partir de uma compilação do Moldura histórico. Os arquivos publicados são os mesmos aprovados nesses testes.
+Os workflows de cada produto chamam `_editor-windows.yml`: na revisão, validam código e interface; no `main`, compilam e testam o executável portátil, a interface e o instalador no Windows. O Bottons Editor também testa a atualização a partir de uma compilação do Moldura histórico. A tag pode reutilizar a aprovação completa do commit exato no `main`, conferindo sua origem e integridade, ou executar uma validação completa quando o artefato não estiver disponível. Consulte o [fluxo de entregas](delivery.md) para preparar versões e entender os critérios.
 
 Os commits originais foram importados com `git subtree`, sem compactar o histórico. O teste de regressão consulta o motor original pelo commit preservado; mantenha o histórico completo no checkout de CI.
 
@@ -38,6 +38,6 @@ python scripts/bundle.py fetch
 python scripts/bundle.py build
 ```
 
-As versões fixadas precisam estar publicadas para `fetch`. Use uma pasta de entradas nova em uma nova tentativa (`--inputs <pasta>`). O workflow do PR obtém entradas compiladas do próprio código; a tag usa os instaladores públicos exatos. Não execute `check_bundle.py` ou `capture_bundle.py` na conta do operador: eles exigem o runner Windows descartável. A validação de interface captura somente a janela criada pelo próprio teste.
+As versões fixadas precisam estar publicadas para `fetch`. Use uma pasta de entradas nova em uma nova tentativa (`--inputs <pasta>`). O workflow do PR baixa releases públicas exatas e só compila componentes ainda não publicados, desde que correspondam ao código. A tag exige todos os componentes públicos. Não execute `check_bundle.py` ou `capture_bundle.py` na conta do operador: eles exigem o runner Windows descartável. A validação de interface captura somente a janela criada pelo próprio teste.
 
 O instalador suporta `/COMPONENTS=bottons_editor,polaroid_editor,medidas_editor` e `/TASKS=desktopicon`, além dos parâmetros padrão do Inno. Para implantação administrada e testes, `/INSTALLROOT=<pasta>` altera a base apenas das instalações novas; instalações registradas mantêm sua localização. `/LOGDIR=<pasta>` altera o destino dos registros e do resumo `result.ini`. Instalações parciais retornam 1; falhas de preparação usam o código padrão do Inno. O pacote não força o fechamento de editores nem reverte instalações já concluídas.

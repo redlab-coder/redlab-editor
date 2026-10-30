@@ -1,5 +1,14 @@
 # Alterações do RedLab Editor
 
+## Processo de entrega — 30/10/2026
+
+- Validação compartilhada com revisão de código e aprovação completa do executável no Windows.
+- Publicação pode reutilizar a compilação aprovada do commit exato, com origem e integridade verificadas; ausência de artefato exige nova validação completa.
+- Cache de dependências, versões explícitas de ferramentas de teste e envio de binários sem recompressão.
+- Pacote reutiliza os editores públicos fixados e compila somente componentes ainda não publicados durante sua preparação.
+- Preparação de versões e links por comando, com prévia e publicação separada após a integração.
+- Documentação e capturas não acionam compilações de aplicativos. Versões públicas e canais existentes preservados.
+
 ## Bottons Editor 1.2.3 e pacote 1.0.2 — 29/10/2026
 
 Quadrado alinhado ao centro da coluna de redondos, com centralização vertical por coluna independente. Tamanhos, sangrias e espaçamento de segurança preservados. Capturas atualizadas. Polaroid e Medidas mantêm suas versões.

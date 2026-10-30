@@ -2,25 +2,42 @@ name: RedLab Editor · Pacote completo
 on:
   push:
     branches: [main]
-    paths: ['bundle/**', 'scripts/bundle*.py', 'scripts/check_bundle.py', 'scripts/capture_bundle.py', 'scripts/publish_bundle.py', 'tests/test_bundle.py', '.github/workflows/bundle.yml']
+    paths: ['bundle/**', '!bundle/*.md', 'scripts/bundle*.py', 'scripts/check_bundle.py', 'scripts/capture_bundle.py', 'scripts/publish_bundle.py', 'scripts/publish.py', 'scripts/installer_version_guard.iss', 'tests/test_bundle.py', 'requirements-ci.txt', '.github/workflows/bundle.yml']
     tags: ['redlab-v*']
   pull_request:
-    paths: ['bundle/**', 'scripts/bundle*.py', 'scripts/check_bundle.py', 'scripts/capture_bundle.py', 'scripts/publish_bundle.py', 'tests/test_bundle.py', '.github/workflows/bundle.yml']
+    paths: ['bundle/**', '!bundle/*.md', 'scripts/bundle*.py', 'scripts/check_bundle.py', 'scripts/capture_bundle.py', 'scripts/publish_bundle.py', 'scripts/publish.py', 'scripts/installer_version_guard.iss', 'tests/test_bundle.py', 'requirements-ci.txt', '.github/workflows/bundle.yml']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: redlab-bundle-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  inputs:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.plan.outputs.build }}
+      published: ${{ steps.plan.outputs.published }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14.9'
+      - name: Planejar somente as compilações necessárias
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUIRE_PUBLIC: ${{ startsWith(github.ref, 'refs/tags/redlab-v') && '--require-public' || '' }}
+        run: python scripts/bundle.py plan $REQUIRE_PUBLIC
   build-editors:
-    if: ${{ !startsWith(github.ref, 'refs/tags/redlab-v') }}
+    needs: inputs
+    if: needs.inputs.outputs.build != '[]'
     runs-on: windows-latest
     timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        product: [bottons-editor, polaroid-editor, medidas-editor]
+        product: ${{ fromJSON(needs.inputs.outputs.build) }}
     defaults:
       run:
         working-directory: apps/${{ matrix.product }}
@@ -28,10 +45,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: '3.14'
+          python-version: '3.14.9'
+          cache: pip
+          cache-dependency-path: |
+            apps/${{ matrix.product }}/requirements*.txt
+            requirements-ci.txt
       - name: Preparar compilação do editor
         run: |
-          python -m pip install -r requirements-build.txt
+          python -m pip install -r requirements-build.txt -r ../../requirements-ci.txt
           ./scripts/bootstrap_inno.ps1
       - name: Compilar instalador independente
         run: python scripts/build_windows.py
@@ -40,9 +61,11 @@ jobs:
           name: ${{ matrix.product }}
           path: apps/${{ matrix.product }}/dist/*
           if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
   windows:
-    needs: build-editors
-    if: ${{ !cancelled() && (needs.build-editors.result == 'success' || needs.build-editors.result == 'skipped') }}
+    needs: [inputs, build-editors]
+    if: ${{ !cancelled() && needs.inputs.result == 'success' && (needs.build-editors.result == 'success' || needs.build-editors.result == 'skipped') }}
     runs-on: windows-latest
     timeout-minutes: 25
     permissions:
@@ -54,26 +77,34 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: '3.14'
+          python-version: '3.14.9'
+          cache: pip
+          cache-dependency-path: |
+            apps/bottons-editor/requirements*.txt
+            requirements-ci.txt
       - name: Preparar compilador e contratos
         run: |
-          python -m pip install -r apps/bottons-editor/requirements-build.txt
+          python -m pip install -r apps/bottons-editor/requirements-build.txt -r requirements-ci.txt
           ./apps/bottons-editor/scripts/bootstrap_inno.ps1
           python -m unittest discover -s tests -v
-      - name: Receber instaladores do mesmo código
-        if: ${{ !startsWith(github.ref, 'refs/tags/redlab-v') }}
+      - name: Receber apenas os instaladores ainda não publicados
+        if: needs.inputs.outputs.build != '[]'
         env:
           GH_TOKEN: ${{ github.token }}
+          BUILD_PRODUCTS: ${{ needs.inputs.outputs.build }}
         run: |
-          foreach ($taskProduct in @('bottons-editor', 'polaroid-editor', 'medidas-editor')) {
+          foreach ($taskProduct in ($env:BUILD_PRODUCTS | ConvertFrom-Json)) {
             gh run download $env:GITHUB_RUN_ID --repo $env:GITHUB_REPOSITORY --name $taskProduct --dir "bundle/build/inputs/$taskProduct"
             if ($LASTEXITCODE -ne 0) { throw "Não foi possível receber $taskProduct" }
           }
-      - name: Receber releases públicas exatas e verificar integridade
-        if: startsWith(github.ref, 'refs/tags/redlab-v')
+      - name: Reutilizar releases públicas exatas e verificar integridade
+        if: needs.inputs.outputs.published != '[]'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python scripts/bundle.py fetch
+          PUBLISHED_PRODUCTS: ${{ needs.inputs.outputs.published }}
+        run: |
+          $taskProducts = @($env:PUBLISHED_PRODUCTS | ConvertFrom-Json)
+          python scripts/bundle.py fetch --products @taskProducts
       - name: Compilar pacote offline
         run: python scripts/bundle.py build
       - name: Validar seleção, instalação, versões e falhas reais
@@ -89,12 +120,15 @@ jobs:
             bundle/build/test-logs/**
             bundle/build/screenshots/**
           if-no-files-found: ignore
+          retention-days: 7
       - name: Guardar pacote aprovado
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: RedlabEditor-Windows-${{ github.run_id }}
           path: bundle/dist/*
           if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
   publish:
     if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/redlab-v') && needs.windows.result == 'success' }}
     needs: windows
@@ -106,7 +140,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: '3.14'
+          python-version: '3.14.9'
       - name: Receber pacote aprovado no Windows
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,95 @@
+name: Validação compartilhada dos editores
+on:
+  workflow_call:
+    inputs:
+      product:
+        required: true
+        type: string
+      executable:
+        required: true
+        type: string
+      full:
+        required: true
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: apps/${{ inputs.product }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14.9'
+          cache: pip
+          cache-dependency-path: |
+            apps/${{ inputs.product }}/requirements*.txt
+            requirements-ci.txt
+      - name: Instalar dependências aprovadas
+        run: python -m pip install -r requirements-build.txt -r ../../requirements-ci.txt
+      - name: Validar contratos antes de aprovar uma entrega
+        if: inputs.full
+        working-directory: .
+        run: python -m unittest discover -s tests -v
+      - name: Testar aplicativo
+        run: python -m unittest discover -s tests -v
+      - name: Validar encerramento pela bandeja e interface
+        run: python ../../scripts/check_shutdown.py ${{ inputs.product }}
+      - name: Validar atualização e recuperação na interface
+        run: python ../../scripts/check_update_flow.py ${{ inputs.product }}
+      - name: Validar identidade visual e painel da bandeja
+        run: |
+          python ../../scripts/generate_branding.py --check
+          python ../../scripts/check_tray_panel.py ${{ inputs.product }}
+          python ../../scripts/check_family_ui.py ${{ inputs.product }}
+      - name: Validar maior formato e memória
+        if: inputs.product == 'medidas-editor'
+        run: python -u tests/large_export_check.py
+      - name: Preparar instalador
+        if: inputs.full
+        run: ./scripts/bootstrap_inno.ps1
+      - name: Compilar uma vez
+        if: inputs.full
+        run: python scripts/build_windows.py
+      - name: Validar executável e interface
+        if: inputs.full
+        run: python -u tests/packaged_check.py dist/${{ inputs.executable }}-Portable.exe
+      - name: Validar instalação e atualização
+        if: inputs.full
+        run: python -u tests/installer_check.py
+      - name: Validar migração do Moldura para Bottons Editor
+        if: inputs.full && inputs.product == 'bottons-editor'
+        working-directory: .
+        run: python -u scripts/check_migration.py
+      - name: Registrar aprovação do executável exato
+        if: inputs.full
+        working-directory: .
+        run: python scripts/release_artifacts.py record ${{ inputs.product }}
+      - name: Guardar capturas da interface
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: ${{ inputs.product }}-interface-${{ github.run_id }}
+          path: apps/${{ inputs.product }}/tests/artifacts/**/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Guardar instalador aprovado
+        if: inputs.full
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: ${{ inputs.executable }}-Windows-${{ github.run_id }}
+          path: |
+            apps/${{ inputs.product }}/dist/${{ inputs.executable }}-Setup-*.exe
+            apps/${{ inputs.product }}/dist/${{ inputs.executable }}-Portable.exe
+            apps/${{ inputs.product }}/dist/update.json
+            apps/${{ inputs.product }}/dist/SHA256SUMS.txt
+            apps/${{ inputs.product }}/dist/build.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

@@ -44,9 +44,44 @@ def identities(product):
     return app_id, ','.join(mutexes)
 
 
-def fetch_inputs(directory):
-    """Fetch exact stable releases, never an ambiguous global Latest release."""
+def selected_products(products):
+    selected = list(package()['products']) if products is None else list(products)
+    if len(set(selected)) != len(selected) or any(product not in PRODUCTS for product in selected):
+        raise ValueError('Seleção de produtos inválida.')
+    return selected
+
+
+def input_plan(require_public=False):
+    """Published pins are immutable inputs; build only unpublished versions."""
+    result = {'build': [], 'published': []}
     for product, version in package()['products'].items():
+        tag = PRODUCTS[product][2]+version
+        try:
+            release = json.loads(gh('api', f'repos/{REPOSITORY}/releases/tags/{tag}'))
+        except subprocess.CalledProcessError as error:
+            # gh's stderr contains HTTP status. Network/auth errors must fail.
+            detail = error.stderr.decode('utf-8', errors='replace') if isinstance(error.stderr, bytes) else (error.stderr or '')
+            if 'HTTP 404' not in detail:
+                raise
+            if require_public:
+                raise ValueError('A versão precisa estar publicada antes do pacote: '+tag) from error
+            namespace = {}
+            exec((ROOT/'apps'/product/'version.py').read_text(encoding='utf-8'), namespace)
+            if namespace['VERSION'] != version:
+                raise ValueError('Versão não publicada também não corresponde ao código: '+tag)
+            result['build'].append(product)
+        else:
+            if release['draft'] or release['prerelease']:
+                raise ValueError('O pacote exige uma versão pública estável: '+tag)
+            result['published'].append(product)
+    return result
+
+
+def fetch_inputs(directory, products=None):
+    """Fetch exact stable releases, never an ambiguous global Latest release."""
+    config = package()['products']
+    for product in selected_products(products):
+        version = config[product]
         tag = PRODUCTS[product][2]+version
         release = json.loads(gh('api', f'repos/{REPOSITORY}/releases/tags/{tag}'))
         if release['draft'] or release['prerelease']:
@@ -146,11 +181,20 @@ def validate_bundle(directory, tag):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('fetch', 'build'))
+    parser.add_argument('action', choices=('plan', 'fetch', 'build'))
     parser.add_argument('--inputs', type=Path, default=BUNDLE/'build/inputs')
+    parser.add_argument('--products', nargs='*', choices=PRODUCTS)
+    parser.add_argument('--require-public', action='store_true')
     args = parser.parse_args()
-    if args.action == 'fetch':
-        fetch_inputs(args.inputs)
+    if args.action == 'plan':
+        plan = input_plan(args.require_public)
+        print(json.dumps(plan))
+        if os.environ.get('GITHUB_OUTPUT'):
+            with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+                for key, value in plan.items():
+                    output.write(key+'='+json.dumps(value, separators=(',', ':'))+'\n')
+    elif args.action == 'fetch':
+        fetch_inputs(args.inputs, args.products)
     else:
         print(json.dumps(build_bundle(args.inputs), ensure_ascii=False, indent=2))
 

@@ -2,73 +2,84 @@ name: Polaroid Editor · Windows e publicação
 on:
   push:
     branches: [main]
-    paths: ['apps/polaroid-editor/**', 'scripts/**', 'tests/**', '.github/workflows/polaroid.yml']
+    paths:
+      - 'apps/polaroid-editor/**'
+      - '!apps/polaroid-editor/docs/**'
+      - '!apps/polaroid-editor/**/*.md'
+      - '!apps/polaroid-editor/**/*.log'
+      - 'scripts/**'
+      - '!scripts/capture_release_docs.py'
+      - '!scripts/docs_assets.py'
+      - '!scripts/bundle*.py'
+      - '!scripts/check_bundle.py'
+      - '!scripts/capture_bundle.py'
+      - '!scripts/publish_bundle.py'
+      - 'tests/**'
+      - 'requirements-ci.txt'
+      - '.github/workflows/polaroid.yml'
+      - '.github/workflows/_editor-windows.yml'
     tags: ['polaroid-v*']
   pull_request:
-    paths: ['apps/polaroid-editor/**', 'scripts/**', 'tests/**', '.github/workflows/polaroid.yml']
+    paths:
+      - 'apps/polaroid-editor/**'
+      - '!apps/polaroid-editor/docs/**'
+      - '!apps/polaroid-editor/**/*.md'
+      - '!apps/polaroid-editor/**/*.log'
+      - 'scripts/**'
+      - '!scripts/capture_release_docs.py'
+      - '!scripts/docs_assets.py'
+      - '!scripts/bundle*.py'
+      - '!scripts/check_bundle.py'
+      - '!scripts/capture_bundle.py'
+      - '!scripts/publish_bundle.py'
+      - 'tests/**'
+      - 'requirements-ci.txt'
+      - '.github/workflows/polaroid.yml'
+      - '.github/workflows/_editor-windows.yml'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Validar tudo ou conferir reaproveitamento sem publicar
+        type: choice
+        options: [validate, reuse-check]
+        default: validate
 permissions:
   contents: read
 concurrency:
   group: polaroid-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
-  windows:
-    runs-on: windows-latest
-    timeout-minutes: 35
-    defaults:
-      run:
-        working-directory: apps/polaroid-editor
+  reuse:
+    if: startsWith(github.ref, 'refs/tags/polaroid-v') || inputs.mode == 'reuse-check'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      reused: ${{ steps.approved.outputs.reused }}
+      run_id: ${{ steps.approved.outputs.run_id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: '3.14'
-      - name: Instalar dependências
-        run: python -m pip install -r requirements-build.txt playwright==1.59.0
-      - name: Testar aplicativo
-        run: python -m unittest discover -s tests -v
-      - name: Validar encerramento pela bandeja e interface
-        run: python ../../scripts/check_shutdown.py polaroid-editor
-      - name: Validar atualização e recuperação na interface
-        run: python ../../scripts/check_update_flow.py polaroid-editor
-      - name: Validar identidade visual e painel da bandeja
-        run: |
-          python ../../scripts/generate_branding.py --check
-          python ../../scripts/check_tray_panel.py polaroid-editor
-          python ../../scripts/check_family_ui.py polaroid-editor
-      - name: Testar contratos de distribuição
-        working-directory: .
-        run: python -m unittest discover -s tests -v
-      - name: Preparar instalador
-        run: ./scripts/bootstrap_inno.ps1
-      - name: Compilar
-        run: python scripts/build_windows.py
-      - name: Validar executável e interface
-        run: python -u tests/packaged_check.py dist/PolaroidEditor-Portable.exe
-      - name: Validar instalação e atualização
-        run: python -u tests/installer_check.py
-      - name: Guardar capturas da interface
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        with:
-          name: polaroid-interface-${{ github.run_id }}
-          path: apps/polaroid-editor/tests/artifacts/*.png
-          if-no-files-found: ignore
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        with:
-          name: PolaroidEditor-Windows-${{ github.run_id }}
-          path: |
-            apps/polaroid-editor/dist/PolaroidEditor-Setup-*.exe
-            apps/polaroid-editor/dist/PolaroidEditor-Portable.exe
-            apps/polaroid-editor/dist/update.json
-            apps/polaroid-editor/dist/SHA256SUMS.txt
-          if-no-files-found: error
+          python-version: '3.14.9'
+      - name: Encontrar e conferir a compilação aprovada do mesmo commit
+        id: approved
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/release_artifacts.py find polaroid-editor
+  windows:
+    needs: reuse
+    if: ${{ !cancelled() && (needs.reuse.result == 'skipped' || (needs.reuse.result == 'success' && needs.reuse.outputs.reused != 'true')) }}
+    uses: ./.github/workflows/_editor-windows.yml
+    with:
+      product: polaroid-editor
+      executable: PolaroidEditor
+      full: ${{ github.event_name != 'pull_request' }}
   publish:
-    if: startsWith(github.ref, 'refs/tags/polaroid-v')
-    needs: windows
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/polaroid-v') && (needs.windows.result == 'success' || needs.reuse.outputs.reused == 'true') }}
+    needs: [reuse, windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -77,11 +88,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: '3.14'
-      - name: Baixar arquivos aprovados no Windows
+          python-version: '3.14.9'
+      - name: Receber e validar os mesmos arquivos aprovados no Windows
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh run download ${{ github.run_id }} --name PolaroidEditor-Windows-${{ github.run_id }} --dir dist
+          APPROVED_RUN: ${{ needs.reuse.outputs.run_id || github.run_id }}
+        run: python scripts/release_artifacts.py restore polaroid-editor --run-id "$APPROVED_RUN" --directory dist
       - name: Publicar aplicativo e canal próprio
         env:
           GH_TOKEN: ${{ github.token }}

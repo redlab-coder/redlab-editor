@@ -6,9 +6,9 @@
 | Polaroid Editor | `apps/polaroid-editor` | `polaroid-v1.2.1` | `updates/polaroid-editor.json` |
 | Medidas Editor | `apps/medidas-editor` | `medidas-v1.1.1` | `updates/medidas-editor.json` |
 
-Cada produto mantém sua própria versão em `version.py`. Atualize também o changelog, as notas, os links de download e a versão padrão do instalador antes de criar uma tag. As tags têm prefixos distintos para impedir que uma atualização de um aplicativo seja oferecida ao outro.
+Cada produto mantém sua própria versão em `version.py`. `scripts/release.py prepare` prepara o changelog, as notas, os links de download e a versão padrão do instalador, com prévia antes de gravar. `scripts/release.py publish` cria a tag depois da integração e da conferência do checkout. Veja os [comandos e critérios de entrega](delivery.md). As tags têm prefixos distintos para impedir que uma atualização de um aplicativo seja oferecida ao outro.
 
-O workflow correspondente testa e compila no Windows antes da publicação. `scripts/publish.py` valida produto, tag, origem, tamanho e SHA-256; publica instalador, portátil, manifesto e checksums; confere os arquivos enviados; só então avança o canal desse produto. O canal não aceita regressão de versão nem troca do instalador de uma versão já publicada. O README aponta para releases explícitas, pois o conceito global de “latest” não representa vários produtos independentes.
+O workflow compartilhado testa o código na revisão e valida o executável e a instalação no Windows após a integração. A tag reutiliza o artefato completo aprovado do mesmo commit no `main`, com origem, tentativa e hashes conferidos. Se ele não estiver disponível, a tag executa a validação completa. `scripts/publish.py` valida produto, tag, origem, tamanho e SHA-256; publica instalador, portátil, manifesto e checksums; confere os arquivos enviados; só então avança o canal desse produto. O canal não aceita regressão de versão nem troca do instalador de uma versão já publicada. O README aponta para releases explícitas, pois o conceito global de “latest” não representa vários produtos independentes.
 
 Se uma publicação falhar, examine o workflow e a release antes de retomar. Uma release pública deve permanecer imutável. Corrija o problema em uma nova versão quando os arquivos públicos precisarem mudar. O canal pode ser retomado com `update_feed` apenas usando o manifesto da release pública já verificada.
 
@@ -17,7 +17,7 @@ Se uma publicação falhar, examine o workflow e a release antes de retomar. Uma
 `bundle/package.json` fixa a versão do conjunto e a versão de cada editor incluído. O pacote 1.0.2 usa a tag `redlab-v1.0.2`. Ele não tem `update.json`, canal próprio, aplicativo residente ou desinstalador coletivo: distribui os três instaladores independentes. O Latest global passa a destacar o pacote, enquanto cada editor continua consultando seu canal explícito.
 
 1. Para uma nova composição, atualize a versão do pacote, seus produtos, notas e links. As versões fixadas podem ser diferentes das versões atuais do código; não é preciso republicar o pacote a cada atualização individual.
-2. O PR do pacote compila os editores do mesmo código e exercita o conjunto em Windows descartável. Para esse caminho, o código de cada produto deve corresponder à versão fixada.
+2. O PR do pacote reutiliza as releases públicas fixadas e compila somente componentes ainda não publicados. Para estes últimos, o código deve corresponder à versão fixada. O conjunto é exercitado em Windows descartável.
 3. Publique as tags dos editores necessários e aguarde os três instaladores estáveis e seus canais.
 4. Envie a tag `redlab-v<versão>`. O workflow baixa as releases exatas, confere os quatro arquivos de cada uma, compila o pacote e repete a instalação real com esses binários públicos.
 5. Somente após os testes, `scripts/publish_bundle.py` publica o mesmo pacote aprovado, `contents.json` e `SHA256SUMS.txt`. Confere novamente os hashes e as origens dos componentes, sem escrever em `updates/`.
