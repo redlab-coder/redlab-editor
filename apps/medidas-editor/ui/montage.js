@@ -44,8 +44,9 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
       const id = row.dataset.id;
       row.classList.toggle('active', id === focused);
       row.classList.toggle('marked', checked.has(id));
-      row.querySelector('.montage-photo').setAttribute('aria-pressed', String(checked.has(id)));
-      for (const control of row.querySelectorAll('button')) control.disabled = !editable;
+      row.querySelector('.montage-photo').setAttribute('aria-current', String(id === focused));
+      row.querySelector('input').checked = checked.has(id);
+      for (const control of row.querySelectorAll('button, input')) control.disabled = !editable;
     }
     const count = plan?.sheets.length || 0;
     el('export').disabled = !editable || !count || !!plan?.pending;
@@ -55,31 +56,42 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
   function renderRows() {
     const scroll = list.scrollTop;
     const previous = document.activeElement;
-    const previousId = previous?.closest('.montage-row')?.dataset.id;
-    const previousClass = previous?.className;
+    const previousRow = previous?.closest('.montage-row');
+    const previousIndex = previousRow ? [...previousRow.querySelectorAll('button, input')].indexOf(previous) : -1;
     cancelReorder();
     list.replaceChildren();
     for (const photo of photos) {
       const row = document.createElement('div');
       row.className = 'montage-row';
       row.dataset.id = photo.id;
+      const selection = document.createElement('label');
+      selection.className = 'montage-check';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.setAttribute('aria-label', `Selecionar ${photo.name}`);
+      checkbox.onclick = event => {
+        if (!canEdit()) return;
+        const start = photos.findIndex(item => item.id === anchor);
+        if (event.shiftKey && start >= 0) {
+          const end = photos.indexOf(photo);
+          for (const item of photos.slice(Math.min(start, end), Math.max(start, end) + 1)) checked.add(item.id);
+        } else {
+          if (checkbox.checked) checked.add(photo.id);
+          else checked.delete(photo.id);
+          anchor = photo.id;
+        }
+        refresh();
+        save();
+      };
+      selection.append(checkbox);
       const button = document.createElement('button');
       button.className = 'montage-photo';
       button.type = 'button';
-      button.setAttribute('aria-label', `Selecionar ${photo.name}`);
+      button.setAttribute('aria-label', `Ver ${photo.name}`);
       button.setAttribute('aria-keyshortcuts', 'Alt+ArrowUp Alt+ArrowDown');
       button.title = [photo.name, ...(photo.metadata?.warnings || [])].join('\n');
-      button.onclick = event => {
+      button.onclick = () => {
         if (!canEdit()) return;
-        const start = photos.findIndex(item => item.id === anchor);
-        const end = photos.indexOf(photo);
-        if (event.shiftKey && start >= 0) {
-          for (const item of photos.slice(Math.min(start, end), Math.max(start, end) + 1)) checked.add(item.id);
-        } else {
-          if (checked.has(photo.id)) checked.delete(photo.id);
-          else checked.add(photo.id);
-          anchor = photo.id;
-        }
         focused = photo.id;
         refresh();
         showPhoto();
@@ -119,9 +131,9 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
         renderRows();
         planChanged();
       });
-      row.append(button, remove);
+      row.append(selection, button, remove);
       list.append(row);
-      if (photo.id === previousId) [...row.children].find(child => child.className === previousClass)?.focus({preventScroll: true});
+      if (photo.id === previousRow?.dataset.id) row.querySelectorAll('button, input')[previousIndex]?.focus({preventScroll: true});
     }
     list.scrollTop = scroll;
     refresh();
@@ -383,12 +395,29 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
     reorderFrame = requestAnimationFrame(autoScroll);
   }
 
+  function liftCard(gesture) {
+    const {left, top, width} = gesture.row.getBoundingClientRect();
+    const card = gesture.row.cloneNode(true);
+    gesture.offsetX = gesture.startX - left;
+    gesture.offsetY = gesture.startY - top;
+    card.classList.add('montage-drag-card');
+    card.inert = true;
+    card.setAttribute('aria-hidden', 'true');
+    card.style.width = `${width}px`;
+    card.style.transformOrigin = `${gesture.offsetX}px ${gesture.offsetY}px`;
+    gesture.card = card;
+    document.body.append(card);
+    list.classList.add('reorder-active');
+  }
+
   function cancelReorder() {
     if (!reorder) return;
     const gesture = reorder;
     reorder = null;
     cancelAnimationFrame(reorderFrame);
     clearDropIndicator(gesture);
+    gesture.card?.remove();
+    list.classList.remove('reorder-active');
     gesture.row.classList.remove('reordering');
     if (gesture.moving) suppressClick = true;
     if (list.hasPointerCapture(gesture.pointer)) list.releasePointerCapture(gesture.pointer);
@@ -400,7 +429,7 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
     const row = event.target.closest('.montage-photo')?.closest('.montage-row');
     if (!row || !canEdit() || photos.length < 2) return;
     if (event.pointerType === 'touch' && !event.target.closest('.montage-grip')) return;
-    reorder = {id: row.dataset.id, row, pointer: event.pointerId, startY: event.clientY, moving: false};
+    reorder = {id: row.dataset.id, row, pointer: event.pointerId, startX: event.clientX, startY: event.clientY, moving: false};
   });
   window.addEventListener('pointermove', event => {
     if (reorder?.pointer !== event.pointerId) return;
@@ -408,12 +437,14 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
     reorder.x = event.clientX;
     reorder.y = event.clientY;
     if (!reorder.moving) {
-      if (Math.abs(reorder.y - reorder.startY) < 7) return;
+      if (Math.hypot(reorder.x - reorder.startX, reorder.y - reorder.startY) < 7) return;
       reorder.moving = true;
+      liftCard(reorder);
       reorder.row.classList.add('reordering');
       list.setPointerCapture(event.pointerId);
       reorderFrame = requestAnimationFrame(autoScroll);
     }
+    reorder.card.style.translate = `${reorder.x - reorder.offsetX}px ${reorder.y - reorder.offsetY}px`;
     updateDropTarget(reorder);
   });
   window.addEventListener('pointerup', event => {

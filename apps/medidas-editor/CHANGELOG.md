@@ -1,5 +1,10 @@
 # Alterações
 
+## 1.2.2 — 11/11/2026
+
+- Separe a navegação pelas fotos da seleção em lote com caixas discretas.
+- Acompanhe o card ampliado junto ao cursor durante a reordenação.
+
 ## 1.2.1 — 11/11/2026
 
 - Selecione fotos pelos cards, com Shift para intervalos e opção de selecionar todas.
