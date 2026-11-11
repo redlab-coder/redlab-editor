@@ -17,8 +17,9 @@ from urllib.parse import urlparse, unquote, quote, parse_qs
 from PIL import Image, UnidentifiedImageError
 from engine import FORMATS, layout, normalized_settings, proportional_size, cm_text, render_preview
 from photo_store import PhotoRecord, PhotoCache, MAX_FILE, MAX_PHOTOS, MAX_TOTAL
-from projects import read_project, write_project
+from projects import project_tool, read_project, write_project
 from jobs import ExportManager
+from montage import photo_size, plan_sheets, render_sheet
 from desktop import SingleInstance, run_tray, clear_session
 from updater import Updater, installed_directory
 from recovery import CheckpointStore, UpdateSession, UpdateBusy
@@ -40,7 +41,7 @@ def photo_response(identifier, photo):
                 metadata=record.metadata)
 
 
-def snapshots(items, allow_missing=False):
+def snapshots(items, allow_missing=False, tool='medidas'):
     if not isinstance(items, list) or not 1 <= len(items) <= MAX_PHOTOS:
         raise ValueError('Selecione entre 1 e 100 fotos.')
     result = []
@@ -48,13 +49,45 @@ def snapshots(items, allow_missing=False):
         for item in items:
             if not isinstance(item, dict) or not isinstance(item.get('id'), str):
                 raise ValueError('Lista de fotos inválida.')
+            scope = tool if tool is not None else project_tool(item.get('tool', 'medidas'))
             photo = IMAGES.get(item['id'])
+            if photo is not None and photo.get('tool', 'medidas') != scope:
+                raise ValueError('A foto pertence a outra ferramenta.')
             if photo is None and not allow_missing:
                 raise ValueError('A foto não está mais disponível. Importe novamente.')
             result.append((photo['record'] if photo else None,
                            dict(name=photo['name'] if photo else str(item.get('name', 'Foto'))[:512],
-                                settings=item.get('settings', {}), reviewed=item.get('reviewed') is True)))
+                                settings=item.get('settings', {}), reviewed=item.get('reviewed') is True,
+                                tool=scope, selected=item.get('selected') is True, checked=item.get('checked') is True)))
     return result
+
+
+def project_records(items, tool):
+    return [(record, dict(name=meta['name'], edits=meta['settings'], reviewed=meta['reviewed'],
+                          tool=meta['tool'], selected=meta['selected'], checked=meta['checked']))
+            for record, meta in snapshots(items, tool=tool)]
+
+
+def restore_records(staged):
+    replacement, response = {}, []
+    for record, meta in staged:
+        identifier = secrets.token_hex(12)
+        tool = meta.get('tool', 'medidas')
+        photo = dict(record=record, name=meta['name'], tool=tool)
+        replacement[identifier] = photo
+        response.append(dict(**photo_response(identifier, photo), tool=tool, settings=meta['edits'],
+                             reviewed=meta['reviewed'], selected=meta.get('selected', False), checked=meta.get('checked', False)))
+    return replacement, response
+
+
+def montage_plan(items):
+    records = snapshots(items, tool='montagem')
+    sizes = []
+    for _, meta in records:
+        if not isinstance(meta['settings'], dict):
+            raise ValueError('Ajustes de montagem inválidos.')
+        sizes.append(photo_size(meta['settings'].get('size'), allow_empty=True))
+    return records, sizes, plan_sheets(sizes)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -116,14 +149,14 @@ class Handler(BaseHTTPRequestHandler):
             except (BrokenPipeError, ConnectionResetError):
                 pass
             return
-        if path == '/':
+        if path in ('/', '/medidas', '/montagem'):
             html = (ROOT/'ui/index.html').read_text(encoding='utf-8')
             html = html.replace('__TOKEN__', TOKEN).replace('__VERSION__', VERSION).replace('__FORMATS__', json.dumps(FORMATS, ensure_ascii=False))
             return self.reply(html.encode(), 'text/html; charset=utf-8')
         if path == '/style.css':
-            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css'))
+            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css','montage.css'))
             return self.reply(css,'text/css; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/update.js'):
+        if path in ('/app.js', '/icons.js', '/update.js', '/montage.js'):
             return self.reply((ROOT/'ui'/path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image
@@ -134,7 +167,7 @@ class Handler(BaseHTTPRequestHandler):
     def update_records(self,items):
         if not isinstance(items,list) or len(items)>100:raise ValueError('Lote inválido.')
         if not items:return []
-        return [(record,dict(name=meta['name'],edits=meta['settings'],reviewed=meta['reviewed'])) for record,meta in snapshots(items)]
+        return project_records(items, tool=None)
 
     def update_api(self,path,data):
         session=getattr(self.server,'update_session',None)
@@ -146,11 +179,7 @@ class Handler(BaseHTTPRequestHandler):
                     try:
                         recovered=session.store.load() if session.store else None
                         if recovered:
-                            response=[];replacement={}
-                            for record,meta in recovered.pop('records'):
-                                identifier=secrets.token_hex(12)
-                                replacement[identifier]=dict(record=record,name=meta['name'])
-                                response.append(dict(**photo_response(identifier,dict(record=record,name=meta['name'])),settings=meta['edits'],reviewed=meta['reviewed']))
+                            replacement, response = restore_records(recovered.pop('records'))
                             with LOCK:
                                 IMAGES.clear();IMAGES.update(replacement)
                             recovered['photos']=response;session.recovered=recovered
@@ -193,12 +222,14 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_reply({'error': 'O editor está encerrando.'}, 503)
         try:
             length = int(self.headers.get('Content-Length', '0'))
-            limit = MAX_TOTAL+2*1024**2 if path == '/api/project/open' else MAX_FILE if path == '/api/upload' else 1024**2
+            uploads = ('/api/upload', '/api/montagem/upload')
+            limit = MAX_TOTAL+2*1024**2 if path == '/api/project/open' else MAX_FILE if path in uploads else 1024**2
             if length < 0 or length > limit:
                 raise ValueError('O arquivo ou a solicitação excede o limite permitido.')
             if path == '/api/project/open':
                 if EXPORTS.running():
                     raise ValueError('Aguarde a exportação terminar.')
+                requested_tool = project_tool(parse_qs(urlparse(self.path).query).get('tool', ['medidas'])[0])
                 with tempfile.SpooledTemporaryFile(max_size=8*1024**2) as stream:
                     remaining = length
                     while remaining:
@@ -209,27 +240,36 @@ class Handler(BaseHTTPRequestHandler):
                     stream.seek(0)
                     with CACHE.lock:
                         staged = read_project(stream, PhotoRecord)
-                        replacement, response = {}, []
-                        for record, meta in staged:
-                            identifier = secrets.token_hex(12)
-                            photo = dict(record=record, name=meta['name'])
-                            replacement[identifier] = photo
-                            response.append(dict(**photo_response(identifier, photo), settings=meta['edits'], reviewed=meta['reviewed']))
+                        tools = {meta.get('tool', 'medidas') for _, meta in staged}
+                        if len(tools) != 1:
+                            raise ValueError('O lote deve pertencer a uma ferramenta.')
+                        tool = tools.pop()
+                        if tool != requested_tool:
+                            label = 'Montagem para corte' if tool == 'montagem' else 'Medidas personalizadas'
+                            raise ValueError(f'Abra este lote na ferramenta {label}.')
+                        replacement, response = restore_records(staged)
                         with LOCK:
-                            IMAGES.clear(); IMAGES.update(replacement)
-                        CACHE.clear()
-                return self.json_reply({'photos':response})
+                            remove = [key for key, photo in IMAGES.items() if photo.get('tool', 'medidas') == tool]
+                            keep = [photo['record'] for photo in IMAGES.values() if photo.get('tool', 'medidas') != tool]
+                            if (len(keep) + len(staged) > MAX_PHOTOS
+                                    or sum(record.bytes for record in keep) + sum(record.bytes for record, _ in staged) > MAX_TOTAL):
+                                raise ValueError('As duas ferramentas juntas aceitam até 100 fotos e 4 GB de originais.')
+                            for key in remove:
+                                CACHE.discard(IMAGES.pop(key)['record'])
+                            IMAGES.update(replacement)
+                return self.json_reply({'photos':response, 'tool':tool})
             body = self.rfile.read(length)
             if len(body) != length:
                 raise ValueError('O envio foi interrompido.')
-            if path == '/api/upload':
+            if path in uploads:
                 name = unquote(self.headers.get('X-Filename', 'Foto'))[:512]
+                tool = 'montagem' if path == '/api/montagem/upload' else 'medidas'
                 with CACHE.lock:
                     with LOCK:
                         if len(IMAGES) >= MAX_PHOTOS or sum(p['record'].bytes for p in IMAGES.values())+length > MAX_TOTAL:
-                            raise ValueError('O lote aceita até 100 fotos e 4 GB de originais.')
+                            raise ValueError('As duas ferramentas juntas aceitam até 100 fotos e 4 GB de originais.')
                     record = PhotoRecord(body)
-                    identifier = secrets.token_hex(12); photo = dict(record=record, name=name)
+                    identifier = secrets.token_hex(12); photo = dict(record=record, name=name, tool=tool)
                     with LOCK:
                         IMAGES[identifier] = photo
                 return self.json_reply(photo_response(identifier, photo))
@@ -246,21 +286,40 @@ class Handler(BaseHTTPRequestHandler):
                 threading.Thread(target=getattr(self.server, 'request_shutdown', self.server.shutdown), daemon=True).start()
                 return
             if path in ('/api/delete', '/api/clear'):
+                tool = project_tool(data.get('tool', 'medidas'))
                 ids = [data['id']] if path.endswith('/delete') else data.get('ids')
                 if not isinstance(ids, list) or len(ids) > MAX_PHOTOS or any(not isinstance(key, str) for key in ids):
                     raise ValueError('Lista de fotos inválida.')
                 with LOCK:
+                    if any(key in IMAGES and IMAGES[key].get('tool', 'medidas') != tool for key in ids):
+                        raise ValueError('A seleção contém fotos de outra ferramenta.')
                     removed = [IMAGES.pop(key) for key in dict.fromkeys(ids) if key in IMAGES]
                 for photo in removed:
                     CACHE.discard(photo['record'])
                 return self.json_reply({'ok':True})
             if path == '/api/project/save':
-                records = snapshots(data['items'])
-                portable = [(record, dict(name=meta['name'], edits=meta['settings'], reviewed=meta['reviewed'], manual=False)) for record, meta in records]
+                tool = project_tool(data.get('tool', 'medidas'))
+                portable = project_records(data['items'], tool=tool)
                 with tempfile.SpooledTemporaryFile(max_size=8*1024**2) as stream:
                     write_project(stream, portable)
-                    self.send_file(stream, 'Meu lote.medidas', 'application/zip')
+                    self.send_file(stream, 'Montagem.medidas' if tool == 'montagem' else 'Meu lote.medidas', 'application/zip')
                 return
+            if path in ('/api/montagem/plan', '/api/montagem/preview', '/api/montagem/export'):
+                records, sizes, sheets = montage_plan(data.get('items'))
+                if path.endswith('/plan'):
+                    return self.json_reply(dict(sheets=[sheet.describe() for sheet in sheets], pending=sizes.count(None)))
+                if path.endswith('/export'):
+                    if None in sizes:
+                        raise ValueError('Defina o tamanho de todas as fotos antes de exportar.')
+                    return self.json_reply({'job': EXPORTS.start_montage(sheets, records)})
+                index, maximum = data.get('index'), data.get('maximum', 1000)
+                if (type(index) is not int or not 0 <= index < len(sheets)
+                        or type(maximum) is not int or not 128 <= maximum <= 1000):
+                    raise ValueError('Prévia de montagem inválida.')
+                output = io.BytesIO()
+                with render_sheet(sheets[index], records, maximum=maximum) as image:
+                    image.save(output, 'PNG')
+                return self.reply(output.getvalue(), 'image/png')
             if path == '/api/export/start':
                 return self.json_reply({'job':EXPORTS.start(snapshots(data['items'], allow_missing=True))})
             if path == '/api/export/status':

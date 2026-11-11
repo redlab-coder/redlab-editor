@@ -8,6 +8,7 @@ import time
 import unicodedata
 import zipfile
 from engine import export_jpeg, layout, ExportCancelled
+from montage import export_sheet
 
 
 def output_name(name, index):
@@ -23,6 +24,32 @@ class ExportManager:
         self.jobs = {}
 
     def start(self, records):
+        return self._start(records, self._render_photo, 'MedidasEditor-fotos.zip')
+
+    def start_montage(self, sheets, records):
+        folders = len({sheet.preset.name for sheet in sheets}) > 1
+        tasks = []
+        for index, sheet in enumerate(sheets, start=1):
+            model = sheet.preset.name
+            filename = f'Folha {index:02d}.jpg' if len(sheets) > 1 else f'{model} - Folha 01.jpg'
+            tasks.append((sheet, dict(name=f'Folha {index:02d} · {model}', filename=filename,
+                                      archive_name=f'{model}/{filename}' if folders else filename)))
+
+        def render(sheet, meta, path, cancel, progress):
+            export_sheet(sheet, records, path, cancel=cancel, progress=progress)
+
+        return self._start(tasks, render, 'MedidasEditor-montagens.zip')
+
+    @staticmethod
+    def _render_photo(record, meta, path, cancel, progress):
+        if record is None:
+            raise ValueError('A foto não está mais disponível. Importe novamente.')
+        plan = layout((record.width, record.height), meta['settings'])
+        if (plan['needs_review'] or record.metadata['warnings']) and not meta.get('reviewed'):
+            raise ValueError('Enquadramento ou cor pendente de revisão. Confira a foto antes de exportar.')
+        export_jpeg(record.original, meta['settings'], path, cancel=cancel, progress=progress)
+
+    def _start(self, records, render, zip_name):
         with self.lock:
             if any(job['state'] == 'running' for job in self.jobs.values()):
                 raise ValueError('Aguarde ou cancele a exportação em andamento.')
@@ -30,18 +57,19 @@ class ExportManager:
                 if time.monotonic()-old['created'] > 3600 or len(self.jobs) >= 3:
                     old['directory'].cleanup(); del self.jobs[key]
             identifier = secrets.token_hex(12)
-            directory = tempfile.TemporaryDirectory(prefix='MedidasEditor-export-')
+            directory = tempfile.TemporaryDirectory(prefix='MedidasEditor-export-', ignore_cleanup_errors=True)
             job = dict(state='running', done=0, total=len(records), percent=0,
                        items=[dict(name=meta['name'], state='queued', error=None) for _, meta in records],
                        success=0, error=None, filename=None, created=time.monotonic(),
                        directory=directory, cancel=threading.Event(), path=None, download_key=secrets.token_urlsafe(24))
             self.jobs[identifier] = job
-            thread = threading.Thread(target=self._work, args=(job, records), daemon=True, name='MedidasEditor-export')
+            thread = threading.Thread(target=self._work, args=(job, records, render, zip_name),
+                                      daemon=True, name='MedidasEditor-export')
             job['thread'] = thread
             thread.start()
             return identifier
 
-    def _work(self, job, records):
+    def _work(self, job, records, render, zip_name):
         folder = Path(job['directory'].name)
         successful = []
         try:
@@ -50,24 +78,17 @@ class ExportManager:
                     raise ExportCancelled()
                 with self.lock:
                     item = job['items'][index]; item['state'] = 'running'; job['percent'] = 0
-                path = folder / output_name(meta['name'], index)
+                path = folder / (meta.get('filename') or output_name(meta['name'], index))
                 partial = path.with_suffix('.part')
                 try:
-                    if record is None:
-                        raise ValueError('A foto não está mais disponível. Importe novamente.')
-                    plan = layout((record.width, record.height), meta['settings'])
-                    if (plan['needs_review'] or record.metadata['warnings']) and not meta.get('reviewed'):
-                        raise ValueError('Enquadramento ou cor pendente de revisão. Confira a foto antes de exportar.')
-                    export_jpeg(record.original, meta['settings'], partial, cancel=job['cancel'],
-                                progress=lambda value: self._progress(job, value))
+                    render(record, meta, partial, job['cancel'], lambda value: self._progress(job, value))
                     partial.replace(path)
-                    successful.append(path)
+                    successful.append((path, meta.get('archive_name', path.name)))
                     with self.lock:
                         item['state'] = 'ready'; job['success'] += 1
                 except ExportCancelled:
                     raise
                 except Exception as error:
-                    partial.unlink(missing_ok=True)
                     message = str(error) if isinstance(error, ValueError) else 'Falha ao processar esta imagem. Confira o arquivo e o espaço temporário.'
                     with self.lock:
                         item.update(state='failed', error=message)
@@ -81,18 +102,18 @@ class ExportManager:
                     job.update(state='failed', error='Nenhum JPEG foi gerado. Confira os avisos de cada foto.')
                 return
             if len(records) == 1:
-                result = successful[0]
+                result = successful[0][0]
             else:
-                result = folder/'MedidasEditor-fotos.zip'
+                result = folder/zip_name
                 with zipfile.ZipFile(result, 'w', zipfile.ZIP_STORED) as archive:
-                    for path in successful:
+                    for path, archive_name in successful:
                         if job['cancel'].is_set():
                             raise ExportCancelled()
-                        archive.write(path, path.name)
+                        archive.write(path, archive_name)
                     failures = [f'{item["name"]}: {item["error"]}' for item in job['items'] if item['state'] == 'failed']
                     if failures:
                         archive.writestr('LEIA-ME-falhas.txt', '\n'.join(failures).encode('utf-8'))
-                for path in successful:
+                for path, _ in successful:
                     path.unlink()
             with self.lock:
                 if job['cancel'].is_set():
@@ -104,19 +125,21 @@ class ExportManager:
                 for item in job['items']:
                     if item['state'] in ('running', 'queued'):
                         item['state'] = 'cancelled'
-            for path in folder.iterdir():
-                if path.is_file():
-                    path.unlink(missing_ok=True)
         except Exception:
             with self.lock:
                 job.update(state='failed', error='Falha ao finalizar o lote. Confira o espaço em disco e tente novamente.')
-            # An incomplete ZIP must not retain copies of all successful JPEGs.
-            for path in folder.iterdir():
-                try:
-                    if path.is_file():
-                        path.unlink(missing_ok=True)
-                except OSError:
-                    pass
+        finally:
+            # Release encoder exceptions before removing files on Windows.
+            keep = job['path']
+            try:
+                for path in folder.iterdir():
+                    if path != keep and path.is_file():
+                        try:
+                            path.unlink(missing_ok=True)
+                        except OSError:
+                            pass  # The job's temporary directory retries cleanup when closed.
+            except OSError:
+                pass
 
     def _progress(self, job, value):
         with self.lock:

@@ -23,7 +23,7 @@ def run(url):
         page.on('request',requested)
         page.on('requestfinished',lambda request:active.discard(request))
         page.on('requestfailed',lambda request:active.discard(request))
-        page.goto(url);page.wait_for_function("!document.querySelector('#add').disabled")
+        page.goto(url.rstrip('/')+'/medidas');page.wait_for_function("!document.querySelector('#add').disabled")
         page.locator('#files').set_input_files([dict(name=f'Foto-{index:02}.png',mimeType='image/png',buffer=data.getvalue()) for index in range(12)])
         page.wait_for_function("photos.length===12&&!importing")
         assert page.locator('#apply-selection').is_hidden()

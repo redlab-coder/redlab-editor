@@ -25,7 +25,7 @@ def run(url):
         browser=p.chromium.launch(channel='msedge',headless=True)
         context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True)
         page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
-        page.goto(url);page.wait_for_function("!document.querySelector('#add').disabled")
+        page.goto(url.rstrip('/')+'/medidas');page.wait_for_function("!document.querySelector('#add').disabled")
         page.locator('#files').set_input_files([photo_file(),dict(name='invalida.png',mimeType='image/png',buffer=b'broken'),photo_file('Retrato.png',(800,1200))])
         page.wait_for_function("document.querySelector('#count').textContent==='2'&&!document.querySelector('#add').disabled")
         page.locator('#width-cm').fill('30');page.locator('#height-cm').fill('36');page.locator('#apply-size').click()

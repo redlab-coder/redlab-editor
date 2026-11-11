@@ -80,7 +80,7 @@ def run(product):
                     page.on('pageerror',lambda error:errors.append(str(error)))
                     page.on('dialog',lambda dialog:(dialogs.append(dialog.message),dialog.dismiss()))
                     if route.startswith('web'):
-                        page.goto(state['url']);page.wait_for_function("!document.querySelector('#add').disabled")
+                        page.goto(state['url'] + ('/medidas' if product == 'medidas-editor' else ''));page.wait_for_function("!document.querySelector('#add').disabled")
                         page.locator('#files').set_input_files(dict(name='Foto.png',mimeType='image/png',buffer=image.getvalue()))
                         page.wait_for_function("document.querySelector('#count').textContent==='1'&&!document.querySelector('#add').disabled")
                     if route.endswith('_export'):

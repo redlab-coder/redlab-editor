@@ -1,10 +1,6 @@
-# Medidas Editor 1.1.1
+# Medidas Editor 1.2.0
 
-Versão de manutenção para integrar o pacote completo RedLab Editor.
-
-- Atalho na pasta **RedLab Editor** do menu Iniciar.
-- Remove o atalho antigo solto no menu Iniciar, mantendo o nome e o ícone da ferramenta.
-- Instalação, desinstalação e atualizações continuam independentes.
-- Projetos, ajustes e funções de edição e impressão preservados.
-
-Também pode ser instalado individualmente. Salve o lote e encerre o editor antes da instalação manual.
+- Nova tela de ferramentas para alternar entre Medidas personalizadas e Montagem para corte com os lotes preservados.
+- Escolha 3×4, 5×7 ou 7×10 por foto ou aplique o tamanho em lote, com seleção de intervalos por Shift.
+- Montagem automática das folhas 10×15 e 15×21 para as fotos 5×7, com prévia e exportação por gabarito.
+- JPEG a 300 dpi com perfil sRGB e ZIP com pastas por modelo em lotes mistos.

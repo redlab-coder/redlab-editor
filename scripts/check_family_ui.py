@@ -12,6 +12,8 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 def run(product,url):
+    if product == 'medidas-editor':
+        url = url.rstrip('/') + '/medidas'
     theme=json.loads((ROOT/'apps'/product/'ui/theme.json').read_text(encoding='utf-8'))
     rgb=lambda hex:'rgb('+', '.join(str(int(hex[i:i+2],16)) for i in (1,3,5))+')'
     output=ROOT/'apps'/product/'tests/artifacts';output.mkdir(parents=True,exist_ok=True)
