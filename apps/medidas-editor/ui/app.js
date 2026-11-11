@@ -344,7 +344,7 @@ function restoreSession(saved){
   if(restoreTask){pendingRestore=saved;return restoreTask;}
   const work=async()=>{
     restoring=true;releaseImages();photos=[];checked.clear();refreshControls();
-    try{for(const data of saved.photos.slice(0,100)){try{await hydrate(data);}catch{toast('Uma foto não está mais disponível. Importe-a novamente.');}}selected=photos.some(p=>p.id===saved.selected)?saved.selected:photos[0]?.id||null;filterReview=!!saved.filterReview;checked=new Set((saved.checked||[]).filter(id=>photos.some(p=>p.id===id)));await montage.restore(saved.montage?.photos||[],saved.montage?.sheet||0);sessionRevision=saved.sessionRevision||0;}
+    try{for(const data of saved.photos.slice(0,100)){try{await hydrate(data);}catch{toast('Uma foto não está mais disponível. Importe-a novamente.');}}selected=photos.some(p=>p.id===saved.selected)?saved.selected:photos[0]?.id||null;filterReview=!!saved.filterReview;checked=new Set((saved.checked||[]).filter(id=>photos.some(p=>p.id===id)));await montage.restore(saved.montage?.photos||[]);sessionRevision=saved.sessionRevision||0;}
     finally{restoring=false;revision++;renderSettings();if(saved.draft){[$('width-cm').value,$('height-cm').value]=saved.draft;draftDirty=true;}renderLibrary();renderCards();drawLive();}
   };
   restoreTask=work().finally(()=>{restoreTask=null;flushRestore();});return restoreTask;

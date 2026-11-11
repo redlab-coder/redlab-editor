@@ -29,7 +29,7 @@ def prepare(page,product):
             page.locator('#tool-nav [data-tool="montagem"]').click()
             page.locator('#montage-files').set_input_files(files[:1])
             page.locator('#montage-sizes [data-size="3x4"]').click()
-            page.locator('#montage-list input').check()
+            page.locator('#montage-list .montage-photo').click()
             page.wait_for_function("document.querySelector('#montage-sheet-count').textContent==='1'")
     page.evaluate('saveSession()')
     return files

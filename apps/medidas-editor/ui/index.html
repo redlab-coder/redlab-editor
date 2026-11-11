@@ -63,10 +63,11 @@
       </div>
       <input id="montage-files" type="file" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff" multiple hidden>
       <label class="select-all"><input id="montage-all" type="checkbox">Selecionar todas <span id="montage-selection-count"></span></label>
-      <p id="montage-range-hint" class="montage-hint" hidden>Use Shift para selecionar um intervalo.</p>
+      <p id="montage-range-hint" class="montage-hint" hidden>Shift seleciona um intervalo. Arraste para ordenar.</p>
       <div id="montage-list" role="region" aria-label="Fotos para montagem"></div>
+      <span id="montage-order-status" class="montage-sr-only" role="status"></span>
       <div class="montage-size-panel">
-        <p id="montage-target">Selecione uma foto ou marque várias.</p>
+        <p id="montage-target">Selecione uma foto.</p>
         <div id="montage-sizes" class="montage-sizes" role="group" aria-label="Tamanho das fotos">
           <button type="button" data-size="3x4" class="secondary">3×4</button>
           <button type="button" data-size="5x7" class="secondary">5×7</button>
@@ -75,16 +76,21 @@
       </div>
     </aside>
     <div class="montage-preview">
-      <div class="panel-heading"><h2>Folhas <span id="montage-sheet-count" class="count">0</span></h2><div class="output-activity"><span id="montage-activity" class="print-spec" role="status"></span><button id="montage-cancel" class="icon-button" type="button" aria-label="Cancelar exportação" title="Cancelar exportação" hidden><span data-icon="close"></span></button></div></div>
+      <div class="panel-heading"><h2 id="montage-photo-title">Prévia da foto</h2><span id="montage-photo-size" class="print-spec"></span></div>
       <div class="montage-stage">
         <div id="montage-empty" class="empty"><div class="empty-symbol" data-icon="grid"></div><p id="montage-stage-message">Adicione ou arraste as fotos.</p><button id="montage-empty-add" class="primary" type="button"><span data-icon="add-photo"></span>Selecionar fotos</button></div>
-        <img id="montage-preview-image" alt="Prévia da folha de montagem" hidden>
+        <img id="montage-preview-image" alt="Prévia da foto selecionada" draggable="false" hidden>
       </div>
-      <div id="montage-sheet-details" class="montage-sheet-details" hidden><strong id="montage-sheet-title"></strong><span id="montage-sheet-spec"></span></div>
-      <div id="montage-sheets" class="montage-sheets" aria-label="Folhas da montagem"></div>
-      <p id="montage-pending" class="montage-hint" role="status" hidden></p>
     </div>
   </div>
+  <section class="output-section" aria-labelledby="montage-sheets-title">
+    <div class="output-title">
+      <h2 id="montage-sheets-title">Folhas <span id="montage-sheet-count" class="count"></span></h2>
+      <div class="output-activity"><span id="montage-activity" class="print-spec" role="status"></span><button id="montage-cancel" class="icon-button" type="button" aria-label="Cancelar exportação" title="Cancelar exportação" hidden><span data-icon="close"></span></button></div>
+    </div>
+    <div id="montage-sheets" class="sheets" aria-label="Folhas da montagem"></div>
+    <p id="montage-pending" class="montage-hint" role="status" hidden></p>
+  </section>
 </section>
 </main>
 <dialog id="montage-clear-dialog" class="help-dialog" aria-labelledby="montage-clear-title">
@@ -92,7 +98,11 @@
   <p>Salve o lote ou exporte as folhas antes de remover as fotos.</p>
   <div class="clear-actions"><button class="secondary" type="button" data-close-dialog autofocus>Cancelar</button><button id="montage-clear-confirm" class="primary danger" type="button">Remover todas</button></div>
 </dialog>
-<dialog id="montage-help" class="help-dialog"><div class="dialog-heading"><h2>Montagem para corte</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fechar ajuda"><span data-icon="close"></span></button></div><ol><li>Adicione suas fotos. Clique em uma foto ou marque várias na lista.</li><li>Escolha 3×4, 5×7 ou 7×10. Use Shift entre duas caixas para marcar um intervalo.</li><li>Confira as folhas e exporte. Os arquivos saem em JPEG a 300 dpi. Várias folhas são reunidas em ZIP.</li></ol><p>O 3×4 gera oito cópias por foto. O 5×7 escolhe entre folhas 10×15 e 15×21 conforme a quantidade. O 7×10 monta até duas fotos por folha 10×15.</p></dialog>
+<dialog id="montage-help" class="help-dialog"><div class="dialog-heading"><h2>Montagem para corte</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fechar ajuda"><span data-icon="close"></span></button></div><ol><li>Adicione as fotos e clique nos cards para marcá-las. Use Shift entre dois cards para selecionar um intervalo.</li><li>Escolha 3×4, 5×7 ou 7×10. Arraste para mudar a ordem ou use Alt com as setas para cima e para baixo.</li><li>Clique em uma folha para ampliar a prévia. Exporte em JPEG a 300 dpi ou ZIP para várias folhas.</li></ol><p>O 3×4 gera oito cópias por foto. O 5×7 escolhe entre folhas 10×15 e 15×21 conforme a quantidade. O 7×10 monta até duas fotos por folha 10×15.</p></dialog>
+<dialog id="montage-sheet-dialog" class="sheet-dialog" aria-labelledby="montage-dialog-title">
+  <div class="dialog-heading"><h2 id="montage-dialog-title">Prévia da folha</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fechar prévia"><span data-icon="close"></span></button></div>
+  <div class="sheet-dialog-preview"><img id="montage-dialog-image" alt="Prévia ampliada da folha" draggable="false" hidden><p id="montage-dialog-status" class="sheet-dialog-status" role="status">Carregando prévia…</p></div>
+</dialog>
 <dialog id="sheet-dialog" class="sheet-dialog" aria-labelledby="sheet-dialog-title"><div class="dialog-heading"><h2 id="sheet-dialog-title">Prévia</h2><button class="icon-button" data-close-dialog aria-label="Fechar prévia"><span data-icon="close"></span></button></div><div id="sheet-dialog-preview"><img id="sheet-dialog-image" alt="Prévia da folha preparada" hidden><p id="sheet-dialog-status" role="status">Carregando prévia…</p></div><div class="clear-actions"><button id="edit-preview" class="secondary">Editar foto</button><button id="export-preview" class="primary">Exportar JPEG</button></div></dialog>
 <dialog id="errors-dialog" class="help-dialog" aria-labelledby="errors-title"><div class="dialog-heading"><h2 id="errors-title">Alguns arquivos não foram gerados</h2><button class="icon-button" data-close-dialog aria-label="Fechar avisos"><span data-icon="close"></span></button></div><ul id="job-errors"></ul></dialog>
 <dialog id="clear-dialog" class="help-dialog" aria-labelledby="clear-title"><div class="dialog-heading"><h2 id="clear-title">Remover todas as fotos?</h2></div><p>Salve o lote ou exporte os arquivos antes de remover as fotos desta sessão. Os originais permanecem intactos.</p><div class="clear-actions"><button id="clear-cancel" class="secondary" data-close-dialog autofocus>Cancelar</button><button id="clear-confirm" class="primary danger">Remover todas</button></div></dialog>

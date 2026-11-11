@@ -1,5 +1,12 @@
 # Alterações
 
+## 1.2.1 — 11/11/2026
+
+- Selecione fotos pelos cards, com Shift para intervalos e opção de selecionar todas.
+- Reordene os cards para definir a sequência da montagem, inclusive por toque ou teclado.
+- Confira a foto ativa no centro e amplie as folhas pela galeria.
+- A prévia deixou de iniciar o arrasto nativo da imagem durante a conferência.
+
 ## 1.2.0 — 11/11/2026
 
 - Nova tela de ferramentas para alternar entre Medidas personalizadas e Montagem para corte com os lotes preservados.

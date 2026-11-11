@@ -61,7 +61,7 @@ class Sheet:
     def describe(self):
         return dict(model=self.preset.name, paper_cm=self.preset.paper_cm,
                     photo_cm=self.preset.photo_cm, photo_count=len(self.indices),
-                    print_count=8 if self.preset.repeat else len(self.indices))
+                    print_count=8 if self.preset.repeat else len(self.indices), indices=self.indices)
 
 
 def photo_size(value, *, allow_empty=False):
@@ -124,6 +124,15 @@ def crop_tile(source, original_size, photo_size_px, target):
         bottom = max(top + 1, round(bottom * sy))
     with source.crop((left, top, right, bottom)) as cropped:
         return cropped.resize(target, Image.Resampling.LANCZOS)
+
+
+def render_photo_preview(record, size, maximum=1000):
+    preset = {'3x4': COPIES, '5x7': FIVE_SMALL, '7x10': SEVEN}[photo_size(size)]
+    width, height = preset.photo_px
+    scale = min(1, maximum / max(width, height))
+    with Image.open(record.proxy) as source:
+        return prepare_tile(source, (record.width, record.height), preset,
+                            (round(width * scale), round(height * scale)))
 
 
 def render_sheet(sheet, records, *, maximum=None, cancel=None, progress=None):

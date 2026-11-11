@@ -1,6 +1,6 @@
-# Medidas Editor 1.2.0
+# Medidas Editor 1.2.1
 
-- Nova tela de ferramentas para alternar entre Medidas personalizadas e Montagem para corte com os lotes preservados.
-- Escolha 3×4, 5×7 ou 7×10 por foto ou aplique o tamanho em lote, com seleção de intervalos por Shift.
-- Montagem automática das folhas 10×15 e 15×21 para as fotos 5×7, com prévia e exportação por gabarito.
-- JPEG a 300 dpi com perfil sRGB e ZIP com pastas por modelo em lotes mistos.
+- Selecione fotos pelos cards, com Shift para intervalos e opção de selecionar todas.
+- Reordene os cards para definir a sequência da montagem, inclusive por toque ou teclado.
+- Confira a foto ativa no centro e amplie as folhas pela galeria.
+- A prévia deixou de iniciar o arrasto nativo da imagem durante a conferência.

@@ -2,7 +2,9 @@
 
 Abra **Montagem para corte** no menu de ferramentas do Medidas Editor. Adicione as fotos pelo botão ou arraste os arquivos para a área da ferramenta.
 
-Clique numa foto e escolha **3×4**, **5×7** ou **7×10**. Para aplicar o mesmo tamanho a várias fotos, marque as caixas e clique no tamanho. Use **Shift** entre a primeira e a última caixa para marcar um intervalo. Depois de aplicar o tamanho, as caixas são desmarcadas para preparar a próxima seleção.
+Clique nos cards das fotos e escolha **3×4**, **5×7** ou **7×10**. Clique de novo num card para desmarcá-lo. Use **Shift** entre o primeiro e o último card para marcar um intervalo, ou **Selecionar todas** para aplicar um tamanho ao lote inteiro. A seleção é limpa depois de aplicar o tamanho.
+
+Arraste os cards para mudar a ordem. Em uma tela de toque, use os pontos à esquerda do card. Pelo teclado, pressione **Alt** com as setas para cima ou para baixo.
 
 ## Folhas e quantidades
 
@@ -19,7 +21,7 @@ Os gabaritos de 5×7 e 7×10 preservam o recorte central, o giro anti-horário d
 
 ## Conferir e exportar
 
-Use os botões numerados para navegar pelas folhas. A prévia é recalculada quando o tamanho ou a lista muda. A exportação fica disponível depois de definir o tamanho de todas as fotos.
+A foto ativa aparece no centro. Ao atribuir um tamanho, a prévia mostra o enquadramento usado na montagem. Na seção **Folhas**, clique em uma miniatura para ampliar a composição. A exportação fica disponível depois de definir o tamanho de todas as fotos.
 
 Uma folha é baixada em JPEG. Várias folhas são reunidas num ZIP. Se o ZIP combinar modelos, os JPEGs são guardados nas pastas correspondentes, como `10x15 (3x4)`, `10x15 (5x7)`, `10x15 (7x10)` e `15x21 (5x7)`. O resultado é JPEG de qualidade 100, 4:4:4, a 300 dpi, com perfil sRGB incorporado.
 
