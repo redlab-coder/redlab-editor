@@ -108,13 +108,30 @@
 #montage-list { overflow: auto; min-height: 86px; max-height: min(48vh, 390px); margin: 5px 0 12px; padding: 3px; }
 .montage-row {
   position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 36px;
+  align-items: center;
   min-height: 54px;
   border: 1px solid transparent;
   border-radius: 10px;
 }
 .montage-row:hover, .montage-row.active { border-color: var(--line); }
+.montage-row.active { background: var(--header); }
 .montage-row.marked { background: var(--soft); border-color: var(--focus); }
-.montage-row.reordering { opacity: .52; }
+.montage-row.reordering { opacity: .32; }
+.montage-check {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  cursor: pointer;
+}
+.montage-check input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: inherit;
+}
 .montage-row.drop-before::before, .montage-row.drop-after::after {
   content: '';
   position: absolute;
@@ -136,7 +153,7 @@
   min-width: 0;
   text-align: left;
   color: var(--ink);
-  padding: 5px 40px 5px 5px;
+  padding: 5px 4px 5px 0;
   background: transparent;
   border: 0;
   border-radius: inherit;
@@ -146,7 +163,7 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 18px;
+  width: 16px;
   height: 40px;
   color: var(--muted);
   cursor: grab;
@@ -163,7 +180,25 @@
 .montage-photo div { min-width: 0; }
 .montage-photo strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
 .montage-photo small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
-.montage-row .icon-button { position: absolute; z-index: 1; right: 5px; top: 50%; translate: 0 -50%; width: 31px; }
+.montage-row .icon-button { width: 31px; }
+#montage-list.reorder-active, #montage-list.reorder-active * { cursor: grabbing; }
+.montage-row.montage-drag-card {
+  position: fixed;
+  z-index: 25;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background: var(--surface);
+  border-color: var(--focus);
+  box-shadow: 0 10px 26px rgb(var(--ink-rgb) / .19);
+  scale: 1.045;
+  animation: montage-lift .16s var(--ease);
+}
+.montage-drag-card.marked { background: var(--soft); }
+@keyframes montage-lift { from { scale: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .montage-row.montage-drag-card { animation: none; }
+}
 .montage-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .montage-size-panel { margin-top: auto; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--header); }
 .montage-size-panel p { margin: 0 0 9px; color: var(--ink); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

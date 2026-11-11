@@ -63,7 +63,7 @@
       </div>
       <input id="montage-files" type="file" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff" multiple hidden>
       <label class="select-all"><input id="montage-all" type="checkbox">Selecionar todas <span id="montage-selection-count"></span></label>
-      <p id="montage-range-hint" class="montage-hint" hidden>Shift seleciona um intervalo. Arraste para ordenar.</p>
+      <p id="montage-range-hint" class="montage-hint" hidden>Shift marca um intervalo. Arraste para ordenar.</p>
       <div id="montage-list" role="region" aria-label="Fotos para montagem"></div>
       <span id="montage-order-status" class="montage-sr-only" role="status"></span>
       <div class="montage-size-panel">
@@ -98,7 +98,7 @@
   <p>Salve o lote ou exporte as folhas antes de remover as fotos.</p>
   <div class="clear-actions"><button class="secondary" type="button" data-close-dialog autofocus>Cancelar</button><button id="montage-clear-confirm" class="primary danger" type="button">Remover todas</button></div>
 </dialog>
-<dialog id="montage-help" class="help-dialog"><div class="dialog-heading"><h2>Montagem para corte</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fechar ajuda"><span data-icon="close"></span></button></div><ol><li>Adicione as fotos e clique nos cards para marcá-las. Use Shift entre dois cards para selecionar um intervalo.</li><li>Escolha 3×4, 5×7 ou 7×10. Arraste para mudar a ordem ou use Alt com as setas para cima e para baixo.</li><li>Clique em uma folha para ampliar a prévia. Exporte em JPEG a 300 dpi ou ZIP para várias folhas.</li></ol><p>O 3×4 gera oito cópias por foto. O 5×7 escolhe entre folhas 10×15 e 15×21 conforme a quantidade. O 7×10 monta até duas fotos por folha 10×15.</p></dialog>
+<dialog id="montage-help" class="help-dialog"><div class="dialog-heading"><h2>Montagem para corte</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fechar ajuda"><span data-icon="close"></span></button></div><ol><li>Clique no card para ver a foto. Marque as caixas para aplicar um tamanho em lote. Use Shift entre duas caixas para marcar um intervalo.</li><li>Escolha 3×4, 5×7 ou 7×10. Arraste para mudar a ordem ou use Alt com as setas para cima e para baixo.</li><li>Clique em uma folha para ampliar a prévia. Exporte em JPEG a 300 dpi ou ZIP para várias folhas.</li></ol><p>O 3×4 gera oito cópias por foto. O 5×7 escolhe entre folhas 10×15 e 15×21 conforme a quantidade. O 7×10 monta até duas fotos por folha 10×15.</p></dialog>
 <dialog id="montage-sheet-dialog" class="sheet-dialog" aria-labelledby="montage-dialog-title">
   <div class="dialog-heading"><h2 id="montage-dialog-title">Prévia da folha</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fechar prévia"><span data-icon="close"></span></button></div>
   <div class="sheet-dialog-preview"><img id="montage-dialog-image" alt="Prévia ampliada da folha" draggable="false" hidden><p id="montage-dialog-status" class="sheet-dialog-status" role="status">Carregando prévia…</p></div>

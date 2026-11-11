@@ -1,6 +1,4 @@
-# Medidas Editor 1.2.1
+# Medidas Editor 1.2.2
 
-- Selecione fotos pelos cards, com Shift para intervalos e opção de selecionar todas.
-- Reordene os cards para definir a sequência da montagem, inclusive por toque ou teclado.
-- Confira a foto ativa no centro e amplie as folhas pela galeria.
-- A prévia deixou de iniciar o arrasto nativo da imagem durante a conferência.
+- Separe a navegação pelas fotos da seleção em lote com caixas discretas.
+- Acompanhe o card ampliado junto ao cursor durante a reordenação.

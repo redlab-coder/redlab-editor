@@ -2,9 +2,9 @@
 
 Abra **Montagem para corte** no menu de ferramentas do Medidas Editor. Adicione as fotos pelo botão ou arraste os arquivos para a área da ferramenta.
 
-Clique nos cards das fotos e escolha **3×4**, **5×7** ou **7×10**. Clique de novo num card para desmarcá-lo. Use **Shift** entre o primeiro e o último card para marcar um intervalo, ou **Selecionar todas** para aplicar um tamanho ao lote inteiro. A seleção é limpa depois de aplicar o tamanho.
+Clique no card para ver a foto e escolher **3×4**, **5×7** ou **7×10**. Para aplicar um tamanho a várias fotos, marque as caixas ao lado dos cards. Use **Shift** entre a primeira e a última caixa para marcar um intervalo, ou **Selecionar todas** para marcar o lote inteiro. A seleção é limpa depois de aplicar o tamanho.
 
-Arraste os cards para mudar a ordem. Em uma tela de toque, use os pontos à esquerda do card. Pelo teclado, pressione **Alt** com as setas para cima ou para baixo.
+Arraste os cards para mudar a ordem. O card acompanha o cursor e a linha indica onde ele será solto. Em uma tela de toque, use os pontos à esquerda do card. Pelo teclado, pressione **Alt** com as setas para cima ou para baixo.
 
 ## Folhas e quantidades
 

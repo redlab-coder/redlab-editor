@@ -31,12 +31,14 @@ def capture_montage(page, files, output, demo):
     page.locator('#montage-files').set_input_files(photos)
     page.wait_for_function("document.querySelector('#montage-count').textContent==='15'&&!importing")
     cards = page.locator('#montage-list .montage-photo')
+    boxes = page.locator('#montage-list .montage-check input')
     for first, last, size in ((0, 11, '5x7'), (12, 12, '3x4'), (13, 14, '7x10')):
-        cards.nth(first).click()
+        boxes.nth(first).check()
         if first != last:
-            cards.nth(last).click(modifiers=['Shift'])
+            boxes.nth(last).click(modifiers=['Shift'])
         page.locator(f'#montage-sizes [data-size="{size}"]').click()
-    cards.first.click()
+    boxes.nth(1).check()
+    boxes.nth(2).check()
     cards.first.click()
     preview = page.locator('#montage-preview-image')
     preview.wait_for(state='visible')
