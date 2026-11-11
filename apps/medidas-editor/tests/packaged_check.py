@@ -17,6 +17,7 @@ from desktop import SingleInstance
 from browser_check import run
 from refinement_browser_check import run as run_refinements
 from gallery_browser_check import run as run_gallery
+from montage_browser_check import run as run_montage
 
 probe=SingleInstance(PORTABLE_NAMESPACE)
 try:
@@ -47,6 +48,7 @@ with tempfile.TemporaryDirectory(prefix='MedidasEditor-packaged-test-') as tempo
         run(state['url'])
         run_refinements(state['url'])
         run_gallery(state['url'])
+        run_montage(state['url'])
         sys.path.insert(0,str(ROOT.parents[1]/'scripts'))
         from check_family_ui import run as check_family
         from packaged_panel_check import check as check_panel

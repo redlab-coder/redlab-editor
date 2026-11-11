@@ -6,12 +6,17 @@ Aplicativo desktop local em Python, Pillow e HTML/CSS/JavaScript, com a mesma fa
 | --- | --- |
 | `formats.json` | Catálogo oficial único |
 | `engine.py` | Precisão decimal, seleção da folha, geometria, cor, prévia e exportação |
+| `montage.py` | Gabaritos do RedLab Tool, agrupamento por tamanho e composição das folhas de corte |
 | `photo_store.py` | Bytes originais imutáveis, metadados e proxies reduzidos |
 | `jobs.py` | Fila única, progresso, cancelamento, nomes e falhas individuais |
 | `projects.py` | Lotes `.medidas`, com limites, hashes e validação |
 | `app.py` | API local autenticada e ciclo de vida |
 | `ui/` | Interface, interação e exclusividade de edição entre abas |
 | `desktop.py`, `updater.py` | Integração Windows e atualização verificada |
+
+A página inicial seleciona a ferramenta e as rotas `/medidas` e `/montagem` abrem diretamente seu espaço de trabalho. Fotos de cada ferramenta são identificadas na API. Abrir um lote substitui somente os registros daquela ferramenta. Os lotes antigos de medidas continuam no formato original. A montagem usa um manifesto versionado para guardar suas atribuições e o checkpoint de atualização pode conter as duas ferramentas.
+
+`plan_sheets()` define a ordem e as posições usadas pela prévia e pelo JPEG. Prévias leem os proxies existentes, e a exportação carrega os originais individualmente. `tests/test_montage.py` verifica os limites do 5×7, as posições legadas, os metadados e as pastas. `tests/montage_browser_check.py` usa o caso de 15 fotos 7×10 e cinco 3×4, a troca de ferramentas e a reorganização automática.
 
 ## Dependência de exportação
 

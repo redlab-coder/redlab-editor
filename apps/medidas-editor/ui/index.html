@@ -5,6 +5,29 @@
 <button id="open-project" class="icon-button" aria-label="Abrir lote" title="Abrir lote salvo"><span data-icon="folder"></span></button><button id="save-project" class="icon-button" aria-label="Salvar lote" title="Salvar fotos e ajustes para continuar depois" disabled><span data-icon="save"></span></button><button id="help" class="icon-button" aria-label="Ajuda" title="Como usar"><span data-icon="help"></span></button><button id="quit" class="icon-button" aria-label="Encerrar Medidas Editor" title="Encerrar Medidas Editor"><span data-icon="power"></span></button><span class="header-divider"></span><button id="export" class="primary" disabled><span data-icon="export"></span><span id="export-label">Exportar JPEG</span></button></div></header>
 <main>
 <div id="session-banner" class="session-banner" hidden><span>Esta sessão está sendo editada em outra aba.</span><button id="takeover" class="secondary">Usar nesta aba</button></div>
+<nav id="tool-nav" class="tool-nav" aria-label="Ferramentas do Medidas Editor">
+  <button type="button" data-tool="inicio"><span data-icon="grid"></span>Ferramentas</button>
+  <button type="button" data-tool="medidas">Medidas personalizadas</button>
+  <button type="button" data-tool="montagem">Montagem para corte</button>
+</nav>
+<section id="tools-home" class="tools-home">
+  <h1>O que você vai preparar?</h1>
+  <div class="tool-cards">
+    <button class="tool-card" type="button" data-tool="medidas">
+      <span class="tool-card-icon" data-icon="brand"></span>
+      <strong>Medidas personalizadas</strong>
+      <span>Ajuste a foto e encontre a folha compatível.</span>
+      <span class="tool-card-link">Abrir ferramenta <span aria-hidden="true">→</span></span>
+    </button>
+    <button class="tool-card" type="button" data-tool="montagem">
+      <span class="tool-card-icon" data-icon="grid"></span>
+      <strong>Montagem para corte</strong>
+      <span>Organize fotos 3×4, 5×7 e 7×10 em folhas de produção.</span>
+      <span class="tool-card-link">Abrir ferramenta <span aria-hidden="true">→</span></span>
+    </button>
+  </div>
+</section>
+<section id="measure-tool" aria-label="Medidas personalizadas" hidden>
 <section class="template-bar"><span class="template-description">Medidas personalizadas <b>·</b> 300 dpi</span><button id="filter-review" class="secondary" aria-pressed="false">Todas as fotos</button></section>
 <section class="workspace">
 <div id="import-area" class="import-area">
@@ -27,12 +50,54 @@
 <div id="output-summary" class="output-summary" aria-live="polite" hidden></div>
 </aside></section>
 <section class="output-section"><div class="output-title"><h2>Preparação <span id="sheet-summary"></span></h2><div class="output-activity"><span id="activity" class="print-spec" role="status" aria-live="polite"></span><button id="cancel-export" class="icon-button" aria-label="Cancelar exportação" title="Cancelar exportação" hidden><span data-icon="close"></span></button></div></div><div id="sheets" class="sheets"><div class="empty-sheet">Suas fotos preparadas aparecerão aqui.</div></div></section>
+</section>
+<section id="montage-tool" class="montage-tool" aria-labelledby="montage-title" hidden>
+  <div class="montage-heading">
+    <div><h1 id="montage-title">Montagem para corte</h1><p>Escolha o tamanho de cada foto e confira as folhas.</p></div>
+    <button id="montage-export" class="primary" type="button" disabled><span data-icon="export"></span><span id="montage-export-label">Exportar folhas</span></button>
+  </div>
+  <div id="montage-drop" class="montage-workspace">
+    <aside class="montage-library">
+      <div class="panel-heading"><h2>Fotos <span id="montage-count" class="count">0</span></h2>
+        <div class="library-actions"><button id="montage-clear" class="icon-button" type="button" title="Remover todas as fotos da montagem" aria-label="Remover todas as fotos da montagem" hidden><span data-icon="clear-all"></span></button><button id="montage-add" class="icon-button" type="button" title="Adicionar fotos" aria-label="Adicionar fotos"><span data-icon="add"></span></button></div>
+      </div>
+      <input id="montage-files" type="file" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff" multiple hidden>
+      <label class="select-all"><input id="montage-all" type="checkbox">Selecionar todas <span id="montage-selection-count"></span></label>
+      <p id="montage-range-hint" class="montage-hint" hidden>Use Shift para selecionar um intervalo.</p>
+      <div id="montage-list" role="region" aria-label="Fotos para montagem"></div>
+      <div class="montage-size-panel">
+        <p id="montage-target">Selecione uma foto ou marque várias.</p>
+        <div id="montage-sizes" class="montage-sizes" role="group" aria-label="Tamanho das fotos">
+          <button type="button" data-size="3x4" class="secondary">3×4</button>
+          <button type="button" data-size="5x7" class="secondary">5×7</button>
+          <button type="button" data-size="7x10" class="secondary">7×10</button>
+        </div>
+      </div>
+    </aside>
+    <div class="montage-preview">
+      <div class="panel-heading"><h2>Folhas <span id="montage-sheet-count" class="count">0</span></h2><div class="output-activity"><span id="montage-activity" class="print-spec" role="status"></span><button id="montage-cancel" class="icon-button" type="button" aria-label="Cancelar exportação" title="Cancelar exportação" hidden><span data-icon="close"></span></button></div></div>
+      <div class="montage-stage">
+        <div id="montage-empty" class="empty"><div class="empty-symbol" data-icon="grid"></div><p id="montage-stage-message">Adicione ou arraste as fotos.</p><button id="montage-empty-add" class="primary" type="button"><span data-icon="add-photo"></span>Selecionar fotos</button></div>
+        <img id="montage-preview-image" alt="Prévia da folha de montagem" hidden>
+      </div>
+      <div id="montage-sheet-details" class="montage-sheet-details" hidden><strong id="montage-sheet-title"></strong><span id="montage-sheet-spec"></span></div>
+      <div id="montage-sheets" class="montage-sheets" aria-label="Folhas da montagem"></div>
+      <p id="montage-pending" class="montage-hint" role="status" hidden></p>
+    </div>
+  </div>
+</section>
 </main>
+<dialog id="montage-clear-dialog" class="help-dialog" aria-labelledby="montage-clear-title">
+  <div class="dialog-heading"><h2 id="montage-clear-title">Remover todas as fotos da montagem?</h2></div>
+  <p>Salve o lote ou exporte as folhas antes de remover as fotos.</p>
+  <div class="clear-actions"><button class="secondary" type="button" data-close-dialog autofocus>Cancelar</button><button id="montage-clear-confirm" class="primary danger" type="button">Remover todas</button></div>
+</dialog>
+<dialog id="montage-help" class="help-dialog"><div class="dialog-heading"><h2>Montagem para corte</h2><button type="button" class="icon-button" data-close-dialog aria-label="Fechar ajuda"><span data-icon="close"></span></button></div><ol><li>Adicione suas fotos. Clique em uma foto ou marque várias na lista.</li><li>Escolha 3×4, 5×7 ou 7×10. Use Shift entre duas caixas para marcar um intervalo.</li><li>Confira as folhas e exporte. Os arquivos saem em JPEG a 300 dpi. Várias folhas são reunidas em ZIP.</li></ol><p>O 3×4 gera oito cópias por foto. O 5×7 escolhe entre folhas 10×15 e 15×21 conforme a quantidade. O 7×10 monta até duas fotos por folha 10×15.</p></dialog>
 <dialog id="sheet-dialog" class="sheet-dialog" aria-labelledby="sheet-dialog-title"><div class="dialog-heading"><h2 id="sheet-dialog-title">Prévia</h2><button class="icon-button" data-close-dialog aria-label="Fechar prévia"><span data-icon="close"></span></button></div><div id="sheet-dialog-preview"><img id="sheet-dialog-image" alt="Prévia da folha preparada" hidden><p id="sheet-dialog-status" role="status">Carregando prévia…</p></div><div class="clear-actions"><button id="edit-preview" class="secondary">Editar foto</button><button id="export-preview" class="primary">Exportar JPEG</button></div></dialog>
 <dialog id="errors-dialog" class="help-dialog" aria-labelledby="errors-title"><div class="dialog-heading"><h2 id="errors-title">Alguns arquivos não foram gerados</h2><button class="icon-button" data-close-dialog aria-label="Fechar avisos"><span data-icon="close"></span></button></div><ul id="job-errors"></ul></dialog>
 <dialog id="clear-dialog" class="help-dialog" aria-labelledby="clear-title"><div class="dialog-heading"><h2 id="clear-title">Remover todas as fotos?</h2></div><p>Salve o lote ou exporte os arquivos antes de remover as fotos desta sessão. Os originais permanecem intactos.</p><div class="clear-actions"><button id="clear-cancel" class="secondary" data-close-dialog autofocus>Cancelar</button><button id="clear-confirm" class="primary danger">Remover todas</button></div></dialog>
 <dialog id="export-dialog" class="help-dialog" aria-labelledby="export-title"><div class="dialog-heading"><h2 id="export-title">Há fotos pendentes</h2></div><p id="export-message"></p><div class="clear-actions"><button class="secondary" data-close-dialog autofocus>Voltar e conferir</button><button id="export-ready" class="primary">Exportar somente as prontas</button></div></dialog>
 <dialog id="help-dialog" class="help-dialog"><div class="dialog-heading"><h2>Da foto à medida certa</h2><button class="icon-button" data-close-dialog aria-label="Fechar ajuda"><span data-icon="close"></span></button></div><ol><li>Adicione as imagens e informe a largura e a altura em centímetros. Uma medida vazia pode ser calculada pela proporção original.</li><li>O programa escolhe a menor folha compatível. Ajuste o recorte na prévia e confira os itens pendentes pelo botão ou pela tecla F.</li><li>Exporte um JPEG por foto, a 300 dpi, com fundo branco e zero margem adicional. Lotes são baixados em ZIP.</li></ol><p>O contorno azul indica a área solicitada. No modo inteira, o contorno verde indica o conteúdo visível; o branco interno faz parte da área solicitada. O branco externo é a sobra da folha. Guias não aparecem no JPEG.</p><p>Exemplo: foto de 30 × 36 cm → folha comercial 30×40 → arquivo de 30,5 × 40 cm. A foto mantém 30 × 36 cm, encostada no canto superior esquerdo.</p><p>Metadados de tamanho não definem o pedido do cliente. Resolução baixa é um aviso; ampliar pixels não recupera detalhes.</p><p>Cor de saída: sRGB com ICC incorporado. Perfis válidos são convertidos; perfis inválidos e CMYK sem perfil geram aviso. A validação física de escala e cor na Noritsu está pendente. Imprima sem ajuste automático de escala.</p><p>Salvar lote cria um arquivo .medidas com cópias dos originais e ajustes. O destino dos downloads segue as configurações do navegador; nomes únicos dentro do ZIP evitam colisões entre fotos.</p><p class="help-formats">JPG, PNG, WebP, BMP e TIFF · até 100 fotos · 50 MB e 60 megapixels por entrada · 4 GB de originais por lote</p></dialog>
 <dialog id="recovery-error-dialog" class="help-dialog" aria-labelledby="recovery-error-title"><div class="dialog-heading"><h2 id="recovery-error-title">Recuperação do lote</h2><button class="icon-button" data-close-dialog aria-label="Fechar aviso"><span data-icon="close"></span></button></div><p id="recovery-error-text"></p></dialog>
-<div id="toast" role="status" aria-live="polite" hidden></div><script id="formats-data" type="application/json">__FORMATS__</script><script src="/icons.js"></script><script src="/update.js"></script><script src="/app.js"></script>
+<div id="toast" role="status" aria-live="polite" hidden></div><script id="formats-data" type="application/json">__FORMATS__</script><script src="/icons.js"></script><script src="/update.js"></script><script src="/montage.js"></script><script src="/app.js"></script>
 </body></html>

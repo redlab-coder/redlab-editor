@@ -1,6 +1,12 @@
 # Guia de uso
 
-Instale `MedidasEditor-Setup-1.1.1.exe` ou abra a [versão portátil](https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.1.1). A interface abre no navegador padrão; o programa fica disponível na bandeja do Windows até ser encerrado. Não é necessário instalar Python. A edição e a exportação funcionam offline.
+Instale o aplicativo ou abra a versão portátil pelo [catálogo do Medidas Editor](../README.md). A interface abre no navegador padrão e o programa fica disponível na bandeja do Windows até ser encerrado. A edição e a exportação funcionam offline.
+
+## Escolher a ferramenta
+
+Na tela **Ferramentas**, escolha **Medidas personalizadas** ou **Montagem para corte**. Use o menu no topo para alternar. Cada ferramenta conserva suas próprias fotos e ajustes enquanto o aplicativo estiver aberto.
+
+Para montar fotos **3×4, 5×7 e 7×10** em folhas prontas para corte, consulte [Montagem para corte](montage.md). As instruções abaixo são para **Medidas personalizadas**.
 
 ## Preparar uma foto
 
@@ -40,11 +46,11 @@ Os downloads seguem o destino e a política de nomes do navegador, como nas outr
 
 ## Formatos e limites
 
-Entradas: JPG, PNG, WebP, BMP e TIFF, primeira página. Até 100 fotos, 50 MB e 60 megapixels por imagem; 4 GB de originais por lote, mais espaço temporário para normalização e resultados. HEIC e RAW precisam ser convertidos antes.
+Entradas: JPG, PNG, WebP, BMP e TIFF, primeira página. A sessão comporta até 100 fotos e 4 GB de originais entre as duas ferramentas, com até 50 MB e 60 megapixels por imagem. É necessário espaço temporário para normalização e resultados. HEIC e RAW precisam ser convertidos antes.
 
 As prévias usam imagens de até 1600 pixels por lado. A exportação usa os originais e suporta todas as folhas cadastradas, inclusive 61 × 250 cm. O limite de 60 megapixels pertence à entrada, não à folha gerada.
 
-A versão instalada consulta atualizações ao iniciar e a cada 30 minutos, baixa e verifica o instalador. Quando estiver pronto, o cabeçalho oferece **Atualizar e reiniciar**, que guarda uma cópia local do lote e reabre o programa com o trabalho recuperado. Sem conexão, a edição continua disponível. [Funcionamento das atualizações](../../../docs/updates.md). A edição portátil não instala atualizações automaticamente.
+A versão instalada consulta atualizações ao iniciar e a cada 30 minutos, baixa e verifica o instalador. Quando estiver pronto, o cabeçalho oferece **Atualizar e reiniciar**, que guarda uma cópia local das duas ferramentas e reabre o programa com o trabalho recuperado. Sem conexão, a edição continua disponível. [Funcionamento das atualizações](../../../docs/updates.md). A edição portátil não instala atualizações automaticamente.
 
 [← Medidas Editor](../README.md)
 

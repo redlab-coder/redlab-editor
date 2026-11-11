@@ -1,0 +1,178 @@
+.tool-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.tool-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+}
+.tool-nav button .icon { width: 15px; height: 15px; }
+.tool-nav button:hover, .tool-nav button[aria-current="page"] {
+  color: var(--ink);
+  background: var(--header);
+  border-color: var(--line);
+}
+.tool-nav button[aria-current="page"] { font-weight: 650; }
+.tools-home {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: clamp(25px, 7vh, 84px) 0;
+}
+.tools-home h1, .montage-heading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.15;
+  letter-spacing: -.035em;
+}
+.tool-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.tool-card {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 9px;
+  min-height: 224px;
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+  text-align: left;
+  line-height: 1.45;
+}
+.tool-card:hover { border-color: var(--focus); background: var(--header); }
+.tool-card strong { color: var(--ink); font-size: 21px; line-height: 1.2; }
+.tool-card-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 5px;
+  border-radius: 13px;
+  background: var(--soft);
+  color: var(--accent);
+}
+.tool-card-icon .icon { width: 28px; height: 28px; }
+.tool-card-link { color: var(--accent); font-size: 13px; font-weight: 650; margin-top: 10px; }
+.tool-card-link span { margin-left: 5px; }
+.montage-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.montage-heading h1 { font-size: clamp(23px, 3vw, 30px); }
+.montage-heading p { margin: 5px 0 0; color: var(--muted); }
+.montage-workspace {
+  position: relative;
+  display: grid;
+  grid-template-columns: clamp(260px, 28%, 360px) minmax(0, 1fr);
+  min-height: 550px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.montage-workspace.file-drop-active::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  border: 2px dashed var(--accent);
+  border-radius: calc(var(--radius) - 3px);
+}
+.montage-library, .montage-preview { min-width: 0; padding: 18px; }
+.montage-library { display: flex; flex-direction: column; border-right: 1px solid var(--line); }
+.montage-library .panel-heading, .montage-preview .panel-heading { margin-bottom: 8px; }
+.montage-library .select-all { margin: 3px 0; }
+.montage-hint { color: var(--muted); font-size: 12px; margin: 4px 0 8px; }
+#montage-list { overflow: auto; min-height: 86px; max-height: min(48vh, 390px); margin: 5px 0 12px; }
+.montage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 5px 6px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+.montage-row.active, .montage-row:has(input:checked) { background: var(--soft); border-color: var(--line); }
+.montage-row input { flex: none; width: 18px; height: 18px; accent-color: var(--accent); }
+.montage-photo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  color: var(--ink);
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.montage-photo img { width: 34px; height: 39px; border-radius: 5px; object-fit: cover; }
+.montage-photo div { min-width: 0; }
+.montage-photo strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.montage-photo small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.montage-row .icon-button { flex: none; width: 31px; }
+.montage-size-panel { margin-top: auto; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--header); }
+.montage-size-panel p { margin: 0 0 9px; color: var(--ink); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.montage-sizes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.montage-sizes button { justify-content: center; padding: 7px 5px; min-height: 38px; }
+.montage-sizes button[aria-pressed="true"] { background: var(--accent); color: white; border-color: var(--accent); }
+.montage-stage {
+  display: grid;
+  place-items: center;
+  min-height: 290px;
+  height: clamp(290px, 45vh, 490px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: radial-gradient(var(--stage-dots) .65px, transparent .65px) 0 0 / 15px 15px, var(--stage);
+  overflow: hidden;
+  padding: clamp(14px, 3vw, 30px);
+}
+.montage-stage .empty { position: static; transform: none; width: auto; }
+.montage-stage img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  align-self: center;
+  object-fit: contain;
+  background: white;
+  box-shadow: 0 2px 14px rgb(var(--ink-rgb) / .13);
+}
+.montage-sheet-details { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 13px; margin: 12px 0 8px; }
+.montage-sheet-details span { color: var(--muted); font-size: 12px; }
+.montage-sheets { display: flex; gap: 6px; overflow-x: auto; padding: 3px 0 6px; }
+.montage-sheets button { white-space: nowrap; font-size: 12px; flex: none; }
+.montage-sheets button[aria-pressed="true"] { background: var(--soft); border-color: var(--focus); color: var(--ink); }
+@media (max-width: 740px) {
+  .montage-workspace { grid-template-columns: minmax(0, 1fr); }
+  .montage-library { border-right: 0; border-bottom: 1px solid var(--line); }
+  #montage-list { max-height: 245px; }
+  .montage-stage { height: 330px; }
+}
+@media (max-width: 520px) {
+  .tool-cards { grid-template-columns: 1fr; gap: 10px; }
+  .tool-card { min-height: 0; }
+  .tool-nav { gap: 3px; margin-bottom: 15px; }
+  .tool-nav button { font-size: 12px; padding-inline: 7px; }
+  .montage-library, .montage-preview { padding: 13px; }
+}

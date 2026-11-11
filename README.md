@@ -12,7 +12,7 @@ O pacote inclui **Bottons 1.2.3**, **Polaroid 1.2.1** e **Medidas 1.1.1**. Os tr
 | --- | --- | --- |
 | **Bottons Editor** | Modelos por imagem e montagem de folhas com bottons. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Setup-1.2.3.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Portable.exe) |
 | **Polaroid Editor** | Enquadramento, conferência e montagem de polaroids. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Setup-1.2.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Portable.exe) |
-| **Medidas Editor** | Fotos em medidas personalizadas na folha comercial compatível. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.1/MedidasEditor-Setup-1.1.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.1.1/MedidasEditor-Portable.exe) |
+| **Medidas Editor** | Medidas personalizadas e montagem de fotos para corte. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.0/MedidasEditor-Setup-1.2.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.0/MedidasEditor-Portable.exe) |
 
 A edição funciona localmente, sem conta. Os originais são preservados e as fotos não são enviadas à nuvem. O instalador é a opção recomendada para receber atualizações; a edição portátil funciona sem instalação e é atualizada manualmente.
 
@@ -33,6 +33,8 @@ Edite e confira em pé; exporte na orientação horizontal de impressão. Foto d
 [Conhecer a ferramenta](apps/polaroid-editor/README.md) · [Guia de uso](apps/polaroid-editor/docs/usage.md) · [Impressão](apps/polaroid-editor/docs/printing.md)
 
 ## Medidas Editor
+
+Em **Montagem para corte**, atribua 3×4, 5×7 e 7×10 a uma ou várias fotos. O editor organiza as folhas, escolhe 10×15 ou 15×21 para o 5×7 e separa os gabaritos em pastas no ZIP. [Guia da montagem](apps/medidas-editor/docs/montage.md)
 
 Informe as medidas em centímetros e ajuste o recorte. A ferramenta escolhe a menor folha comercial compatível e preserva a área da fotografia, com branco nas sobras. Inclui 27 formatos, ajustes por imagem, lotes `.medidas` e JPEG a 300 dpi.
 

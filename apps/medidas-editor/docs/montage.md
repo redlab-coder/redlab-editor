@@ -1,0 +1,28 @@
+# Montagem para corte
+
+Abra **Montagem para corte** no menu de ferramentas do Medidas Editor. Adicione as fotos pelo botão ou arraste os arquivos para a área da ferramenta.
+
+Clique numa foto e escolha **3×4**, **5×7** ou **7×10**. Para aplicar o mesmo tamanho a várias fotos, marque as caixas e clique no tamanho. Use **Shift** entre a primeira e a última caixa para marcar um intervalo. Depois de aplicar o tamanho, as caixas são desmarcadas para preparar a próxima seleção.
+
+## Folhas e quantidades
+
+| Tamanho escolhido | Folha | Dimensões reais da folha | Montagem |
+| --- | --- | --- | --- |
+| 3×4 | 10×15 | 15,2 × 10,2 cm | 8 cópias da mesma foto de 3 × 4 cm |
+| 5×7 | 10×15 | 15,2 × 10,0 cm | Até 3 fotos de 5 × 7 cm |
+| 5×7 | 15×21 | 15,2 × 21,6 cm | Até 9 fotos de 5 × 7 cm |
+| 7×10 | 10×15 | 15,2 × 10,2 cm | Até 2 fotos de 7 × 10,2 cm |
+
+Para **5×7**, cada grupo de nove ocupa uma 15×21. Sobras de uma a três fotos vão para uma 10×15. Sobras de quatro a oito vão para outra 15×21. Por exemplo, 12 fotos geram uma 15×21 com nove e uma 10×15 com três. A ordem da lista define a ordem dentro de cada tamanho.
+
+Os gabaritos de 5×7 e 7×10 preservam o recorte central, o giro anti-horário das fotos horizontais após EXIF e o preenchimento desde o canto inferior esquerdo. O 3×4 repete a foto redimensionada oito vezes numa grade centralizada. O intervalo de produção é de um pixel.
+
+## Conferir e exportar
+
+Use os botões numerados para navegar pelas folhas. A prévia é recalculada quando o tamanho ou a lista muda. A exportação fica disponível depois de definir o tamanho de todas as fotos.
+
+Uma folha é baixada em JPEG. Várias folhas são reunidas num ZIP. Se o ZIP combinar modelos, os JPEGs são guardados nas pastas correspondentes, como `10x15 (3x4)`, `10x15 (5x7)`, `10x15 (7x10)` e `15x21 (5x7)`. O resultado é JPEG de qualidade 100, 4:4:4, a 300 dpi, com perfil sRGB incorporado.
+
+Use **Salvar lote** para guardar as fotos e atribuições num arquivo `.medidas` e reabra esse lote na ferramenta **Montagem para corte**. A sessão de **Medidas personalizadas** permanece disponível ao trocar de ferramenta.
+
+[← Guia de uso](usage.md)

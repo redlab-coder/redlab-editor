@@ -11,6 +11,8 @@ from PIL import Image
 
 def prepare(page,product):
     page.wait_for_function('editingAllowed&&!bootRecovery&&!restoring')
+    if product == 'medidas-editor' and page.locator('#tools-home').is_visible():
+        page.locator('#tools-home [data-tool="medidas"]').click()
     files=[]
     for index,color in enumerate(('red','blue')):
         data=io.BytesIO();Image.new('RGB',(300,400),color).save(data,'PNG')
@@ -23,6 +25,12 @@ def prepare(page,product):
         page.evaluate("()=>{photos[0].edits.zoom=1.25;photos[0].edits.mode='cover';photos[0].manual=true;photos[0].reviewed=true;selected=photos[1].id;filterReview=true;renderLibrary();}")
     else:
         page.evaluate("()=>{Object.assign(photos[0].settings,{width_cm:'30',height_cm:'36',mode:'cover',zoom:1.25});photos[0].reviewed=true;selected=photos[1].id;checked=new Set([photos[0].id]);renderSettings();$('width-cm').value='30,8';$('height-cm').value='';draftDirty=true;renderLibrary();}")
+        if page.locator('#montage-tool').count():
+            page.locator('#tool-nav [data-tool="montagem"]').click()
+            page.locator('#montage-files').set_input_files(files[:1])
+            page.locator('#montage-sizes [data-size="3x4"]').click()
+            page.locator('#montage-list input').check()
+            page.wait_for_function("document.querySelector('#montage-sheet-count').textContent==='1'")
     page.evaluate('saveSession()')
     return files
 
@@ -35,7 +43,10 @@ def state(page,product):
         if product=='polaroid-editor':photo['manual']=bool(photo.get('manual'));photo['reviewed']=bool(photo.get('reviewed'))
     if product=='bottons-editor':result.update(page.evaluate("({template:activeTemplate,guides:$('guides').getAttribute('aria-pressed')==='true'})"))
     elif product=='polaroid-editor':result.update(page.evaluate('({filter_review:filterReview})'))
-    else:result.update(page.evaluate("({filter_review:filterReview,draft_width:$('width-cm').value,draft_height:$('height-cm').value,draft_dirty:draftDirty,checked:photos.map((p,i)=>checked.has(p.id)?i:-1).filter(i=>i>=0)})"))
+    else:
+        result.update(page.evaluate("({filter_review:filterReview,draft_width:$('width-cm').value,draft_height:$('height-cm').value,draft_dirty:draftDirty,checked:photos.map((p,i)=>checked.has(p.id)?i:-1).filter(i=>i>=0)})"))
+        if page.locator('#montage-tool').count():
+            result.update(page.evaluate("({tool,montage:montage.items().map(({name,settings,selected,checked})=>({name,settings,selected,checked}))})"))
     return result
 
 

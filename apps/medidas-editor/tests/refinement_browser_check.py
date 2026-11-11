@@ -17,7 +17,7 @@ def run(url):
         browser=p.chromium.launch(channel='msedge',headless=True)
         context=browser.new_context(viewport={'width':1366,'height':900},accept_downloads=True)
         page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
-        page.goto(url);page.wait_for_function("!document.querySelector('#add').disabled")
+        page.goto(url.rstrip('/')+'/medidas');page.wait_for_function("!document.querySelector('#add').disabled")
         def drop(selector,types='Files'):
             page.evaluate('''({selector,encoded,types})=>{
                 const data=new DataTransfer();if(types==='Files'){

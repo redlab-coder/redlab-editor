@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 import threading
+from PIL import Image
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -13,6 +14,35 @@ PRODUCTS=('bottons-editor','polaroid-editor','medidas-editor')
 def load(path):
     spec=importlib.util.spec_from_file_location('redlab_demo',path)
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
+
+
+def capture_montage(page, files, output, demo):
+    page.set_viewport_size(dict(width=1440, height=900))
+    page.locator('#tool-nav [data-tool="inicio"]').click()
+    page.screenshot(path=str(output/'tools.png'))
+    page.locator('#tools-home [data-tool="montagem"]').click()
+    photos = []
+    for number in range(1, 16):
+        with Image.open(files[(number - 1) % len(files)]) as image:
+            image.thumbnail((720, 960))
+            path = demo / f'{number:02d} · {files[(number - 1) % len(files)].stem}.png'
+            image.save(path)
+        photos.append(str(path))
+    page.locator('#montage-files').set_input_files(photos)
+    page.wait_for_function("document.querySelector('#montage-count').textContent==='15'&&!importing")
+    boxes = page.locator('#montage-list input')
+    for first, last, size in ((0, 11, '5x7'), (12, 12, '3x4'), (13, 14, '7x10')):
+        boxes.nth(first).check()
+        if first != last:
+            boxes.nth(last).click(modifiers=['Shift'])
+        page.locator(f'#montage-sizes [data-size="{size}"]').click()
+    page.locator('#montage-sheets button').nth(1).click()
+    preview = page.locator('#montage-preview-image')
+    preview.wait_for(state='visible')
+    preview.evaluate('image=>image.decode()')
+    page.locator('#montage-list').evaluate('list=>{list.scrollTop=0;}')
+    page.wait_for_function("document.querySelector('#toast').hidden")
+    page.screenshot(path=str(output/'montage.png'), full_page=True)
 
 
 def capture(product):
@@ -36,7 +66,8 @@ def capture(product):
                     renderer.set_viewport_size(dict(width=3840,height=4608));renderer.set_content('<body style="margin:0">'+svg+'</body>');path=demo/(title+'.png');renderer.locator('svg').screenshot(path=str(path));files.append(path)
             renderer.close()
             page=context.new_page();page.emulate_media(reduced_motion='reduce');errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
-            page.goto(f'http://127.0.0.1:{server.server_port}');page.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring")
+            route='/medidas' if product=='medidas-editor' else '/'
+            page.goto(f'http://127.0.0.1:{server.server_port}{route}');page.wait_for_function("typeof editingAllowed!=='undefined'&&editingAllowed&&!bootRecovery&&!restoring")
             page.locator('#files').set_input_files([str(path) for path in files]);page.wait_for_function('photos.length===3&&!importing')
             if product=='bottons-editor':
                 for path in files[1:]:
@@ -64,6 +95,14 @@ def capture(product):
             page.locator('#sheet-dialog').screenshot(path=str(output/'sheet.png'));page.keyboard.press('Escape')
             page.set_viewport_size(dict(width=390,height=844));page.screenshot(path=str(output/'mobile.png'),full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');assert not errors,errors
+            if product=='medidas-editor':
+                page.set_viewport_size(dict(width=1440,height=1000))
+                page.locator('#fit-mode').select_option('contain')
+                page.locator('#content-outline').wait_for(state='visible')
+                page.wait_for_function("!current().planning && [...document.querySelectorAll('.preparation-card img')].every(img=>img.complete&&img.naturalWidth>0)")
+                page.screenshot(path=str(output/'contain.png'),full_page=True)
+                capture_montage(page,files,output,demo)
+                assert not errors,errors
             browser.close()
         print(product+': capturas atualizadas',flush=True)
     finally:server.shutdown();server.server_close();app.CACHE.clear();app.IMAGES.clear()
