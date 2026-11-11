@@ -19,7 +19,7 @@ from engine import FORMATS, layout, normalized_settings, proportional_size, cm_t
 from photo_store import PhotoRecord, PhotoCache, MAX_FILE, MAX_PHOTOS, MAX_TOTAL
 from projects import project_tool, read_project, write_project
 from jobs import ExportManager
-from montage import photo_size, plan_sheets, render_sheet
+from montage import photo_size, plan_sheets, render_photo_preview, render_sheet
 from desktop import SingleInstance, run_tray, clear_session
 from updater import Updater, installed_directory
 from recovery import CheckpointStore, UpdateSession, UpdateBusy
@@ -304,6 +304,12 @@ class Handler(BaseHTTPRequestHandler):
                     write_project(stream, portable)
                     self.send_file(stream, 'Montagem.medidas' if tool == 'montagem' else 'Meu lote.medidas', 'application/zip')
                 return
+            if path == '/api/montagem/photo-preview':
+                (record, _), = snapshots([data], tool='montagem')
+                output = io.BytesIO()
+                with render_photo_preview(record, data.get('size')) as image:
+                    image.save(output, 'PNG')
+                return self.reply(output.getvalue(), 'image/png')
             if path in ('/api/montagem/plan', '/api/montagem/preview', '/api/montagem/export'):
                 records, sizes, sheets = montage_plan(data.get('items'))
                 if path.endswith('/plan'):

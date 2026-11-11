@@ -30,16 +30,21 @@ def capture_montage(page, files, output, demo):
         photos.append(str(path))
     page.locator('#montage-files').set_input_files(photos)
     page.wait_for_function("document.querySelector('#montage-count').textContent==='15'&&!importing")
-    boxes = page.locator('#montage-list input')
+    cards = page.locator('#montage-list .montage-photo')
     for first, last, size in ((0, 11, '5x7'), (12, 12, '3x4'), (13, 14, '7x10')):
-        boxes.nth(first).check()
+        cards.nth(first).click()
         if first != last:
-            boxes.nth(last).click(modifiers=['Shift'])
+            cards.nth(last).click(modifiers=['Shift'])
         page.locator(f'#montage-sizes [data-size="{size}"]').click()
-    page.locator('#montage-sheets button').nth(1).click()
+    cards.first.click()
+    cards.first.click()
     preview = page.locator('#montage-preview-image')
     preview.wait_for(state='visible')
     preview.evaluate('image=>image.decode()')
+    page.wait_for_function("""() => {
+        const images = [...document.querySelectorAll('#montage-sheets img')];
+        return images.length === 4 && images.every(image => image.naturalWidth);
+    }""")
     page.locator('#montage-list').evaluate('list=>{list.scrollTop=0;}')
     page.wait_for_function("document.querySelector('#toast').hidden")
     page.screenshot(path=str(output/'montage.png'), full_page=True)

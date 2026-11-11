@@ -5,9 +5,13 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
   const sizes = [...el('sizes').querySelectorAll('[data-size]')];
   const textSize = size => size?.replace('x', '×') || 'Sem tamanho';
   let photos = [], checked = new Set(), focused = null, anchor = null;
-  let plan = null, sheetIndex = 0, generation = 0, timer, planError = '';
-  let previewUrl = null, previewRequest = 0, previewLoading = false, pendingPreview = null;
+  let plan = null, generation = 0, timer;
+  let photoKey = null, photoUrl = null, photoLoading = false, pendingPhoto = null;
+  let galleryItems = [], galleryLoading = false, dialogUrl = null, dialogRequest = 0;
+  const cards = new Map(), galleryUrls = new Map(), galleryQueue = new Set();
   const thumbs = new Map();
+  const list = el('list');
+  const dialog = el('sheet-dialog');
   const items = () => photos.map(photo => ({
     id: photo.id, name: photo.name, tool: 'montagem', settings: {size: photo.settings.size},
     selected: photo.id === focused, checked: checked.has(photo.id)
@@ -30,18 +34,18 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
     el('clear').disabled = !editable;
     const selected = targets();
     el('target').textContent = checked.size ? `Aplicar a ${checked.size} ${checked.size === 1 ? 'foto marcada' : 'fotos marcadas'}`
-      : selected[0]?.name || 'Selecione uma foto ou marque várias.';
+      : selected.length ? 'Tamanho da foto' : 'Selecione uma foto.';
     el('target').title = el('target').textContent;
     for (const button of sizes) {
       button.disabled = !editable || !selected.length;
       button.setAttribute('aria-pressed', String(!!selected.length && selected.every(photo => photo.settings.size === button.dataset.size)));
     }
-    for (const row of el('list').children) {
+    for (const row of list.children) {
       const id = row.dataset.id;
       row.classList.toggle('active', id === focused);
-      row.querySelector('input').checked = checked.has(id);
-      row.querySelector('.montage-photo').setAttribute('aria-pressed', String(id === focused));
-      for (const control of row.querySelectorAll('button, input')) control.disabled = !editable;
+      row.classList.toggle('marked', checked.has(id));
+      row.querySelector('.montage-photo').setAttribute('aria-pressed', String(checked.has(id)));
+      for (const control of row.querySelectorAll('button')) control.disabled = !editable;
     }
     const count = plan?.sheets.length || 0;
     el('export').disabled = !editable || !count || !!plan?.pending;
@@ -49,37 +53,42 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
   }
 
   function renderRows() {
-    const list = el('list');
     const scroll = list.scrollTop;
     const previous = document.activeElement;
     const previousId = previous?.closest('.montage-row')?.dataset.id;
     const previousClass = previous?.className;
+    cancelReorder();
     list.replaceChildren();
     for (const photo of photos) {
       const row = document.createElement('div');
       row.className = 'montage-row';
       row.dataset.id = photo.id;
-      const check = document.createElement('input');
-      check.type = 'checkbox';
-      check.setAttribute('aria-label', `Marcar ${photo.name}`);
-      check.onclick = event => {
-        const start = photos.findIndex(item => item.id === anchor);
-        const end = photos.indexOf(photo);
-        const range = event.shiftKey && start >= 0 ? photos.slice(Math.min(start, end), Math.max(start, end) + 1) : [photo];
-        for (const item of range) check.checked ? checked.add(item.id) : checked.delete(item.id);
-        anchor = photo.id;
-        refresh();
-        save();
-      };
       const button = document.createElement('button');
       button.className = 'montage-photo';
       button.type = 'button';
+      button.setAttribute('aria-label', `Selecionar ${photo.name}`);
+      button.setAttribute('aria-keyshortcuts', 'Alt+ArrowUp Alt+ArrowDown');
       button.title = [photo.name, ...(photo.metadata?.warnings || [])].join('\n');
-      button.onclick = () => {
+      button.onclick = event => {
+        if (!canEdit()) return;
+        const start = photos.findIndex(item => item.id === anchor);
+        const end = photos.indexOf(photo);
+        if (event.shiftKey && start >= 0) {
+          for (const item of photos.slice(Math.min(start, end), Math.max(start, end) + 1)) checked.add(item.id);
+        } else {
+          if (checked.has(photo.id)) checked.delete(photo.id);
+          else checked.add(photo.id);
+          anchor = photo.id;
+        }
         focused = photo.id;
         refresh();
+        showPhoto();
         save();
       };
+      const grip = document.createElement('span');
+      grip.className = 'montage-grip';
+      grip.setAttribute('aria-hidden', 'true');
+      button.append(grip);
       const detail = document.createElement('div');
       const title = document.createElement('strong');
       title.textContent = photo.name;
@@ -90,6 +99,7 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
         const thumb = document.createElement('img');
         thumb.src = thumbs.get(photo.id);
         thumb.alt = '';
+        thumb.draggable = false;
         button.append(thumb);
       }
       button.append(detail);
@@ -109,7 +119,7 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
         renderRows();
         planChanged();
       });
-      row.append(check, button, remove);
+      row.append(button, remove);
       list.append(row);
       if (photo.id === previousId) [...row.children].find(child => child.className === previousClass)?.focus({preventScroll: true});
     }
@@ -117,78 +127,186 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
     refresh();
   }
 
-  function clearPreview() {
-    previewRequest++;
-    pendingPreview = null;
+  function clearPhoto() {
+    photoKey = null;
+    pendingPhoto = null;
     el('preview-image').removeAttribute('src');
     el('preview-image').hidden = true;
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    previewUrl = null;
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    photoUrl = null;
     el('empty').hidden = false;
   }
 
-  async function loadPreview() {
-    if (previewLoading) return;
-    previewLoading = true;
+  async function loadPhoto() {
+    if (photoLoading) return;
+    photoLoading = true;
     try {
-      while (pendingPreview) {
-        const request = pendingPreview;
-        pendingPreview = null;
+      while (pendingPhoto) {
+        const {key, id, size} = pendingPhoto;
+        pendingPhoto = null;
         try {
-          const blob = await (await api('montagem/preview', {items: request.items, index: request.index})).blob();
-          if (request.id !== previewRequest) continue;
-          previewUrl = URL.createObjectURL(blob);
-          el('preview-image').src = previewUrl;
+          const blob = await (await api(size ? 'montagem/photo-preview' : 'source', {id, size})).blob();
+          if (key !== photoKey || photoUrl) continue;
+          photoUrl = URL.createObjectURL(blob);
+          el('preview-image').src = photoUrl;
           el('preview-image').hidden = false;
           el('empty').hidden = true;
         } catch (error) {
-          if (request.id === previewRequest) el('stage-message').textContent = error.message;
+          if (key === photoKey) {
+            photoKey = null;
+            el('stage-message').textContent = error.message;
+          }
         }
       }
     } finally {
-      previewLoading = false;
+      photoLoading = false;
     }
   }
 
-  function renderSheets() {
-    clearPreview();
-    const scroll = el('sheets').scrollLeft;
-    const sheets = plan?.sheets || [];
-    const sheet = sheets[sheetIndex];
-    el('sheet-count').textContent = sheets.length;
+  function showPhoto() {
+    if (!active()) return;
+    const photo = photos.find(item => item.id === focused);
+    el('photo-title').textContent = photo?.name || 'Prévia da foto';
+    el('photo-title').title = photo?.name || '';
+    el('photo-size').textContent = photo ? textSize(photo.settings.size) : '';
     el('empty-add').hidden = !!photos.length;
-    el('sheet-details').hidden = !sheet;
-    el('sheets').replaceChildren();
-    const pending = photos.filter(photo => !photo.settings.size).length;
+    if (!photo) {
+      clearPhoto();
+      el('stage-message').textContent = photos.length ? 'Selecione uma foto.' : 'Adicione ou arraste as fotos.';
+      return;
+    }
+    const size = photo.settings.size;
+    const key = `${photo.id}:${size || ''}`;
+    if (key === photoKey) return;
+    clearPhoto();
+    photoKey = key;
+    el('preview-image').alt = photo.name;
+    el('stage-message').textContent = 'Carregando foto…';
+    pendingPhoto = {key, id: photo.id, size};
+    loadPhoto();
+  }
+
+  function paintCard(card, url) {
+    card.image.src = url;
+    card.image.hidden = false;
+    card.placeholder.hidden = true;
+  }
+
+  async function loadGallery() {
+    if (galleryLoading || !active()) return;
+    galleryLoading = true;
+    try {
+      while (galleryQueue.size && active()) {
+        const [key] = galleryQueue;
+        galleryQueue.delete(key);
+        const card = cards.get(key);
+        if (!card || galleryUrls.has(key)) continue;
+        try {
+          const blob = await (await api('montagem/preview', {items: galleryItems, index: card.index, maximum: 320})).blob();
+          if (!cards.has(key)) continue;
+          const url = URL.createObjectURL(blob);
+          galleryUrls.set(key, url);
+          paintCard(cards.get(key), url);
+        } catch {
+          if (cards.get(key) === card) card.placeholder.textContent = 'Clique para abrir a prévia';
+        }
+      }
+    } finally {
+      galleryLoading = false;
+    }
+  }
+
+  const galleryObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) if (entry.isIntersecting) galleryQueue.add(entry.target.dataset.key);
+    loadGallery();
+  }, {root: el('sheets'), rootMargin: '0px 100px'});
+
+  async function openSheet(title, index) {
+    clearDialog();
+    const request = ++dialogRequest;
+    el('dialog-title').textContent = title;
+    el('dialog-status').textContent = 'Carregando prévia…';
+    el('dialog-status').hidden = false;
+    el('dialog-image').hidden = true;
+    dialog.showModal();
+    try {
+      const blob = await (await api('montagem/preview', {items: galleryItems, index})).blob();
+      if (!dialog.open || request !== dialogRequest) return;
+      dialogUrl = URL.createObjectURL(blob);
+      el('dialog-image').src = dialogUrl;
+      el('dialog-image').alt = title;
+      el('dialog-image').hidden = false;
+      el('dialog-status').hidden = true;
+    } catch (error) {
+      if (request === dialogRequest) el('dialog-status').textContent = error.message;
+    }
+  }
+
+  function clearDialog() {
+    dialogRequest++;
+    el('dialog-image').removeAttribute('src');
+    if (dialogUrl) URL.revokeObjectURL(dialogUrl);
+    dialogUrl = null;
+  }
+  dialog.addEventListener('close', () => { if (!dialog.open) clearDialog(); });
+
+  function renderGallery(message = '') {
+    galleryObserver.disconnect();
+    galleryQueue.clear();
+    cards.clear();
+    const gallery = el('sheets');
+    const scroll = gallery.scrollLeft;
+    gallery.replaceChildren();
+    const sheets = plan?.sheets || [];
+    el('sheet-count').textContent = sheets.length || '';
+    const pending = plan?.pending || 0;
     el('pending').hidden = !pending || !sheets.length;
     el('pending').textContent = pending === 1 ? '1 foto ainda precisa de tamanho.' : `${pending} fotos ainda precisam de tamanho.`;
-    el('stage-message').textContent = planError || (sheet ? 'Carregando prévia…' : !photos.length ? 'Adicione ou arraste as fotos.'
-      : pending === photos.length ? 'Escolha o tamanho das fotos para montar as folhas.' : 'Organizando as folhas…');
-    if (sheet) {
-      const model = sheet.model.replaceAll('x', '×');
-      el('sheet-title').textContent = `Folha ${sheetIndex + 1} · ${model}`;
-      const format = values => values.map(value => value.replace('.', ',')).join(' × ');
-      el('sheet-spec').textContent = `${format(sheet.paper_cm)} cm · ${sheet.print_count} ${sheet.print_count === 1 ? 'foto' : 'fotos'} · 300 dpi`;
-      el('preview-image').alt = `Prévia da folha ${sheetIndex + 1}, ${model}`;
-      sheets.forEach((entry, index) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'secondary';
-        button.textContent = `${index + 1} · ${entry.model.replaceAll('x', '×')}`;
-        button.setAttribute('aria-label', `Ver folha ${index + 1}, ${entry.model.replaceAll('x', '×')}`);
-        button.setAttribute('aria-pressed', String(index === sheetIndex));
-        button.onclick = () => {
-          sheetIndex = index;
-          renderSheets();
-          el('sheets').children[index]?.focus({preventScroll: true});
-          save();
-        };
-        el('sheets').append(button);
-      });
-      pendingPreview = {id: previewRequest, index: sheetIndex, items: items()};
-      if (active()) loadPreview();
+    if (!sheets.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-sheet';
+      empty.textContent = message || 'As folhas aparecem aqui depois de definir o tamanho das fotos.';
+      gallery.append(empty);
     }
-    el('sheets').scrollLeft = scroll;
+    for (const [index, sheet] of sheets.entries()) {
+      const model = sheet.model.replaceAll('x', '×');
+      const title = `Folha ${index + 1} · ${model}`;
+      const key = JSON.stringify([sheet.model, ...sheet.indices.map(i => galleryItems[i].id)]);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'preparation-card';
+      button.dataset.key = key;
+      button.setAttribute('aria-label', `Ampliar folha ${index + 1}, ${model}`);
+      button.onclick = () => openSheet(title, index);
+      const preview = document.createElement('span');
+      preview.className = 'card-preview';
+      const image = document.createElement('img');
+      image.alt = '';
+      image.draggable = false;
+      image.hidden = true;
+      const placeholder = document.createElement('span');
+      placeholder.className = 'card-placeholder';
+      placeholder.textContent = 'Carregando prévia…';
+      preview.append(image, placeholder);
+      const label = document.createElement('strong');
+      label.textContent = title;
+      const measure = document.createElement('span');
+      measure.className = 'card-measure';
+      measure.textContent = `${sheet.paper_cm.join(' × ').replaceAll('.', ',')} cm · ${sheet.print_count} ${sheet.print_count === 1 ? 'foto' : 'fotos'}`;
+      button.append(preview, label, measure);
+      const card = {index, image, placeholder};
+      cards.set(key, card);
+      gallery.append(button);
+      if (galleryUrls.has(key)) paintCard(card, galleryUrls.get(key));
+      else galleryObserver.observe(button);
+    }
+    if (plan || !photos.length) {
+      for (const [key, url] of galleryUrls) if (!cards.has(key)) {
+        URL.revokeObjectURL(url);
+        galleryUrls.delete(key);
+      }
+    }
+    gallery.scrollLeft = scroll;
     refresh();
   }
 
@@ -196,23 +314,139 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
     const request = ++generation;
     clearTimeout(timer);
     plan = null;
-    planError = '';
-    renderSheets();
+    const hasSizes = photos.some(photo => photo.settings.size);
+    renderGallery(hasSizes ? 'Organizando as folhas…' : '');
+    showPhoto();
     if (!photos.length) return;
     const snapshot = items();
     timer = setTimeout(async () => {
       try {
         const next = await (await api('montagem/plan', {items: snapshot})).json();
         if (request !== generation) return;
+        galleryItems = snapshot;
         plan = next;
-        sheetIndex = Math.min(sheetIndex, Math.max(0, plan.sheets.length - 1));
       } catch (error) {
         if (request !== generation) return;
-        planError = error.message;
+        renderGallery(error.message);
+        return;
       }
-      renderSheets();
+      renderGallery();
     }, 75);
   }
+
+  let reorder = null, reorderFrame = 0, suppressClick = false;
+
+  function movePhoto(id, to) {
+    const from = photos.findIndex(photo => photo.id === id);
+    if (from < 0 || to === from || to < 0 || to >= photos.length) return;
+    const [photo] = photos.splice(from, 1);
+    photos.splice(to, 0, photo);
+    renderRows();
+    planChanged();
+    save();
+    el('order-status').textContent = `${photo.name} movida para a posição ${to + 1}.`;
+  }
+
+  function clearDropIndicator(gesture) {
+    gesture.indicator?.classList.remove('drop-before', 'drop-after');
+    gesture.indicator = null;
+  }
+
+  function updateDropTarget(gesture) {
+    clearDropIndicator(gesture);
+    const rect = list.getBoundingClientRect();
+    const {x, y, id} = gesture;
+    gesture.valid = x >= rect.left && x <= rect.right && y >= rect.top - 24 && y <= rect.bottom + 24;
+    if (!gesture.valid) return;
+    const rows = [...list.children].filter(row => row.dataset.id !== id);
+    const before = rows.find(row => {
+      const box = row.getBoundingClientRect();
+      return y < box.top + box.height / 2;
+    });
+    gesture.before = before?.dataset.id || null;
+    gesture.indicator = before || rows.at(-1);
+    gesture.indicator?.classList.add(before ? 'drop-before' : 'drop-after');
+  }
+
+  function autoScroll() {
+    if (!reorder?.moving) return;
+    const {x, y} = reorder;
+    const rect = list.getBoundingClientRect();
+    if (x >= rect.left && x <= rect.right && y >= rect.top - 24 && y <= rect.bottom + 24) {
+      const delta = y < rect.top + 28 ? -9 : y > rect.bottom - 28 ? 9 : 0;
+      if (delta) {
+        const previous = list.scrollTop;
+        list.scrollTop += delta;
+        if (list.scrollTop !== previous) updateDropTarget(reorder);
+      }
+    }
+    reorderFrame = requestAnimationFrame(autoScroll);
+  }
+
+  function cancelReorder() {
+    if (!reorder) return;
+    const gesture = reorder;
+    reorder = null;
+    cancelAnimationFrame(reorderFrame);
+    clearDropIndicator(gesture);
+    gesture.row.classList.remove('reordering');
+    if (gesture.moving) suppressClick = true;
+    if (list.hasPointerCapture(gesture.pointer)) list.releasePointerCapture(gesture.pointer);
+  }
+
+  list.addEventListener('pointerdown', event => {
+    if (!event.isPrimary || event.button !== 0) return;
+    suppressClick = false;
+    const row = event.target.closest('.montage-photo')?.closest('.montage-row');
+    if (!row || !canEdit() || photos.length < 2) return;
+    if (event.pointerType === 'touch' && !event.target.closest('.montage-grip')) return;
+    reorder = {id: row.dataset.id, row, pointer: event.pointerId, startY: event.clientY, moving: false};
+  });
+  window.addEventListener('pointermove', event => {
+    if (reorder?.pointer !== event.pointerId) return;
+    if (!active() || !canEdit()) { cancelReorder(); return; }
+    reorder.x = event.clientX;
+    reorder.y = event.clientY;
+    if (!reorder.moving) {
+      if (Math.abs(reorder.y - reorder.startY) < 7) return;
+      reorder.moving = true;
+      reorder.row.classList.add('reordering');
+      list.setPointerCapture(event.pointerId);
+      reorderFrame = requestAnimationFrame(autoScroll);
+    }
+    updateDropTarget(reorder);
+  });
+  window.addEventListener('pointerup', event => {
+    if (reorder?.pointer !== event.pointerId) return;
+    const gesture = reorder;
+    if (gesture.moving) {
+      gesture.x = event.clientX;
+      gesture.y = event.clientY;
+      updateDropTarget(gesture);
+    }
+    cancelReorder();
+    if (!gesture.moving || !gesture.valid || !active() || !canEdit()) return;
+    const remaining = photos.filter(photo => photo.id !== gesture.id);
+    const to = gesture.before ? remaining.findIndex(photo => photo.id === gesture.before) : remaining.length;
+    movePhoto(gesture.id, to);
+  });
+  window.addEventListener('pointercancel', event => { if (reorder?.pointer === event.pointerId) cancelReorder(); });
+  list.addEventListener('lostpointercapture', event => { if (event.target === list) cancelReorder(); });
+  list.addEventListener('click', event => {
+    if (!suppressClick || !event.detail) return;
+    suppressClick = false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+  list.addEventListener('keydown', event => {
+    const id = event.target.closest('.montage-photo')?.closest('.montage-row')?.dataset.id;
+    if (!id || !event.altKey || !canEdit() || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    event.preventDefault();
+    movePhoto(id, photos.findIndex(photo => photo.id === id) + (event.key === 'ArrowUp' ? -1 : 1));
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && reorder) { event.preventDefault(); cancelReorder(); }
+  });
 
   async function addPhoto(data) {
     photos.push({...data, settings: {size: data.settings?.size || null}});
@@ -252,12 +486,20 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
   function release() {
     generation++;
     clearTimeout(timer);
-    clearPreview();
+    cancelReorder();
+    clearPhoto();
+    galleryObserver.disconnect();
+    galleryQueue.clear();
+    cards.clear();
+    for (const url of galleryUrls.values()) URL.revokeObjectURL(url);
+    galleryUrls.clear();
+    if (dialog.open) dialog.close();
+    clearDialog();
     for (const url of thumbs.values()) URL.revokeObjectURL(url);
     thumbs.clear();
   }
 
-  async function restore(entries, previousSheet = 0) {
+  async function restore(entries) {
     release();
     photos = [];
     checked.clear();
@@ -267,7 +509,6 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
       if (photo.checked) checked.add(photo.id);
     }
     focused = entries.find(photo => photo.selected)?.id || photos[0]?.id || null;
-    sheetIndex = previousSheet;
     renderRows();
     planChanged();
   }
@@ -328,12 +569,18 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
     endDrop();
     importFiles([...event.dataTransfer.files]);
   };
-  window.addEventListener('blur', endDrop);
+  window.addEventListener('blur', () => { endDrop(); cancelReorder(); });
+  for (const area of [el('tool'), dialog]) area.addEventListener('dragstart', event => event.preventDefault());
+  renderGallery();
 
   return {
     items, restore, refresh, release,
-    show() { refresh(); if (active()) loadPreview(); else endDrop(); },
+    show() {
+      refresh();
+      if (active()) { showPhoto(); loadGallery(); }
+      else { endDrop(); cancelReorder(); }
+    },
     count: () => photos.length,
-    session: () => ({sheet: sheetIndex, photos: items().map((item, index) => ({...photos[index], ...item}))})
+    session: () => ({photos: items().map((item, index) => ({...photos[index], ...item}))})
   };
 }

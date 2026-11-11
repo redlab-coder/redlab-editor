@@ -12,7 +12,7 @@ O pacote inclui **Bottons 1.2.3**, **Polaroid 1.2.1** e **Medidas 1.1.1**. Os tr
 | --- | --- | --- |
 | **Bottons Editor** | Modelos por imagem e montagem de folhas com bottons. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Setup-1.2.3.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Portable.exe) |
 | **Polaroid Editor** | Enquadramento, conferência e montagem de polaroids. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Setup-1.2.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Portable.exe) |
-| **Medidas Editor** | Medidas personalizadas e montagem de fotos para corte. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.0/MedidasEditor-Setup-1.2.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.0/MedidasEditor-Portable.exe) |
+| **Medidas Editor** | Medidas personalizadas e montagem de fotos para corte. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.1/MedidasEditor-Setup-1.2.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.1/MedidasEditor-Portable.exe) |
 
 A edição funciona localmente, sem conta. Os originais são preservados e as fotos não são enviadas à nuvem. O instalador é a opção recomendada para receber atualizações; a edição portátil funciona sem instalação e é atualizada manualmente.
 
