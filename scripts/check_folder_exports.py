@@ -103,9 +103,11 @@ def run(product):
             assert_jpeg(first, size)
             first_bytes = first.read_bytes()
             expect(save).to_be_enabled()
-            with page.expect_response(lambda response: '/api/files/open' in response.url):
+            with page.expect_response(lambda response: '/api/files/open' in response.url) as opened:
                 notice.get_by_role('button', name='Abrir pasta').click()
-            assert Path(explorer.call_args.args[0]) == source / folder
+            assert opened.value.ok
+            opened_path = Path(explorer.call_args.args[0])
+            assert opened_path.samefile(source / folder), (opened_path, source / folder)
             dismiss.click()
             save.click()
             expect(notice).to_be_visible(timeout=30000)
@@ -125,7 +127,8 @@ def run(product):
                 expect(notice.get_by_role('status')).to_contain_text('2 JPEGs salvos', timeout=30000)
                 assert len(list((source / '10x15 (3x4)').glob('*.jpg'))) == 1
                 assert len(list((source / folder).glob('*.jpg'))) == 3
-                assert Path(local_files.RECENT_FOLDERS[next(reversed(local_files.RECENT_FOLDERS))]) == source
+                opened_path = local_files.RECENT_FOLDERS[next(reversed(local_files.RECENT_FOLDERS))]
+                assert opened_path.samefile(source), (opened_path, source)
                 dismiss.click()
                 page.locator('#montage-list input').last.check()
                 page.locator('#montage-sizes [data-size="5x7"]').click()
