@@ -1,7 +1,7 @@
 {
   "product": "medidas-editor",
-  "version": "1.2.2",
-  "url": "https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.2/MedidasEditor-Setup-1.2.2.exe",
-  "sha256": "8cb0039d70fdffae8685698c60022b4636b626efd6624c9d4035b33de8d39c7e",
-  "size": 34206700
+  "version": "1.3.0",
+  "url": "https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.3.0/MedidasEditor-Setup-1.3.0.exe",
+  "sha256": "6c92593eb9e3d5bd43ec4d737a7d1866733988dbc39dea3baaab03d40408bd1b",
+  "size": 34254148
 }
