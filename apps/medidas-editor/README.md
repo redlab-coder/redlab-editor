@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Medidas Editor — RedLab Editor" width="100%"></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.2/MedidasEditor-Setup-1.2.2.exe"><img src="docs/images/download.svg" alt="Baixar Medidas Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.3.0/MedidasEditor-Setup-1.3.0.exe"><img src="docs/images/download.svg" alt="Baixar Medidas Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.2.2">Versão 1.2.2 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/medidas-v1.3.0">Versão 1.3.0 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
 
 ![Interface atual do Medidas Editor com artes de demonstração](docs/images/workspace.png)
 
@@ -19,7 +19,7 @@
 
 ![Tela de ferramentas do Medidas Editor](docs/images/tools.png)
 
-- **Montagem para corte.** Atribua 3×4, 5×7 e 7×10 por foto ou em lote. Confira as folhas e baixe JPEG ou ZIP organizado por gabarito. [Guia da montagem](docs/montage.md)
+- **Montagem para corte.** Atribua 3×4, 5×7 e 7×10 por foto ou em lote. Confira as folhas e salve os JPEGs em subpastas por modelo. [Guia da montagem](docs/montage.md)
 - **Medidas personalizadas.** Informe a medida da foto, ajuste o recorte e escolha uma folha comercial.
 
 ![Montagem para corte com a prévia das folhas](docs/images/montage.png)
@@ -28,7 +28,7 @@
 
 1. Adicione as fotos e informe largura e altura em centímetros.
 2. Ajuste o enquadramento e confira os recortes pendentes.
-3. Exporte JPEGs individuais ou um ZIP com os arquivos do lote.
+3. Salve os JPEGs na pasta da medida ou baixe JPEG e ZIP pelo navegador.
 
 ## O essencial
 

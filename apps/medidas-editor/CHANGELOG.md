@@ -1,5 +1,11 @@
 # Alterações
 
+## 1.3.0 — 12/11/2026
+
+- Salve os JPEGs diretamente em subpastas junto às fotos escolhidas pelo seletor do Windows.
+- Escolha um destino para lotes com origens diferentes ou indisponíveis.
+- Abra a pasta ao concluir ou use o download de JPEG ou ZIP pelo navegador.
+
 ## 1.2.2 — 11/11/2026
 
 - Separe a navegação pelas fotos da seleção em lote com caixas discretas.

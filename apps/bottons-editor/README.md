@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Bottons Editor — RedLab Editor" width="100%"></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Setup-1.2.3.exe"><img src="docs/images/download.svg" alt="Baixar Bottons Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.3.0/BottonsEditor-Setup-1.3.0.exe"><img src="docs/images/download.svg" alt="Baixar Bottons Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.3">Versão 1.2.3 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.3.0">Versão 1.3.0 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
 
 ![Interface atual do Bottons Editor com artes de demonstração](docs/images/workspace.png)
 
@@ -19,7 +19,7 @@
 
 1. Adicione as imagens e escolha o modelo de cada uma.
 2. Enquadre, ajuste e confira as folhas na galeria.
-3. Exporte os JPGs ou salve o lote para continuar depois.
+3. Salve as folhas na pasta `Bottons 10x15` ou baixe JPEG e ZIP pelo navegador.
 
 ## O essencial
 
@@ -27,7 +27,7 @@
 - **Combine quando couber.** Folhas mistas com encaixe seguro, mantendo corte e sangria.
 - **Ajuste com precisão.** Recorte, zoom e filtros graduais com controles numéricos.
 - **Salve o lote.** Arquivos `.bottons` guardam originais, ordem, modelos e ajustes.
-- **Exporte a 300 dpi.** Folha de 15,2 × 10,2 cm em JPG; várias folhas em ZIP.
+- **Exporte a 300 dpi.** Folha de 15,2 × 10,2 cm em JPEG.
 
 O fluxo não tem etapa de conferência. Os gabaritos mantêm medidas, sangria espelhada e guias de impressão.
 

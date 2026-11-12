@@ -36,11 +36,11 @@ A seção **Preparação** mostra miniaturas da composição final, incluindo re
 
 Marque as fotos desejadas, informe as medidas e clique em **Aplicar às selecionadas**. Uma dimensão vazia é calculada individualmente pela proporção de cada original. Cada foto pode manter modo, medida, folha, posição e recorte próprios.
 
-**Exportar lote** informa quando há itens pendentes e oferece exportar somente as fotos prontas. Um lote gera um ZIP com um JPEG por foto; não existe composição de várias fotos independentes na mesma folha. Falhas de processamento são mostradas em uma janela de avisos e não impedem os demais arquivos. Quando houver resultados válidos e falhas, o ZIP inclui `LEIA-ME-falhas.txt`.
+**Salvar na pasta** informa quando há itens pendentes e oferece exportar as fotos prontas. Cada foto gera um JPEG em uma subpasta identificada pela folha e pela medida solicitada, como `30x40 (30x36)`. A subpasta é criada junto às fotos selecionadas pelo Windows. Para um lote com origens diferentes ou desconhecidas, escolha a pasta de destino uma vez.
 
-O botão de download ao lado do nome exporta somente a foto atual. A exportação acontece em segundo plano, um item por vez. O download começa automaticamente ao concluir; o progresso aparece no botão de exportação e ao lado de **Preparação**, sem painel de arquivos prontos. O ícone de cancelar ao lado do progresso interrompe a fila; resultados parciais não ficam disponíveis para download.
+Os botões ao lado do nome exportam somente a foto atual. O progresso aparece ao lado de **Preparação**. Ao cancelar o salvamento direto, os JPEGs já concluídos ficam na pasta de saída. Use **Abrir pasta** para encontrá-los. Se já houver um JPEG com o mesmo nome, o novo arquivo recebe um sufixo.
 
-Os downloads seguem o destino e a política de nomes do navegador, como nas outras ferramentas RedLab. Para escolher uma pasta a cada download, habilite essa opção no navegador. O aplicativo não tem acesso irrestrito às pastas do computador. Prefixos numéricos evitam nomes duplicados dentro do ZIP, inclusive quando os originais têm o mesmo nome.
+**Baixar JPEG** ou **Baixar ZIP** usa o destino definido pelo navegador. Falhas de processamento aparecem em uma janela de avisos. Quando houver resultados válidos e falhas, o ZIP inclui `LEIA-ME-falhas.txt`.
 
 **Salvar lote** baixa um `.medidas` com os bytes originais e os ajustes. **Abrir lote** substitui a sessão após confirmação. Remover todas as fotos também exige confirmação. Recarregar a aba preserva os ajustes enquanto a instância local e seus temporários existirem; salvar o lote é a forma de continuar depois de encerrar.
 

@@ -1,6 +1,6 @@
 # Usar o Polaroid Editor
 
-Instale o `PolaroidEditor-Setup-<versão>.exe` nas [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.2.1). A instalação é por usuário, com atalho no menu Iniciar. A interface abre no navegador padrão e o aplicativo permanece na bandeja do Windows. Não precisa instalar Python, criar conta ou enviar fotografias para um serviço externo.
+Instale o `PolaroidEditor-Setup-<versão>.exe` nas [versões oficiais](../README.md). A instalação é por usuário, com atalho no menu Iniciar. A interface abre no navegador padrão e o aplicativo permanece na bandeja do Windows. Não precisa instalar Python, criar conta ou enviar fotografias para um serviço externo.
 
 ## Preparar as fotos
 
@@ -19,9 +19,9 @@ O ícone de **Remover todas as fotos**, ao lado de Adicionar na coluna Fotos, li
 
 ## Conferir e exportar
 
-**Conferir lote** abre uma grade em pé. Selecione uma montagem para ajustar. As montagens abaixo do editor também ficam em pé; clique para ampliar e baixar individualmente.
+**Conferir lote** abre uma grade em pé. Selecione uma montagem para ajustar. As montagens abaixo do editor também ficam em pé. Clique para ampliar, salvar ou baixar individualmente.
 
-**Exportar** mantém a orientação horizontal de impressão, com o topo da foto à esquerda e a faixa vermelha à direita. Mostra o progresso e gera um JPG, ou um ZIP com JPGs individuais para várias fotos. Os nomes mantêm referência ao original e recebem sufixos quando necessário para evitar colisões. A exportação usa os ajustes no momento do clique e os originais completos. Uma falha identifica o arquivo afetado; o aplicativo não entrega silenciosamente um ZIP parcial.
+**Salvar na pasta** grava os JPEGs em `Polaroid`, junto às fotos selecionadas pelo Windows. Se houver origens diferentes ou desconhecidas, como ao arrastar fotos para a interface, escolha uma pasta de destino para o lote. O editor acrescenta um sufixo a nomes já usados e oferece **Abrir pasta** ao concluir. **Baixar JPEG** e **Baixar ZIP** usam os downloads do navegador. As duas formas mantêm a orientação horizontal de impressão, com o topo da foto à esquerda e a faixa vermelha à direita.
 
 Fotos com detalhe insuficiente recebem um aviso de ampliação. Isso não impede exportar: o arquivo final registra 300 DPI, mas a ampliação não cria o detalhe ausente no original.
 

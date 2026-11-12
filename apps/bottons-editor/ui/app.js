@@ -25,7 +25,7 @@ const scratchPhoto=document.createElement('canvas');scratchPhoto.width=591;scrat
 const scratchHorizontal=document.createElement('canvas');scratchHorizontal.width=827;scratchHorizontal.height=591;
 const sessionKey = 'bottons-editor-session';
 let restoring = false;
-let openedSheet=null, sheetDownloading=false, sheetDialogUrl=null;
+let openedSheet=null, sheetDialogUrl=null;
 let authoritativeRevision=0;
 let editingAllowed=false, releaseOwnership=null, acquiring=false, passiveAfterYield=false, pendingRestore=null, sessionRevision=0;
 const tabId=crypto.randomUUID();
@@ -37,6 +37,7 @@ async function api(path, data, raw=false, filename='') {
   return response;
 }
 function toast(message) {if(closed)return; clearTimeout(toastTimer); $('toast').textContent=message; $('toast').hidden=false; toastTimer=setTimeout(()=>{if($('toast'))$('toast').hidden=true;},5500); }
+const localFiles = createLocalFiles(api, toast);
 function current() {return photos.find(p=>p.id===selected);}
 function item(photo) {return {id:photo.id,edits:{...photo.edits},template:photo.template||activeTemplate};}
 const cm=mm=>(mm/10).toLocaleString('pt-BR',{maximumFractionDigits:2});
@@ -168,11 +169,12 @@ function renderLibrary() {
     }
     detail.append(name,subtitle);selectButton.append(image,detail);row.append(selectButton,actions);$('photo-list').append(row);
   });
-  $('export').disabled=!photos.length||!canEdit()||!pagesCurrent();
+  $('save-folder').disabled=$('export').disabled=!photos.length||!canEdit()||!pagesCurrent();
+  $('save-sheet').disabled=$('download-sheet').disabled=!canEdit()||!openedSheet;
   $('save-project').disabled=!photos.length||!canEdit();$('open-project').disabled=!canEdit();
   const pages=pagesCurrent()?sheetPlan.length:0;
-  $('export-label').textContent=exporting?'Preparando…':photos.length?(pagesCurrent()?`Exportar ${pages} folha${pages>1?'s':''}`:'Organizando…'):'Exportar JPG';
-  $('export').setAttribute('aria-label',$('export-label').textContent);$('export').title=$('export-label').textContent;
+  $('save-folder-label').textContent=exporting?'Preparando…':'Salvar na pasta';
+  localFiles.label($('export'), pages);
   $('sheet-summary').textContent=photos.length?`${photos.length} foto${photos.length>1?'s':''}${pages?' · '+pages+' folha'+(pages>1?'s':''):''}`:'';
   for(const id of ['add','drop','empty-add'])$(id).disabled=!canEdit()||importing||exporting;
   $('clear-all').hidden=!photos.length;$('clear-all').disabled=!photos.length||!canEdit();$('clear-confirm').disabled=clearing;$('clear-cancel').disabled=clearing;updateSliders();
@@ -253,30 +255,28 @@ async function renderSheets() {
   }catch(error){if(request===sheetRevision){toast(error.message);}}
 }
 async function importFiles(files) {
-  files=files.filter(file=>!['thumbs.db','.ds_store','desktop.ini'].includes(file.name.toLowerCase()));
-  if(importing||exporting||!canEdit()||!files.length) return;
+  if(!canEdit()||files?.length===0)return;
   importing=true;renderLibrary();$('drop').disabled=true;$('add').disabled=true;
   const errors=[];let first=null;
   try {
-    for(const file of files) {
+    for await(const photo of localFiles.photos(files, errors, toast)) {
+      photo.edits=defaults();photo.template=activeTemplate;photos.push(photo);first??=photo.id;
       try {
-        toast('Importando '+file.name+'…');
-        const photo=await (await api('upload',file,true,file.name)).json();photo.edits=defaults();photo.template=activeTemplate;photos.push(photo);first??=photo.id;
-        // Generate thumbnails without selecting every imported image.
         const blob=await (await api('thumbnail',item(photo))).blob();photo.thumb=URL.createObjectURL(blob);objectUrls.set('thumb-'+photo.id,photo.thumb);
-      }catch(error){errors.push(file.name+': '+error.message);}
+      }catch{photo.previewError=true;}
     }
-  }finally{importing=false;$('files').value='';}
+  }catch(error){errors.push(error.message);}finally{importing=false;$('files').value='';}
   if(!selected&&first) selected=first;
   renderLibrary();updateSliders();drawLive();renderEditor();renderSheets();saveSession();
-  toast(errors.length?errors.join(' • '):'Fotos adicionadas.');
+  if(errors.length||first)toast(errors.length?errors.join(' • '):'Fotos adicionadas.');
+  else $('toast').hidden=true;
 }
 function move(index,offset) {if(!canEdit())return;const other=index+offset;if(other<0||other>=photos.length)return;[photos[index],photos[other]]=[photos[other],photos[index]];renderLibrary();renderSheets();saveSession();}
 async function remove(id) {
   if(!canEdit()||importing)return;
   try {await api('delete',{id});photos=photos.filter(p=>p.id!==id);const url=objectUrls.get('thumb-'+id);if(url)URL.revokeObjectURL(url);objectUrls.delete('thumb-'+id);previewSources.get(id)?.then(bitmap=>bitmap.close()).catch(()=>{});previewSources.delete(id);if(orientedSource?.id===id)orientedSource=null;if(selected===id)selected=photos[0]?.id||null;renderLibrary();updateSliders();drawLive();renderEditor();renderSheets();saveSession();}catch(error){toast(error.message);}
 }
-for(const id of ['add','drop','empty-add']) $(id).onclick=()=>$('files').click();
+for(const id of ['add','drop','empty-add']) $(id).onclick=()=>nativeFiles?importFiles(null):$('files').click();
 $('files').onchange=event=>importFiles([...event.target.files]);
 // Only external files trigger import; pointer gestures still position the photo.
 const importArea=$('import-area');let fileDragDepth=0;
@@ -311,12 +311,26 @@ $('tile-frame').addEventListener('pointermove',event=>{if(!drag||event.pointerId
 // Fine movement: one source pixel; Shift moves ten pixels.
 $('tile-frame').addEventListener('keydown',event=>{const axes={ArrowLeft:[1,0],ArrowRight:[-1,0],ArrowUp:[0,1],ArrowDown:[0,-1]};if(!axes[event.key])return;const photo=current();if(!photo||!canEdit())return;event.preventDefault();const geometry=clampCrop(photo),step=event.shiftKey?10:1;photo.edits.cx+=axes[event.key][0]*step/geometry.w;photo.edits.cy+=axes[event.key][1]*step/geometry.h;clampCrop(photo);changed();});
 for(const type of ['pointerup','pointercancel','lostpointercapture']) $('tile-frame').addEventListener(type,event=>{if(!drag||event.pointerId!==drag.pointerId)return;const moved=drag.moved;drag=null;$('tile-frame').classList.remove('dragging');if(moved)changed();});
-$('export').onclick=async()=>{
-  if(!photos.length||exporting||importing||clearing)return;exporting=true;renderLibrary();
+async function exportBatch(folder, sheet=null){
+  if(!canEdit()||!photos.length||(!sheet&&!pagesCurrent()))return;
+  const count=sheet?1:sheetPlan.length;
+  exporting=true;renderLibrary();
   try {
-    const snapshot=photos.map(item),template=activeTemplate,response=await api('export',{items:snapshot,template}),blob=await response.blob(),url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=sheetPlan.length>1?'BottonsEditor-folhas.zip':'BottonsEditor-01.jpg';document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);toast(sheetPlan.length>1?'Download iniciado · ZIP com as folhas em JPG.':'Download iniciado · JPG a 300 DPI.');
+    const items=sheet?.items||photos.map(item),template=sheet?.template||activeTemplate;
+    const response=await api('export',{items,template,folder,first_sheet:(sheet?.index??0)+1});
+    if(folder){
+      const result=await response.json();
+      if(!result.cancelled){if(result.folder&&sheet)$('sheet-dialog').close();localFiles.saved(result);}
+      return;
+    }
+    const blob=await response.blob(),url=URL.createObjectURL(blob),anchor=document.createElement('a');
+    anchor.href=url;anchor.download=count>1?'BottonsEditor-folhas.zip':`BottonsEditor-${String((sheet?.index??0)+1).padStart(2,'0')}.jpg`;
+    document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    toast(count>1?'Download iniciado · ZIP com as folhas em JPG.':'Download iniciado · JPG a 300 DPI.');
   }catch(error){toast(error.message);}finally{exporting=false;renderLibrary();flushRestore();}
-};
+}
+$('save-folder').onclick=()=>exportBatch(true);
+$('export').onclick=()=>exportBatch(false);
 $('quit').onclick=async()=>{if(closed)return;try{await api('quit',{});closed=true;photos=[];editingAllowed=false;releaseOwnership?.();channel?.close();localStorage.removeItem(sessionKey);clearInterval(heartbeat);clearTimeout(debounce);clearTimeout(editorTimer);clearTimeout(syncTimer);clearTimeout(toastTimer);cancelAnimationFrame(liveFrame);document.querySelectorAll('body > :not(script)').forEach(el=>{if(el.tagName==='DIALOG')el.close();el.hidden=true;el.inert=true;});const goodbye=document.createElement('div');goodbye.innerHTML='<main style="padding-top:100px;text-align:center"><h1>Até a próxima memória.</h1><p>O Bottons Editor foi encerrado. Você pode fechar esta aba.</p></main>';document.body.append(goodbye);}catch(error){toast(error.message);}};
 async function refreshAppStatus(){const response=await(await api('heartbeat',{})).json();if(!closed)updateController?.setState(response.update);}
 const heartbeat=setInterval(()=>refreshAppStatus().catch(()=>{clearInterval(heartbeat);toast('A sessão foi encerrada. Abra o Bottons Editor novamente.');}),20000);
@@ -388,20 +402,12 @@ function openSheet(index){
   openedSheet={index,template:cached.template,items:cached.items.map(photo=>({...photo,edits:{...photo.edits}}))};
   if(sheetDialogUrl)URL.revokeObjectURL(sheetDialogUrl);sheetDialogUrl=URL.createObjectURL(cached.blob);
   $('sheet-dialog-title').textContent='Folha '+(index+1);$('sheet-dialog-image').src=sheetDialogUrl;
-  $('download-sheet').disabled=sheetDownloading;$('download-sheet').setAttribute('aria-label',`Baixar folha ${index+1} em JPG`);
+  $('save-sheet').disabled=$('download-sheet').disabled=!canEdit();$('download-sheet').setAttribute('aria-label',`Baixar folha ${index+1} em JPG`);
   if(!$('sheet-dialog').open)$('sheet-dialog').showModal();
 }
 $('sheet-dialog').addEventListener('close',()=>{openedSheet=null;if(sheetDialogUrl)URL.revokeObjectURL(sheetDialogUrl);sheetDialogUrl=null;});
-$('download-sheet').onclick=async()=>{
-  if(!openedSheet||sheetDownloading)return;
-  const snapshot=openedSheet;sheetDownloading=true;$('download-sheet').disabled=true;$('download-sheet').setAttribute('aria-busy','true');
-  try{
-    const response=await api('export',{items:snapshot.items,template:snapshot.template}),blob=await response.blob();
-    const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=`BottonsEditor-${String(snapshot.index+1).padStart(2,'0')}.jpg`;
-    document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
-    toast(`Download iniciado · Folha ${snapshot.index+1} em JPG a 300 DPI.`);
-  }catch(error){toast(error.message);}finally{sheetDownloading=false;$('download-sheet').disabled=!openedSheet;$('download-sheet').removeAttribute('aria-busy');}
-};
+$('save-sheet').onclick=()=>openedSheet&&exportBatch(true, openedSheet);
+$('download-sheet').onclick=()=>openedSheet&&exportBatch(false, openedSheet);
 function releaseBatch(){
   revision++;sheetRevision++;restoreVersion++;clearTimeout(editorTimer);clearTimeout(debounce);cancelAnimationFrame(liveFrame);liveFrame=null;drag=null;
   for(const promise of previewSources.values())promise.then(bitmap=>bitmap.close()).catch(()=>{});previewSources.clear();
@@ -445,7 +451,7 @@ function updateRestartScreen(){
 }
 updateController=RedLabUpdate({
   api,toast,closed:()=>closed,owner:()=>editingAllowed,canActivate:()=>editingAllowed&&!bootRecovery&&!closed,
-  starting:()=>acquiring||restoring,busy:()=>importing||exporting||clearing||restoring||sheetDownloading||!!drag,
+  starting:()=>acquiring||restoring,busy:()=>importing||exporting||clearing||restoring||!!drag,
   setBootBusy:value=>{bootRecovery=value;},setApplying:value=>{updateApplying=value;},
   snapshot:()=>({items:photos.map(item),ui:{selected_index:photos.findIndex(p=>p.id===selected),template:activeTemplate,guides:$('guides').getAttribute('aria-pressed')==='true'}}),
   restore:async data=>{releaseBatch();photos=data.photos;activeTemplate=templates[data.ui.template]?data.ui.template:photos[0]?.template||'square';selected=photos[data.ui.selected_index]?.id||photos[0]?.id||null;

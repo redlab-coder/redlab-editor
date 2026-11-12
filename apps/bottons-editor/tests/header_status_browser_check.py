@@ -40,7 +40,8 @@ with sync_playwright() as p:
         assert page.locator('#app-version').is_visible()
         assert page.locator('#update-status').is_visible()
         assert page.locator('#export').is_visible()
-        assert page.locator('#export').get_attribute('aria-label')=='Exportar 1 folha'
+        assert page.locator('#export').get_attribute('aria-label')=='Baixar JPEG'
+        assert page.locator('#save-folder').is_visible()
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
         assert page.evaluate("(()=>{const a=document.querySelector('.brand').getBoundingClientRect(),b=document.querySelector('.header-actions').getBoundingClientRect();return a.right<=b.left||a.bottom<=b.top})()"),width
     page.screenshot(path=str(OUT/'header-ready-mobile.png'))

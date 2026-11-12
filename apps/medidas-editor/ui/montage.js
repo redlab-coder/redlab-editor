@@ -1,6 +1,6 @@
 'use strict';
 
-function createMontage({api, canEdit, active, busy, operation, startJob, save, toast}) {
+function createMontage({api, canEdit, active, busy, operation, startJob, save, toast, localFiles}) {
   const el = id => document.getElementById(`montage-${id}`);
   const sizes = [...el('sizes').querySelectorAll('[data-size]')];
   const textSize = size => size?.replace('x', '×') || 'Sem tamanho';
@@ -49,8 +49,9 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
       for (const control of row.querySelectorAll('button, input')) control.disabled = !editable;
     }
     const count = plan?.sheets.length || 0;
-    el('export').disabled = !editable || !count || !!plan?.pending;
-    if (!busy()) el('export-label').textContent = count > 1 ? 'Exportar ZIP' : 'Exportar JPEG';
+    el('save-folder').disabled = el('export').disabled = !editable || !count || !!plan?.pending;
+    if (!busy()) el('save-folder-label').textContent = 'Salvar na pasta';
+    localFiles.label(el('export'), count);
   }
 
   function renderRows() {
@@ -490,26 +491,26 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
   }
 
   function importFiles(files) {
-    if (!active() || document.querySelector('dialog[open]') || !files.length) return;
+    if (!active() || document.querySelector('dialog[open]') || files?.length === 0) return;
     operation(async () => {
       const errors = [];
       let first = null;
-      for (const [index, file] of files.entries()) {
-        el('activity').textContent = `Importando ${index + 1} de ${files.length}`;
-        try {
-          if (!/\.(jpe?g|png|webp|bmp|tiff?)$/i.test(file.name)) throw new Error('Formato não aceito.');
-          const data = await (await api('montagem/upload', file, true, file.name)).json();
+      try {
+        for await (const data of localFiles.photos(files, errors, message => el('activity').textContent = message, 'montagem')) {
           await addPhoto(data);
           first ??= data.id;
-        } catch (error) {
-          errors.push(`${file.name}: ${error.message}`);
         }
+      } catch (error) {
+        errors.push(error.message);
+      } finally {
+        el('activity').textContent = '';
+        el('files').value = '';
       }
-      el('activity').textContent = '';
-      el('files').value = '';
-      if (first) focused = first;
-      renderRows();
-      planChanged();
+      if (first) {
+        focused = first;
+        renderRows();
+        planChanged();
+      }
       if (errors.length) toast(`${errors.length} arquivo(s) não importados. ${errors.slice(0, 2).join(' ')}`);
     });
   }
@@ -567,12 +568,14 @@ function createMontage({api, canEdit, active, busy, operation, startJob, save, t
       await restore([]);
       el('clear-dialog').close();
   });
-  el('add').onclick = el('empty-add').onclick = () => el('files').click();
+  el('add').onclick = el('empty-add').onclick = () => nativeFiles ? importFiles(null) : el('files').click();
   el('files').onchange = () => importFiles([...el('files').files]);
-  el('export').onclick = () => {
+  function exportPhotos(folder) {
     if (!plan?.sheets.length || plan.pending || !canEdit()) return;
-    startJob('montagem/export', items(), {label: el('export-label'), activity: el('activity'), cancel: el('cancel')});
-  };
+    startJob('montagem/export', items(), {label: el('save-folder-label'), activity: el('activity'), cancel: el('cancel'), folder});
+  }
+  el('save-folder').onclick = () => exportPhotos(true);
+  el('export').onclick = () => exportPhotos(false);
 
   const drop = el('drop');
   let depth = 0;

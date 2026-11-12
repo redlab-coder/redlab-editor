@@ -100,7 +100,10 @@ def capture(product):
             page.locator('.sheet-open' if product!='medidas-editor' else '.preparation-card').first.click()
             page.locator('#sheet-dialog-image').wait_for(state='visible');page.locator('#sheet-dialog-image').evaluate('image=>image.decode()')
             page.locator('#sheet-dialog').screenshot(path=str(output/'sheet.png'));page.keyboard.press('Escape')
-            page.set_viewport_size(dict(width=390,height=844));page.screenshot(path=str(output/'mobile.png'),full_page=True)
+            page.set_viewport_size(dict(width=390,height=844))
+            page.evaluate("window.scrollTo({top:0,behavior:'instant'})")
+            page.wait_for_function('window.scrollY===0')
+            page.screenshot(path=str(output/'mobile.png'),full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');assert not errors,errors
             if product=='medidas-editor':
                 page.set_viewport_size(dict(width=1440,height=1000))

@@ -48,6 +48,8 @@ jobs:
           python ../../scripts/generate_branding.py --check
           python ../../scripts/check_tray_panel.py ${{ inputs.product }}
           python ../../scripts/check_family_ui.py ${{ inputs.product }}
+      - name: Validar salvamento direto e importação local
+        run: python -u ../../scripts/check_folder_exports.py ${{ inputs.product }}
       - name: Validar maior formato e memória
         if: inputs.product == 'medidas-editor'
         run: python -u tests/large_export_check.py

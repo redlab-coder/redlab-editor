@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Polaroid Editor — RedLab Editor" width="100%"></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Setup-1.2.1.exe"><img src="docs/images/download.svg" alt="Baixar Polaroid Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.3.0/PolaroidEditor-Setup-1.3.0.exe"><img src="docs/images/download.svg" alt="Baixar Polaroid Editor para Windows" width="252" height="54"></a><br><sub>Windows 10 e 11 · 64 bits · Instalação sem administrador</sub></p>
 
-<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.2.1">Versão 1.2.1 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
+<p align="center"><a href="https://github.com/redlab-coder/redlab-editor/releases/tag/polaroid-v1.3.0">Versão 1.3.0 e edição portátil</a> · <a href="docs/usage.md">Guia de uso</a> · <a href="../../docs/updates.md">Atualizações</a></p>
 
 ![Interface atual do Polaroid Editor com artes de demonstração](docs/images/workspace.png)
 
@@ -19,7 +19,7 @@
 
 1. Adicione as imagens pelo botão ou arrastando para a biblioteca e o editor.
 2. Ajuste o enquadramento e confira as orientações em pé.
-3. Exporte as montagens ou salve o lote para continuar depois.
+3. Salve as montagens na pasta `Polaroid` ou baixe JPEG e ZIP pelo navegador.
 
 ## O essencial
 
