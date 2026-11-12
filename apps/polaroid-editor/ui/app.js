@@ -25,6 +25,7 @@ async function api(path,data={},raw=false,name=''){
   if(!response.ok){let error;try{error=(await response.json()).error;}catch{}const failure=new Error(error||'Não foi possível concluir.');failure.status=response.status;throw failure;}return response;
 }
 function toast(message){if(closed)return;clearTimeout(toastTimer);$('toast').textContent=message;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,6000);}
+const localFiles = createLocalFiles(api, toast);
 function activity(message=''){$('activity').textContent=message;}
 function setUrl(key,blob){const old=urls.get(key),url=URL.createObjectURL(blob);urls.set(key,url);if(old)URL.revokeObjectURL(old);return url;}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
@@ -58,12 +59,12 @@ function refreshControls(){
     if(effective<299){$('resolution').hidden=false;$('resolution').textContent=`Ampliação necessária · aproximadamente ${Math.round(effective)} DPI de detalhe original.`;$('resolution').title='A saída é gravada a 300 DPI; ampliar não recupera detalhes ausentes.';}}
   for(const id of ['add','drop','empty-add','open-project'])$(id).disabled=!canEdit();
   $('clear-all').hidden=!photos.length;$('clear-all').disabled=!photos.length||!canEdit();
-  $('save-project').disabled=!photos.length||!canEdit();$('export').disabled=!photos.length||exporting||importing||restoring||clearing;
+  $('save-project').disabled=!photos.length||!canEdit();$('save-folder').disabled=$('export').disabled=!photos.length||!canEdit();
   $('review-batch').disabled=!photos.length||importing||restoring||clearing;
-  $('download-sheet').disabled=exporting||importing||clearing;
+  $('save-sheet').disabled=$('download-sheet').disabled=!canEdit();
   $('clear-confirm').disabled=clearing;$('clear-cancel').disabled=clearing;
-  if(!exporting)$('export-label').textContent=photos.length?`Exportar ${photos.length} foto${photos.length===1?'':'s'}`:'Exportar JPG';
-  $('export').title=$('export-label').textContent;$('export').setAttribute('aria-label',$('export-label').textContent);updateController?.paint();
+  if(!exporting)$('save-folder-label').textContent='Salvar na pasta';
+  localFiles.label($('export'), photos.length);updateController?.paint();
 }
 function renderLibrary(){
   const focused=document.activeElement?.classList.contains('photo-select');
@@ -157,15 +158,15 @@ async function renderSheets(){
   const keep=new Set(snapshot.map(s=>s.id));for(const key of sheetCache.keys())if(!keep.has(key)){sheetCache.delete(key);const old=urls.get('sheet-'+key);if(old)URL.revokeObjectURL(old);urls.delete('sheet-'+key);}
 }
 async function importFiles(files){
-  files=files.filter(file=>!['thumbs.db','.ds_store','desktop.ini'].includes(file.name.toLowerCase()));
-  if(!canEdit()||!files.length)return;importing=true;renderLibrary();const errors=[];let first;
-  try{for(let i=0;i<files.length;i++){const f=files[i];activity(`Importando ${i+1} de ${files.length}`);
-    try{const p=await(await api('upload',f,true,f.name)).json();p.edits=defaults();p.reviewed=false;p.manual=false;photos.push(p);first??=p.id;
+  if(!canEdit()||files?.length===0)return;importing=true;renderLibrary();const errors=[];let first;
+  try{for await(const p of localFiles.photos(files, errors, activity)){
+      p.edits=defaults();p.reviewed=false;p.manual=false;photos.push(p);first??=p.id;
       try{const result=await(await api('orientation',{id:p.id})).json();p.edits.rotation=result.rotation;p.initialRotation=result.rotation;p.suggested=result.suggested;}catch{p.initialRotation=270;p.suggested=false;}
       await updateThumbnail(p);if(!selected)selected=p.id;renderLibrary();saveSession();
-    }catch(e){errors.push(f.name+': '+e.message);}}
-  }finally{importing=false;$('files').value='';activity();}
-  selected??=first||null;renderLibrary();renderEditor();renderSheets();saveSession();toast(errors.length?errors.join(' • '):'Fotos adicionadas. Confira as orientações antes de imprimir.');
+    }
+  }catch(error){errors.push(error.message);}finally{importing=false;$('files').value='';activity();}
+  selected??=first||null;renderLibrary();renderEditor();renderSheets();saveSession();
+  if(errors.length||first)toast(errors.length?errors.join(' • '):'Fotos adicionadas. Confira as orientações antes de imprimir.');
 }
 function move(index,delta){if(!canEdit())return;const other=index+delta;if(other<0||other>=photos.length)return;[photos[index],photos[other]]=[photos[other],photos[index]];renderLibrary();renderSheets();saveSession();}
 async function remove(id){if(!canEdit())return;try{await api('delete',{id});photos=photos.filter(p=>p.id!==id);releasePhoto(id);if(selected===id)selected=visiblePhotos()[0]?.id||photos[0]?.id||null;renderLibrary();renderEditor();renderSheets();saveSession();}catch(e){toast(e.message);}}
@@ -175,10 +176,19 @@ async function clearPhotos(){
   try{await api('clear',{ids});photos.forEach(p=>releasePhoto(p.id));photos=[];selected=null;filterReview=false;liveSourceCache=null;livePage=null;displayedPhoto=null;openedSheet=null;$('batch-grid').replaceChildren();$('sheet-dialog-image').removeAttribute('src');const dialogUrl=urls.get('dialog');if(dialogUrl)URL.revokeObjectURL(dialogUrl);urls.delete('dialog');saveSession();$('clear-dialog').close();toast('Fotos removidas da sessão.');}
   catch(e){toast(e.message);}finally{clearing=false;activity();renderLibrary();renderEditor();renderSheets();flushRestore();if(!photos.length)$('empty-add').focus();}
 }
-async function exportItems(snapshot){
-  if(exporting||importing||clearing||!snapshot.length)return;exporting=true;renderLibrary();
-  try{const {job}=await(await api('export/start',{items:snapshot})).json();let state;
-    do{state=await(await api('export/status',{job})).json();$('export-label').textContent=`${state.done} de ${state.total}`;activity(`Exportando ${state.done} de ${state.total}`);if(state.state==='failed')throw new Error(state.error);if(state.state!=='ready')await new Promise(resolve=>setTimeout(resolve,350));}while(state.state!=='ready');
+async function exportItems(snapshot, folder=false){
+  if(!canEdit()||!snapshot.length)return;exporting=true;renderLibrary();
+  if(folder)$('save-folder-label').textContent='Preparando…';
+  activity(folder?'Preparando salvamento…':'Preparando download…');
+  try{const {job,cancelled}=await(await api('export/start',{items:snapshot,folder})).json();if(cancelled)return;let state;
+    do{
+      state=await(await api('export/status',{job})).json();
+      if(folder)$('save-folder-label').textContent=`${state.done} de ${state.total}`;
+      activity(`Exportando ${state.done} de ${state.total}`);
+      if(state.state==='running')await new Promise(resolve=>setTimeout(resolve,350));
+    }while(state.state==='running');
+    if(folder){if(state.folder)$('sheet-dialog').close();localFiles.saved(state);return;}
+    if(state.state!=='ready')throw new Error(state.error||'Não foi possível exportar.');
     const response=await api('export/download',{job});download(await response.blob(),state.filename);toast('Download iniciado · '+(snapshot.length>1?'ZIP com as montagens em JPG.':'JPG a 300 DPI.'));
   }catch(e){toast(e.message);}finally{exporting=false;activity();renderLibrary();flushRestore();}
 }
@@ -190,7 +200,7 @@ async function openProject(file){if(!file||!canEdit())return;if(photos.length&&!
   try{const result=await(await api('project/open',file,true)).json();photos.forEach(p=>releasePhoto(p.id));photos=result.photos.map(p=>({...p,initialRotation:p.edits.rotation}));selected=photos[0]?.id||null;filterReview=false;for(const p of photos)await updateThumbnail(p);saveSession();}
   catch(e){toast(e.message);}finally{importing=false;$('project-file').value='';activity();renderLibrary();renderEditor();renderSheets();saveSession();flushRestore();}}
 
-for(const id of ['add','drop','empty-add'])$(id).onclick=()=>$('files').click();
+for(const id of ['add','drop','empty-add'])$(id).onclick=()=>nativeFiles?importFiles(null):$('files').click();
 $('files').onchange=e=>importFiles([...e.target.files]);
 $('open-project').onclick=()=>$('project-file').click();$('project-file').onchange=e=>openProject(e.target.files[0]);$('save-project').onclick=saveProject;
 $('clear-all').onclick=()=>{if(canEdit()&&photos.length){$('clear-message').textContent=`Remover ${photos.length===1?'a foto':`as ${photos.length} fotos`} desta sessão? Salve o lote antes para guardar os ajustes.`;$('clear-dialog').showModal();}};
@@ -245,7 +255,10 @@ $('tile-frame').onpointerdown=e=>{if(e.button!==0||drag||!canEdit()||!current()|
 $('tile-frame').onpointermove=e=>{if(!drag||e.pointerId!==drag.pointerId)return;const unit=1063/$('tile-frame').clientWidth,dx=(e.clientX-drag.x)*unit,dy=(e.clientY-drag.y)*unit;drag.x=e.clientX;drag.y=e.clientY;if((dx||dy)&&moveBy(dx,dy,{interactive:true}))drag.moved=true;};
 for(const type of ['pointerup','pointercancel','lostpointercapture'])$('tile-frame').addEventListener(type,e=>{if(!drag||e.pointerId!==drag.pointerId)return;const moved=drag.moved;drag=null;$('tile-frame').classList.remove('dragging');if(moved)changed();else refreshControls();});
 $('tile-frame').onkeydown=e=>{const delta={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!delta)return;e.preventDefault();moveBy(...delta.map(x=>x*(e.shiftKey?10:1)));};
-$('export').onclick=()=>exportItems(photos.map(item));$('download-sheet').onclick=()=>openedSheet&&exportItems([{...openedSheet,edits:{...openedSheet.edits}}]);
+$('save-folder').onclick=()=>exportItems(photos.map(item),true);
+$('export').onclick=()=>exportItems(photos.map(item));
+$('save-sheet').onclick=()=>openedSheet&&exportItems([{...openedSheet,edits:{...openedSheet.edits}}],true);
+$('download-sheet').onclick=()=>openedSheet&&exportItems([{...openedSheet,edits:{...openedSheet.edits}}]);
 $('review-batch').onclick=()=>{const grid=$('batch-grid');grid.replaceChildren();for(const p of photos){const button=document.createElement('button');button.className='batch-card';const img=document.createElement('img');img.alt='Montagem de '+p.name;if(p.thumb)img.src=p.thumb;const name=document.createElement('strong');name.textContent=p.name;const sub=document.createElement('small');sub.textContent=status(p);button.append(img,name,sub);button.onclick=()=>{$('batch-dialog').close();select(p.id);$('tile-frame').focus();};grid.append(button);}$('batch-dialog').showModal();};
 $('retry-preview').onclick=()=>{renderEditor();renderSheets();};$('help').onclick=()=>$('help-dialog').showModal();
 document.querySelectorAll('[data-close-dialog]').forEach(b=>b.onclick=()=>b.closest('dialog').close());

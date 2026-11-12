@@ -1,5 +1,9 @@
 # Validação da integração
 
+## Salvamento direto nos editores 1.3.0
+
+`scripts/check_folder_exports.py` exercita a importação pelo seletor integrado, destino na origem, seleção manual, cancelamento, colisões de nome, abertura da pasta e download pelo navegador. Os testes usam JPEGs reabertos para conferir formato, dimensões e 300 dpi. No Medidas, incluem cinco fotos 5×7 em uma 15×21, um lote com mais de um modelo e a saída de 30 × 36 cm em folha comercial 30×40.
+
 ## Alinhamento individual do Bottons Editor 1.2.3
 
 A validação exige o centro vertical do quadrado no centro da folha e da coluna de dois P. Modelos G, M, P e quadrado lado a lado também devem compartilhar esse eixo, com tolerância de 1 pixel. Colunas só se movem independentemente quando seus limites de corte já estão separados pelo espaçamento completo de segurança; peças de uma mesma coluna movem-se juntas. Os testes exaustivos e aleatórios conferem ausência de sobreposição, margens, renderização e consistência entre lote completo e folha individual.

@@ -23,7 +23,9 @@ Os gabaritos de 5×7 e 7×10 preservam o recorte central, o giro anti-horário d
 
 A foto ativa aparece no centro. Ao atribuir um tamanho, a prévia mostra o enquadramento usado na montagem. Na seção **Folhas**, clique em uma miniatura para ampliar a composição. A exportação fica disponível depois de definir o tamanho de todas as fotos.
 
-Uma folha é baixada em JPEG. Várias folhas são reunidas num ZIP. Se o ZIP combinar modelos, os JPEGs são guardados nas pastas correspondentes, como `10x15 (3x4)`, `10x15 (5x7)`, `10x15 (7x10)` e `15x21 (5x7)`. O resultado é JPEG de qualidade 100, 4:4:4, a 300 dpi, com perfil sRGB incorporado.
+**Salvar na pasta** cria uma subpasta por modelo junto às fotos selecionadas pelo Windows. Por exemplo, cinco fotos 5×7 geram `15x21 (5x7)\Folha 01.jpg`. A subpasta é criada também para uma única folha. Se houver origens diferentes ou desconhecidas, escolha uma pasta de destino para o lote. Use **Abrir pasta** ao concluir.
+
+**Baixar JPEG** baixa uma folha pelo navegador. **Baixar ZIP** reúne várias folhas e separa os modelos quando houver mais de um. A saída é JPEG de qualidade 100, 4:4:4, a 300 dpi, com perfil sRGB incorporado.
 
 Use **Salvar lote** para guardar as fotos e atribuições num arquivo `.medidas` e reabra esse lote na ferramenta **Montagem para corte**. A sessão de **Medidas personalizadas** permanece disponível ao trocar de ferramenta.
 

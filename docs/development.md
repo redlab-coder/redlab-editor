@@ -16,6 +16,8 @@ O Medidas Editor usa Pillow para entrada/ICC e prévias, e libvips empacotada pa
 
 A preparação de atualização fica em `recovery.py`; o controlador visual em `ui/update.js`. Esses dois módulos têm o mesmo contrato nos três produtos e devem ser mantidos coerentes. O adaptador de cada `app.py` e `ui/app.js` traduz o estado específico da ferramenta. A cópia usa o formato de lote já existente e não recodifica os originais. `scripts/check_update_flow.py` valida API e interface; `scripts/update_test_helpers.py` também é usado pelos testes reais dos instaladores para comparar o estado antes e depois do reinício.
 
+`local_files.py`, `ui/local-files.js` e `ui/local-files.css` são comuns aos três editores. O serviço local consulta o seletor do Windows e associa a origem ao registro de cada foto durante a sessão. O navegador recebe identificadores, e os lotes portáteis carregam as fotos e os ajustes. `scripts/check_folder_exports.py` exercita a importação, o destino automático e manual, a gravação e os downloads com arquivos sintéticos.
+
 ## Identidade da família
 
 Cada produto define sua identidade e paleta em `ui/theme.json`. `python scripts/generate_branding.py` gera os tokens CSS, o símbolo vetorial e o ícone Windows com nove resoluções; `--check` detecta arquivos desatualizados. `branding.py`, `tray_panel.py` e `ui/family.css` são comuns aos três produtos e têm testes contra divergência. Ajustes de cor devem usar tokens, preservando as cores funcionais de guias de corte e avisos. O servidor entrega tema, estrutura e componentes em uma única resposta CSS, reduzindo as conexões locais necessárias para abrir cada aba.

@@ -1,6 +1,6 @@
 # Usar o Bottons Editor
 
-Baixe o `BottonsEditor-Setup-<versão>.exe` na página de [versões oficiais](https://github.com/redlab-coder/redlab-editor/releases/tag/bottons-v1.2.3) e execute o instalador. A instalação é por usuário, com atalho no menu Iniciar e desinstalação pelas configurações do Windows. A interface abre no navegador padrão e o ícone fica na bandeja, ao lado do relógio. Não precisa instalar Python ou conectar uma conta. A edição e a exportação funcionam offline. Windows 10/11 de 64 bits.
+Baixe o `BottonsEditor-Setup-<versão>.exe` na página de [versões oficiais](../README.md) e execute o instalador. A instalação é por usuário, com atalho no menu Iniciar e desinstalação pelas configurações do Windows. A interface abre no navegador padrão e o ícone fica na bandeja, ao lado do relógio. Não precisa instalar Python ou conectar uma conta. A edição e a exportação funcionam offline. Windows 10/11 de 64 bits.
 
 A versão instalada consulta atualizações ao iniciar e a cada 30 minutos, baixa e verifica o instalador. Quando estiver pronto, o cabeçalho oferece **Atualizar e reiniciar**, que guarda uma cópia local do lote e reabre o programa com o trabalho recuperado. Sem conexão, a edição continua disponível. [Funcionamento das atualizações](../../../docs/updates.md).
 
@@ -11,15 +11,15 @@ Clique no ícone para abrir a interface. Com o botão direito, escolha **Abrir e
 1. Clique em **Adicionar fotos** ou arraste arquivos para qualquer ponto da coluna Fotos ou da área de enquadramento. Um destaque mostra onde soltar; o painel Ajustes não importa arquivos.
 2. Selecione uma foto na coluna esquerda e escolha seu modelo (Quadrado ou Redondo G/M/P). Essa escolha afeta somente ela. Arraste a imagem na prévia para enquadrar, use o zoom e ajuste as cores. O contorno pontilhado delimita a área visível do modelo escolhido. **Guias** mostra/oculta as marcações; **Centralizar** reposiciona sem alterar zoom ou cores. O botão **?** reúne as orientações de uso. Clique na prévia e use as setas para mover um pixel da imagem original; Shift + seta move dez pixels.
 3. Digite o valor exato no campo ao lado de cada ajuste. Brilho, contraste e saturação vão de -100 a +100; nitidez de -100 a +200; zoom de 1,00 a 5,00. O botão **↺** zera somente aquele ajuste (zoom retorna a 1,00). Os filtros respondem gradualmente perto do zero e os campos numéricos aceitam duas casas decimais. As setas no campo fazem ajustes de 0,01. Durante o movimento, uma prévia rápida acompanha sua mão; ao soltar, a prévia final é calculada pelo mesmo processamento usado na exportação.
-4. Confira as folhas abaixo; clique em uma para ampliar. O ícone de download ao lado de fechar baixa somente essa folha, em JPG na resolução final a 300 DPI. Clique em uma foto ou no espaço da lista e use ↑/↓ para selecionar a anterior/seguinte; a seleção acompanha a rolagem. Os pequenos botões de seta de cada linha continuam alterando a ordem das fotos nas folhas.
-5. Clique em **Exportar** no topo da interface. Uma folha baixa como JPG; várias folhas baixam juntas em ZIP, contendo os JPGs individuais. O navegador salva na pasta de downloads ou pergunta onde salvar, conforme suas configurações.
+4. Confira as folhas abaixo e clique em uma para ampliar. Na prévia você pode salvar ou baixar apenas aquela folha. Use ↑/↓ na lista para navegar pelas fotos e as setas de cada linha para alterar a ordem nas folhas.
+5. Clique em **Salvar na pasta** para gravar os JPEGs a 300 dpi em `Bottons 10x15`, junto às fotos selecionadas pelo Windows. Se houver origens diferentes ou desconhecidas, como ao arrastar fotos para a interface, escolha uma pasta de destino para o lote. O editor acrescenta um sufixo a nomes já usados e oferece **Abrir pasta** ao concluir. Para usar os downloads do navegador, escolha **Baixar JPEG** ou **Baixar ZIP**, conforme o número de folhas.
 6. Você pode fechar ou recarregar a aba e reabrir pelo ícone, usando o mesmo navegador/perfil: fotos, ajustes e ordem retornam enquanto o Bottons Editor continuar ativo na bandeja. Os ajustes e identificadores da sessão ficam no armazenamento local do navegador; os arquivos completos ficam em uma área temporária local, removida ao excluir as fotos ou encerrar normalmente o aplicativo. Salve o lote ou exporte antes de **Encerrar Bottons Editor**, desligar ou reiniciar o computador. A recuperação da aba não substitui o arquivo de lote e não funciona em outro navegador/perfil. Somente uma aba edita a sessão por vez em navegadores compatíveis com Web Locks, como o Edge testado. Outra aba mostra a sessão para consulta; clique em **Usar nesta aba** para transferir a edição. A aba anterior passa a somente consulta e não sobrescreve os ajustes ao fechar.
 
 O ícone discreto de **Remover todas as fotos**, ao lado de Adicionar, limpa a sessão após confirmação. Exporte antes para guardar o resultado. Os originais permanecem intactos, e o gabarito selecionado continua ativo.
 
 ## Ampliar uma folha
 
-A prévia ampliada reúne a folha e o botão para baixar somente aquele JPG.
+A prévia ampliada permite salvar ou baixar apenas a folha exibida.
 
 ![Folha ampliada com duas artes e download individual](images/sheet.png)
 

@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.3.0 — 12/11/2026
+
+- Salve os JPEGs diretamente em subpastas junto às fotos escolhidas pelo seletor do Windows.
+- Escolha um destino para lotes com origens diferentes ou indisponíveis.
+- Abra a pasta ao concluir ou use o download de JPEG ou ZIP pelo navegador.
+
 ## 1.2.3 — 29/10/2026
 
 - Quadrado centralizado verticalmente ao lado da coluna de dois redondos.

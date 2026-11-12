@@ -10,9 +10,11 @@ O pacote inclui **Bottons 1.2.3**, **Polaroid 1.2.1** e **Medidas 1.1.1**. Os tr
 
 | Ferramenta | Para que serve | Windows 10 e 11 · 64 bits |
 | --- | --- | --- |
-| **Bottons Editor** | Modelos por imagem e montagem de folhas com bottons. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Setup-1.2.3.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.2.3/BottonsEditor-Portable.exe) |
-| **Polaroid Editor** | Enquadramento, conferência e montagem de polaroids. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Setup-1.2.1.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.2.1/PolaroidEditor-Portable.exe) |
-| **Medidas Editor** | Medidas personalizadas e montagem de fotos para corte. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.2/MedidasEditor-Setup-1.2.2.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.2.2/MedidasEditor-Portable.exe) |
+| **Bottons Editor** | Modelos por imagem e montagem de folhas com bottons. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.3.0/BottonsEditor-Setup-1.3.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/bottons-v1.3.0/BottonsEditor-Portable.exe) |
+| **Polaroid Editor** | Enquadramento, conferência e montagem de polaroids. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.3.0/PolaroidEditor-Setup-1.3.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/polaroid-v1.3.0/PolaroidEditor-Portable.exe) |
+| **Medidas Editor** | Medidas personalizadas e montagem de fotos para corte. | [Instalador](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.3.0/MedidasEditor-Setup-1.3.0.exe) · [Portátil](https://github.com/redlab-coder/redlab-editor/releases/download/medidas-v1.3.0/MedidasEditor-Portable.exe) |
+
+Nos três editores, **Salvar na pasta** grava os JPEGs em subpastas junto às fotos adicionadas pelo seletor do Windows. Se o lote reunir origens diferentes ou a origem estiver indisponível, o editor pede uma pasta de destino. **Baixar JPEG** e **Baixar ZIP** usam os downloads do navegador.
 
 A edição funciona localmente, sem conta. Os originais são preservados e as fotos não são enviadas à nuvem. O instalador é a opção recomendada para receber atualizações; a edição portátil funciona sem instalação e é atualizada manualmente.
 

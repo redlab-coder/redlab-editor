@@ -15,6 +15,7 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote, quote
 from PIL import Image, UnidentifiedImageError
 from engine import render_tile, jpeg_bytes, normalized_edits, output_names, APERTURE, PAGE, PHOTO, RED_START
+from local_files import NATIVE_FILES, destination_for, import_selected, open_saved_folder
 from desktop import SingleInstance, run_tray, clear_session
 from photo_store import PhotoRecord, PhotoCache
 from projects import read_project, write_project, MAX_FILE, MAX_TOTAL, MAX_PHOTOS
@@ -46,7 +47,7 @@ def snapshot(items):
         return result
 
 
-def start_export(records):
+def start_export(records, destination=None):
     with LOCK:
         for key, old in list(JOBS.items()):
             if old['state'] != 'running' and time.monotonic() - old['created'] > 3600:
@@ -62,37 +63,53 @@ def start_export(records):
         names = output_names([meta['name'] for _, meta in records])
         job = dict(state='running', done=0, total=len(records), error=None, directory=directory,
                    filename=names[0] if len(records) == 1 else 'PolaroidEditor-polaroids.zip',
-                   created=time.monotonic(), path=Path(directory.name) / 'result')
+                   created=time.monotonic(), path=Path(directory.name) / 'result' if destination is None else None,
+                   folder=None, success=0, errors=[])
         JOBS[job_id] = job
     def work():
         current_name = ''
         try:
-            archive = zipfile.ZipFile(job['path'], 'w', zipfile.ZIP_STORED) if len(records) > 1 else None
+            archive = zipfile.ZipFile(job['path'], 'w', zipfile.ZIP_STORED) if job['path'] and len(records) > 1 else None
             try:
                 for index, (record, meta) in enumerate(records):
                     if CLOSING.is_set():
                         raise InterruptedError('Encerrando')
                     current_name = meta['name']
-                    with CACHE.lock:
-                        image = render_tile(CACHE.get(record, full=True), meta['edits'])
-                        data = jpeg_bytes(image)
-                    if CLOSING.is_set():
-                        raise InterruptedError('Encerrando')
-                    if archive:
-                        archive.writestr(names[index], data)
-                    else:
-                        job['path'].write_bytes(data)
+                    try:
+                        with CACHE.lock:
+                            with render_tile(CACHE.get(record, full=True), meta['edits']) as image:
+                                data = jpeg_bytes(image)
+                        if CLOSING.is_set():
+                            raise InterruptedError('Encerrando')
+                        if destination:
+                            with destination.file('Polaroid', names[index]) as output:
+                                output.write_bytes(data)
+                        elif archive:
+                            archive.writestr(names[index], data)
+                        else:
+                            job['path'].write_bytes(data)
+                        job['success'] += 1
+                    except (ValueError, OSError) as error:
+                        if not destination or CLOSING.is_set():
+                            raise
+                        job['errors'].append(f'{current_name}: {error}')
                     job['done'] = index + 1
             finally:
                 if archive:
                     archive.close()
             if CLOSING.is_set():
                 raise InterruptedError('Encerrando')
-            job['state'] = 'ready'
+            if destination:
+                job['folder'] = destination.result()
+            job['state'] = 'ready' if job['success'] else 'failed'
         except Exception:
-            job['error'] = f'Falha em {current_name}. Nenhum arquivo parcial foi disponibilizado; tente exportar novamente.'
+            if destination:
+                job['folder'] = destination.result()
+                job['error'] = f'Falha em {current_name}. Confira os arquivos já salvos antes de tentar novamente.'
+            else:
+                job['error'] = f'Falha em {current_name}. Nenhum arquivo parcial foi disponibilizado; tente exportar novamente.'
+                job['path'].unlink(missing_ok=True)
             job['state'] = 'cancelled' if CLOSING.is_set() else 'failed'
-            job['path'].unlink(missing_ok=True)
     job['thread'] = threading.Thread(target=work, daemon=True, name='PolaroidEditor-export')
     job['thread'].start()
     return job_id
@@ -130,6 +147,21 @@ class Handler(BaseHTTPRequestHandler):
         while chunk := stream.read(256 * 1024):
             self.wfile.write(chunk)
 
+    def add_photo(self, body, name, source_folder=None):
+        with CACHE.lock:
+            with LOCK:
+                if len(IMAGES) >= MAX_PHOTOS or sum(p['record'].bytes for p in IMAGES.values()) + len(body) > MAX_TOTAL:
+                    raise ValueError('O lote aceita até 100 fotos e 4 GB. Salve este lote antes de iniciar outro.')
+            record = PhotoRecord(body)
+            record.source_folder = source_folder
+            identifier = secrets.token_hex(12)
+            with LOCK:
+                if CLOSING.is_set():
+                    raise ValueError('O editor está encerrando.')
+                IMAGES[identifier] = dict(record=record, name=name)
+        return dict(id=identifier, name=name, width=record.width, height=record.height,
+                    content_box=record.content_box)
+
     def authorized_host(self):
         return self.headers.get('Host') == f'127.0.0.1:{self.server.server_port}'
 
@@ -142,11 +174,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/':
             html = (ROOT / 'ui/index.html').read_text(encoding='utf-8')
             html = html.replace('__TOKEN__', TOKEN).replace('__VERSION__', VERSION)
+            html = html.replace('__NATIVE_FILES__', 'true' if NATIVE_FILES else 'false')
             return self.reply(html.encode(), 'text/html; charset=utf-8')
         if path == '/style.css':
-            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css'))
+            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css', 'local-files.css'))
             return self.reply(css,'text/css; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/update.js'):
+        if path in ('/app.js', '/icons.js', '/update.js', '/local-files.js'):
             return self.reply((ROOT / 'ui' / path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image
@@ -248,19 +281,15 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError('O envio foi interrompido.')
             if path == '/api/upload':
                 name = unquote(self.headers.get('X-Filename', 'Foto'))[:512]
-                with CACHE.lock:
-                    with LOCK:
-                        if len(IMAGES) >= MAX_PHOTOS or sum(p['record'].bytes for p in IMAGES.values()) + length > MAX_TOTAL:
-                            raise ValueError('O lote aceita até 100 fotos e 4 GB. Salve este lote antes de iniciar outro.')
-                    record = PhotoRecord(body)
-                    id_ = secrets.token_hex(12)
-                    with LOCK:
-                        IMAGES[id_] = {'record': record, 'name': name}
-                return self.json_reply(dict(id=id_, name=name, width=record.width, height=record.height,
-                                            content_box=record.content_box))
+                return self.json_reply(self.add_photo(body, name))
             data = json.loads(body or b'{}')
             if not isinstance(data, dict):
                 raise ValueError('Solicitação inválida.')
+            if path == '/api/files/import':
+                return self.json_reply(import_selected(self.add_photo, MAX_FILE, CLOSING))
+            if path == '/api/files/open':
+                open_saved_folder(data['token'])
+                return self.json_reply({'ok': True})
             if path.startswith('/api/update/'):
                 return self.update_api(path,data)
             if path == '/api/heartbeat':
@@ -293,13 +322,19 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_file(stream, 'Meu lote.polaroid', 'application/zip')
                 return
             if path == '/api/export/start':
-                return self.json_reply({'job': start_export(snapshot(data['items']))})
+                records = snapshot(data['items'])
+                if data.get('folder') is True:
+                    destination = destination_for(records)
+                    if destination is None:
+                        return self.json_reply({'cancelled': True})
+                    return self.json_reply({'job': start_export(records, destination)})
+                return self.json_reply({'job': start_export(records)})
             if path in ('/api/export/status', '/api/export/download'):
                 with LOCK:
                     job = JOBS[data['job']]
                 if path.endswith('/status'):
-                    return self.json_reply({k: job[k] for k in ('state', 'done', 'total', 'error', 'filename')})
-                if job['state'] != 'ready':
+                    return self.json_reply({k: job[k] for k in ('state', 'done', 'total', 'error', 'filename', 'folder', 'success', 'errors')})
+                if job['state'] != 'ready' or not job['path']:
                     raise ValueError('A exportação ainda não está pronta.')
                 with job['path'].open('rb') as stream:
                     self.send_file(stream, job['filename'], 'image/jpeg' if job['total'] == 1 else 'application/zip')

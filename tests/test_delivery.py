@@ -22,6 +22,11 @@ import release_artifacts as artifacts
 from publish import PRODUCTS, REPOSITORY
 
 
+def next_patch(version):
+    major, minor, patch_number = release.version_tuple(version)
+    return f'{major}.{minor}.{patch_number + 1}'
+
+
 class PreparationTests(unittest.TestCase):
     def copy_catalog(self, destination):
         paths = ['README.md', 'CHANGELOG.md', 'docs/maintenance.md', 'docs/package.md',
@@ -38,38 +43,47 @@ class PreparationTests(unittest.TestCase):
             root = Path(directory)
             self.copy_catalog(root)
             before = (root/'README.md').read_bytes()
-            changes = release.prepare(root, 'bottons-editor', '1.2.4', '- Melhora o alinhamento.', date='30/10/2026')
+            version = next_patch(release.current_version(root, 'bottons-editor'))
+            pin = bundle.package()['products']['bottons-editor']
+            old_history = (root/'CHANGELOG.md').read_text(encoding='utf-8').split('\n', 1)[1].strip()
+            changes = release.prepare(root, 'bottons-editor', version, '- Melhora o alinhamento.', date='30/10/2026')
             self.assertEqual(before, (root/'README.md').read_bytes())
             self.assertNotIn(Path('bundle/package.json'), changes)
             self.assertFalse(any('polaroid-editor' in str(path) or 'medidas-editor' in str(path) for path in changes))
-            self.assertIn('Bottons 1.2.3', changes[Path('README.md')])
-            self.assertIn('bottons-v1.2.4/BottonsEditor-Setup-1.2.4.exe', changes[Path('README.md')])
-            self.assertIn('Versão 1.2.4', changes[Path('apps/bottons-editor/README.md')])
-            self.assertIn('#define AppVersion "1.2.4"', changes[Path('apps/bottons-editor/installer/bottons-editor.iss')])
-            self.assertTrue(changes[Path('apps/bottons-editor/RELEASE_NOTES.md')].startswith('# Bottons Editor 1.2.4\n'))
-            self.assertIn('Bottons Editor 1.2.4 — 30/10/2026', changes[Path('CHANGELOG.md')])
-            self.assertIn('## Bottons Editor 1.2.3 e pacote 1.0.2', changes[Path('CHANGELOG.md')])
+            self.assertIn(f'Bottons {pin}', changes[Path('README.md')])
+            self.assertIn(f'bottons-v{version}/BottonsEditor-Setup-{version}.exe', changes[Path('README.md')])
+            self.assertIn(f'Versão {version}', changes[Path('apps/bottons-editor/README.md')])
+            self.assertIn(f'#define AppVersion "{version}"', changes[Path('apps/bottons-editor/installer/bottons-editor.iss')])
+            self.assertTrue(changes[Path('apps/bottons-editor/RELEASE_NOTES.md')].startswith(f'# Bottons Editor {version}\n'))
+            self.assertIn(f'Bottons Editor {version} — 30/10/2026', changes[Path('CHANGELOG.md')])
+            self.assertIn(old_history, changes[Path('CHANGELOG.md')])
 
     def test_bundle_preparation_changes_only_pins_requested_and_preserves_individual_links(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.copy_catalog(root)
-            changes = release.prepare(root, 'bundle', '1.0.3', 'Atualiza o conjunto.', included={'bottons-editor': '1.2.4'})
+            old = bundle.package()
+            version = next_patch(old['version'])
+            pin = next_patch(old['products']['bottons-editor'])
+            product = release.current_version(root, 'bottons-editor')
+            changes = release.prepare(root, 'bundle', version, 'Atualiza o conjunto.', included={'bottons-editor': pin})
             config = json.loads(changes[Path('bundle/package.json')])
-            self.assertEqual(config['products'], dict(bundle.package()['products'], **{'bottons-editor': '1.2.4'}))
-            self.assertIn('Bottons 1.2.4', changes[Path('README.md')])
+            self.assertEqual(config['products'], dict(old['products'], **{'bottons-editor': pin}))
+            self.assertIn(f'Bottons {pin}', changes[Path('README.md')])
             # An individual download is not moved to an unpublished product by a bundle edit.
-            self.assertIn('bottons-v1.2.3/BottonsEditor-Setup-1.2.3.exe', changes[Path('README.md')])
-            self.assertIn('RedlabEditor-Setup-1.0.3.exe', changes[Path('docs/package.md')])
-            self.assertIn('Bottons Editor 1.2.4', changes[Path('bundle/RELEASE_NOTES.md')])
-            self.assertFalse(any(str(path).startswith('apps/') for path in changes))
+            self.assertIn(f'bottons-v{product}/BottonsEditor-Setup-{product}.exe', changes[Path('README.md')])
+            self.assertIn(f'RedlabEditor-Setup-{version}.exe', changes[Path('docs/package.md')])
+            self.assertIn(f'Bottons Editor {pin}', changes[Path('bundle/RELEASE_NOTES.md')])
+            self.assertFalse(any(path.parts[0] == 'apps' for path in changes))
 
     def test_invalid_versions_notes_and_pins_do_not_produce_a_plan(self):
-        for version, notes in [('1.2.3', 'Ajusta.'), ('1.2.2', 'Ajusta.'), ('1.2.4', ''), ('1.2.4', 'TODO')]:
+        current = release.current_version(ROOT, 'bottons-editor')
+        future = next_patch(current)
+        for version, notes in [(current, 'Ajusta.'), ('0.0.1', 'Ajusta.'), (future, ''), (future, 'TODO')]:
             with self.assertRaises(ValueError):
                 release.prepare(ROOT, 'bottons-editor', version, notes)
         with self.assertRaises(ValueError):
-            release.prepare(ROOT, 'bundle', '1.0.3', 'Melhora.', included={'bottons-editor': '1.0.0'})
+            release.prepare(ROOT, 'bundle', next_patch(bundle.package()['version']), 'Melhora.', included={'bottons-editor': '0.0.1'})
 
 
 class ArtifactTests(unittest.TestCase):
@@ -175,7 +189,9 @@ class BundleInputTests(unittest.TestCase):
             if 'bottons-v' in args[-1]:
                 raise subprocess.CalledProcessError(1, ['gh'], stderr=b'gh: Not Found (HTTP 404)')
             return json.dumps(dict(draft=False, prerelease=False))
-        with patch.object(bundle, 'gh', side_effect=lookup):
+        config = bundle.package()
+        config['products']['bottons-editor'] = release.current_version(ROOT, 'bottons-editor')
+        with patch.object(bundle, 'package', return_value=config), patch.object(bundle, 'gh', side_effect=lookup):
             plan = bundle.input_plan()
             self.assertEqual(plan['build'], ['bottons-editor'])
             self.assertEqual(plan['published'], ['polaroid-editor', 'medidas-editor'])

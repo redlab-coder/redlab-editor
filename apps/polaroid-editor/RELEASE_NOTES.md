@@ -1,10 +1,5 @@
-# Polaroid Editor 1.2.1
+# Polaroid Editor 1.3.0
 
-Versão de manutenção para integrar o pacote completo RedLab Editor.
-
-- Atalho na pasta **RedLab Editor** do menu Iniciar.
-- Remove o atalho antigo solto no menu Iniciar, mantendo o nome e o ícone da ferramenta.
-- Instalação, desinstalação e atualizações continuam independentes.
-- Projetos, ajustes e funções de edição e impressão preservados.
-
-Também pode ser instalado individualmente. Salve o lote e encerre o editor antes da instalação manual.
+- Salve os JPEGs diretamente em subpastas junto às fotos escolhidas pelo seletor do Windows.
+- Escolha um destino para lotes com origens diferentes ou indisponíveis.
+- Abra a pasta ao concluir ou use o download de JPEG ou ZIP pelo navegador.

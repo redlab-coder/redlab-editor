@@ -20,6 +20,7 @@ from photo_store import PhotoRecord, PhotoCache, MAX_FILE, MAX_PHOTOS, MAX_TOTAL
 from projects import project_tool, read_project, write_project
 from jobs import ExportManager
 from montage import photo_size, plan_sheets, render_photo_preview, render_sheet
+from local_files import NATIVE_FILES, destination_for, import_selected, open_saved_folder
 from desktop import SingleInstance, run_tray, clear_session
 from updater import Updater, installed_directory
 from recovery import CheckpointStore, UpdateSession, UpdateBusy
@@ -135,7 +136,7 @@ class Handler(BaseHTTPRequestHandler):
             with EXPORTS.lock:
                 job = EXPORTS.jobs.get(query.get('job', [''])[0])
                 supplied = query.get('key', [''])[0]
-                if (job is None or job['state'] != 'ready' or not supplied.isascii()
+                if (job is None or job['state'] != 'ready' or not job['path'] or not supplied.isascii()
                         or not hmac.compare_digest(supplied, job['download_key'])):
                     return self.json_reply({'error':'Download indisponível.'}, 403)
                 try:
@@ -152,17 +153,33 @@ class Handler(BaseHTTPRequestHandler):
         if path in ('/', '/medidas', '/montagem'):
             html = (ROOT/'ui/index.html').read_text(encoding='utf-8')
             html = html.replace('__TOKEN__', TOKEN).replace('__VERSION__', VERSION).replace('__FORMATS__', json.dumps(FORMATS, ensure_ascii=False))
+            html = html.replace('__NATIVE_FILES__', 'true' if NATIVE_FILES else 'false')
             return self.reply(html.encode(), 'text/html; charset=utf-8')
         if path == '/style.css':
-            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css','montage.css'))
+            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css', 'local-files.css','montage.css'))
             return self.reply(css,'text/css; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/update.js', '/montage.js'):
+        if path in ('/app.js', '/icons.js', '/update.js', '/local-files.js', '/montage.js'):
             return self.reply((ROOT/'ui'/path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image
             output = io.BytesIO(); icon_image().save(output, 'ICO')
             return self.reply(output.getvalue(), 'image/x-icon')
         return self.json_reply({'error':'Não encontrado.'}, 404)
+
+    def add_photo(self, body, name, source_folder=None, *, tool='medidas'):
+        with CACHE.lock:
+            with LOCK:
+                if len(IMAGES) >= MAX_PHOTOS or sum(p['record'].bytes for p in IMAGES.values()) + len(body) > MAX_TOTAL:
+                    raise ValueError('As duas ferramentas juntas aceitam até 100 fotos e 4 GB de originais.')
+            record = PhotoRecord(body)
+            record.source_folder = source_folder
+            identifier = secrets.token_hex(12)
+            photo = dict(record=record, name=name, tool=tool)
+            with LOCK:
+                if getattr(self.server, 'closing', threading.Event()).is_set():
+                    raise ValueError('O editor está encerrando.')
+                IMAGES[identifier] = photo
+        return photo_response(identifier, photo)
 
     def update_records(self,items):
         if not isinstance(items,list) or len(items)>100:raise ValueError('Lote inválido.')
@@ -264,18 +281,18 @@ class Handler(BaseHTTPRequestHandler):
             if path in uploads:
                 name = unquote(self.headers.get('X-Filename', 'Foto'))[:512]
                 tool = 'montagem' if path == '/api/montagem/upload' else 'medidas'
-                with CACHE.lock:
-                    with LOCK:
-                        if len(IMAGES) >= MAX_PHOTOS or sum(p['record'].bytes for p in IMAGES.values())+length > MAX_TOTAL:
-                            raise ValueError('As duas ferramentas juntas aceitam até 100 fotos e 4 GB de originais.')
-                    record = PhotoRecord(body)
-                    identifier = secrets.token_hex(12); photo = dict(record=record, name=name, tool=tool)
-                    with LOCK:
-                        IMAGES[identifier] = photo
-                return self.json_reply(photo_response(identifier, photo))
+                return self.json_reply(self.add_photo(body, name, tool=tool))
             data = json.loads(body or b'{}')
             if not isinstance(data, dict):
                 raise ValueError('Solicitação inválida.')
+            if path == '/api/files/import':
+                tool = project_tool(data.get('tool', 'medidas'))
+                return self.json_reply(import_selected(
+                    lambda body, name, origin: self.add_photo(body, name, origin, tool=tool),
+                    MAX_FILE, getattr(self.server, 'closing', None)))
+            if path == '/api/files/open':
+                open_saved_folder(data['token'])
+                return self.json_reply({'ok': True})
             if path.startswith('/api/update/'):
                 return self.update_api(path,data)
             if path == '/api/heartbeat':
@@ -317,6 +334,11 @@ class Handler(BaseHTTPRequestHandler):
                 if path.endswith('/export'):
                     if None in sizes:
                         raise ValueError('Defina o tamanho de todas as fotos antes de exportar.')
+                    if data.get('folder') is True:
+                        destination = destination_for(records)
+                        if destination is None:
+                            return self.json_reply({'cancelled': True})
+                        return self.json_reply({'job': EXPORTS.start_montage(sheets, records, destination)})
                     return self.json_reply({'job': EXPORTS.start_montage(sheets, records)})
                 index, maximum = data.get('index'), data.get('maximum', 1000)
                 if (type(index) is not int or not 0 <= index < len(sheets)
@@ -327,7 +349,13 @@ class Handler(BaseHTTPRequestHandler):
                     image.save(output, 'PNG')
                 return self.reply(output.getvalue(), 'image/png')
             if path == '/api/export/start':
-                return self.json_reply({'job':EXPORTS.start(snapshots(data['items'], allow_missing=True))})
+                records = snapshots(data['items'], allow_missing=True)
+                if data.get('folder') is True:
+                    destination = destination_for(records)
+                    if destination is None:
+                        return self.json_reply({'cancelled': True})
+                    return self.json_reply({'job': EXPORTS.start(records, destination)})
+                return self.json_reply({'job': EXPORTS.start(records)})
             if path == '/api/export/status':
                 return self.json_reply(EXPORTS.status(data['job']))
             if path == '/api/export/cancel':
@@ -336,7 +364,7 @@ class Handler(BaseHTTPRequestHandler):
             if path == '/api/export/download':
                 with EXPORTS.lock:
                     job = EXPORTS.jobs[data['job']]
-                    if job['state'] != 'ready':
+                    if job['state'] != 'ready' or not job['path']:
                         raise ValueError('A exportação ainda não está pronta.')
                     stream = job['path'].open('rb'); filename = job['filename']
                 with stream:

@@ -17,6 +17,7 @@ from PIL import UnidentifiedImageError, Image
 from engine import render_tile, jpeg_bytes, template_info, TEMPLATES
 from layout import plan_pages, compose_sheet
 from projects import read_project, write_project, normalized_edits, MAX_FILE, MAX_TOTAL
+from local_files import NATIVE_FILES, destination_for, import_selected, open_saved_folder
 from desktop import SingleInstance, run_tray, clear_session
 from photo_store import PhotoRecord, PhotoCache
 from updater import Updater, installed_directory
@@ -72,11 +73,12 @@ class Handler(BaseHTTPRequestHandler):
             html = (ROOT / 'ui' / 'index.html').read_text(encoding='utf-8').replace('__TOKEN__', TOKEN)
             html = html.replace('__VERSION__', VERSION)
             html = html.replace('__TEMPLATES__', json.dumps({key: template_info(key) for key in TEMPLATES}, ensure_ascii=False))
+            html = html.replace('__NATIVE_FILES__', 'true' if NATIVE_FILES else 'false')
             return self.reply(html.encode(), 'text/html; charset=utf-8')
         if path == '/style.css':
-            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css'))
+            css=b'\n'.join((ROOT/'ui'/name).read_bytes() for name in ('theme.css','style.css','family.css', 'local-files.css'))
             return self.reply(css,'text/css; charset=utf-8')
-        if path in ('/app.js', '/icons.js', '/update.js'):
+        if path in ('/app.js', '/icons.js', '/update.js', '/local-files.js'):
             return self.reply((ROOT / 'ui' / path[1:]).read_bytes(), 'text/javascript; charset=utf-8' if path.endswith('js') else 'text/css; charset=utf-8')
         if path == '/favicon.ico':
             from desktop import icon_image
@@ -173,20 +175,17 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_reply(dict(photos=response))
             body = self.rfile.read(length)
             if path == '/api/upload':
-                with CACHE.lock:
-                    with LOCK:
-                        self.check_capacity(length)
-                    CACHE.clear()
-                    record = PhotoRecord(body)
-                    with LOCK:
-                        self.check_capacity(length)
-                        id_ = secrets.token_hex(12)
-                        name=unquote(self.headers.get('X-Filename','Foto'))[:512] or 'Foto'
-                        IMAGES[id_] = {'record': record,'name':name}
-                return self.json_reply({'id': id_, 'width': record.width, 'height': record.height, 'name': name})
+                name = unquote(self.headers.get('X-Filename', 'Foto'))[:512] or 'Foto'
+                return self.json_reply(self.add_photo(body, name))
             payload = json.loads(body or b'{}')
             if not isinstance(payload, dict):
                 raise ValueError('Solicitação inválida.')
+            closing = getattr(self.server, 'closing', None)
+            if path == '/api/files/import':
+                return self.json_reply(import_selected(self.add_photo, MAX_FILE, closing))
+            if path == '/api/files/open':
+                open_saved_folder(payload['token'])
+                return self.json_reply({'ok': True})
             if path == '/api/templates':
                 return self.json_reply([template_info(key) for key in TEMPLATES])
             if path.startswith('/api/update/'):
@@ -258,6 +257,27 @@ class Handler(BaseHTTPRequestHandler):
                         page.thumbnail((1000,1000),Image.Resampling.LANCZOS)
                         output=io.BytesIO();page.save(output,'PNG')
                     return self.reply(output.getvalue(),'image/png')
+                if payload.get('folder') is True:
+                    first = payload.get('first_sheet', 1)
+                    if type(first) is not int or not 1 <= first <= 100:
+                        raise ValueError('Numeração de folha inválida.')
+                    destination = destination_for(records)
+                    if destination is None:
+                        return self.json_reply({'cancelled': True})
+                    errors, success = [], 0
+                    for index, plan in enumerate(plans, start=first):
+                        try:
+                            with compose(plan) as page:
+                                data = jpeg_bytes(page)
+                            self.check_open()
+                            with destination.file('Bottons 10x15', f'BottonsEditor-{index:02d}.jpg') as output:
+                                output.write_bytes(data)
+                            success += 1
+                        except (ValueError, OSError) as error:
+                            errors.append(f'Folha {index:02d}: {error}')
+                            if closing is not None and closing.is_set():
+                                break
+                    return self.json_reply(dict(folder=destination.result(), success=success, errors=errors))
                 if len(plans)==1:
                     with compose(plans[0]) as page:data=jpeg_bytes(page)
                     return self.reply(data,'image/jpeg',filename='BottonsEditor-01.jpg')
@@ -275,6 +295,20 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, KeyError, TypeError, AttributeError, OverflowError, UnidentifiedImageError, OSError, Image.DecompressionBombError) as error:
             message = str(error) if isinstance(error, ValueError) else 'Não foi possível processar a imagem ou a solicitação. Use JPG, PNG, WebP, BMP ou TIFF.'
             self.json_reply({'error': message}, 400)
+
+    def add_photo(self, body, name, source_folder=None):
+        with CACHE.lock:
+            with LOCK:
+                self.check_capacity(len(body))
+            CACHE.clear()
+            record = PhotoRecord(body)
+            record.source_folder = source_folder
+            with LOCK:
+                self.check_open()
+                self.check_capacity(len(body))
+                identifier = secrets.token_hex(12)
+                IMAGES[identifier] = dict(record=record, name=name)
+        return dict(id=identifier, name=name, width=record.width, height=record.height)
 
     def send_stream(self, stream, filename, content_type):
         self.check_open();size=stream.tell();stream.seek(0)

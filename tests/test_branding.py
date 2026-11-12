@@ -10,7 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 class BrandingTests(unittest.TestCase):
     def test_shared_modules_and_geometry_stay_in_sync(self):
         products=list((ROOT/'apps').glob('*-editor'))
-        for name in ('branding.py','tray_panel.py','ui/family.css'):
+        for name in ('branding.py','tray_panel.py','ui/family.css','local_files.py','ui/local-files.js','ui/local-files.css'):
             contents=[(product/name).read_bytes() for product in products]
             self.assertTrue(all(content==contents[0] for content in contents),name)
         boxes=[]
